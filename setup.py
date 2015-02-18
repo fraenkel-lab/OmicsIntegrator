@@ -15,7 +15,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = [
-    # TODO: put package requirements here
+    #requirements?
 ]
 
 test_requirements = [
@@ -52,6 +52,9 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    test_suite='tests',
-    tests_require=test_requirements
-)
+    data_files=[('data',[]),
+                 ('data/matrix_files',[]),
+                 ('example',[]),
+                 ('example/emt',[])],
+    scripts=['bin/garnet.py','bin/motif_fsa_scores.py','bin/get_window_binding_matrix.py','bin/motif_regression.py','bin/map_peaks_to_known_genes.py','bin/zipTgms.py']
+    )
