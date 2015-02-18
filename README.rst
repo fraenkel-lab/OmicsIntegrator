@@ -43,17 +43,52 @@ Features
 
 Garnet Module
 -------------
+Garnet is a script that runs a series of smaller scripts to map epigenetic data
+to genes and then scan the genome to determine the likelihood of a transcription
+factor binding the genome near that gene. 
 
+Usage: garnet.py [configfilename]
+
+Options:
+  -h, --help          show this help message and exit
+  --useUniprot        Set this flag to use Uniprot identifies
+  --utilpath=ADDPATH  Destination of chipsequtil library,
+                      Default=../../../tfMatrix/garnet/bin/../src
+
+The configuration file should take the following format:
+
+[chromatinData]
+#these files contain epigenetically interesting regions
+bedfile=bedfilecontainingregions.bed
+fastafile=fastafilemappedusinggalaxytools.fasta
+
+#these two files are provided in the package
+genefile=../../data/ucsc_hg19_knownGenes.txt
+xreffile=../../data/ucsc_hg19_kgXref.txt
+
+
+#distance to look from transcription start site
+windowsize=2000
+
+[motifData]
+#motif matrices to be used, data provided with the package
+tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
+#settings for scanning
+genome=hg19
+numthreads=4
+doNetwork=False
+tfDelimiter=.
+
+[expressionData]
+expressionFile=tabDelimitedExpressionData.txt
+pvalThresh=0.01
+qvalThresh=
 
 Forest Module
 -------------
-forest.py has many tunable parameters that enable the user to run the algorithm 
-in many different configurations.  For a full list of all options, type:
-python forest.py -h
+Forest *requires* the msgsteiner package as well as the boost library.
 
-
-
-Usage: PCSF.py [options]
+Usage: forest.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
