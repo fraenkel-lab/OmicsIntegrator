@@ -14,9 +14,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
-requirements = [
-    #requirements?
-]
+requirements = ["networkx","scipy","numpy","matplotlib"]
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -52,9 +50,11 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    data_files=[('data',[]),
-                 ('data/matrix_files',[]),
+    data_files=[('data',['data/ucsc_hg19_kgXref.txt','data/ucsc_mm9_kgXref.txt',
+                 'data/ucsc_hg19_knownGenes.txt','data/ucsc_mm9_knownGenes.txt']),
+                 ('data/matrix_files',['data/matrix_files/vertebrates_clustered_motifs.txt','data/matrix_files/vertebrates_clustered_motifs_mIDs.txt','data/matrix_files/vertebrates_clustered_motifs_tfids.txt','data/matrix_files/vertebrates_clustered_motifs_up_tfids.txt','data/matrix_files/motif_thresholds.pkl','data/matrix_files/vertebrates_clustered_motifs.tamo']),
+                 ('data/matrix_files/gifs',[]),
                  ('example',[]),
                  ('example/emt',[])],
-    scripts=['bin/garnet.py','bin/motif_fsa_scores.py','bin/get_window_binding_matrix.py','bin/motif_regression.py','bin/map_peaks_to_known_genes.py','bin/zipTgms.py']
+    scripts=['scripts/garnet.py','scripts/motif_fsa_scores.py','scripts/get_window_binding_matrix.py','scripts/motif_regression.py','scripts/map_peaks_to_known_genes.py','scripts/zipTgms.py','scripts/forest.py']
     )

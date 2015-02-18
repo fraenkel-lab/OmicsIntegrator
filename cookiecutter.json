@@ -3,7 +3,7 @@
 	"email": "fraenkel-admin@mit.edu",
 	"project_name": "Garnet-Forest",
 	"repo_name": "garnetforest",
-	"project_short_description": "Python Boilerplate contains all the boilerplate you need to create a Python package.",
+	"project_short_description": "Garnet and Python modules to connect various forms of OMIC data"
 	"release_date": "2015-04-01",
 	"year": "2015",
 	"version": "0.1.0"
