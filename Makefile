@@ -35,7 +35,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 garnet=forest tests
+	flake8 garnet-forest tests
 
 test:
 	python setup.py test

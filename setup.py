@@ -23,23 +23,23 @@ test_requirements = [
 ]
 
 setup(
-    name='garnet=forest',
+    name='garnet-forest',
     version='0.1.0',
     description="Python + Forest",
     long_description=readme + '\n\n' + history,
     author="Sara Gosline",
     author_email='sgosline@mit.edu',
-    url='https://github.com/sgosline/garnet=forest',
+    url='https://github.com/sgosline/garnetforest',
     packages=[
-        'garnet=forest',
+        'garnet-forest',
     ],
-    package_dir={'garnet=forest':
-                 'garnet=forest'},
+    package_dir={'garnet-forest':
+                 'garnet-forest'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",
     zip_safe=False,
-    keywords='garnet=forest',
+    keywords='garnet-forest',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

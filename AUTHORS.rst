@@ -10,4 +10,7 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Mandy Kedaigle <mandyjoy@mit.edu>
+* Anthony Soltis <asoltis@mit.edu>
+* Nurcan Tuncbag <ntuncbag@mit.edu>
+ 

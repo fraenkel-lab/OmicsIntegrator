@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_garnet=forest
+test_garnet-forest
 ----------------------------------
 
-Tests for `garnet=forest` module.
+Tests for `garnet-forest` module.
 """
 
 import unittest
