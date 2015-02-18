@@ -1,0 +1,39 @@
+##
+##This configuration is used to run the EMT data with the 'fixed' expression changes
+##
+#
+#__author__='Sara JC Gosline'
+#__email__='sgosline@mit.edu'
+
+#
+#Here is where we list the necessary files for a proper run, customized based
+#on experimental data.  Replace these files names with your species/experiment-specific data
+#
+
+[chromatinData]
+#bedfile reflects regions of open chromatin, or promoter regions, to be scanned
+bedfile=wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.bed
+#fasta sequence of regions from bedfile
+fastafile=wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.fasta
+
+#gene file reflects the UCSC mapping of known genes from the Galaxy website
+genefile=../../data/ucsc_hg19_knownGenes.txt
+#xref file to map gene names to UCSC identfiers
+xreffile=../../data/ucsc_hg19_kgXref.txt
+
+
+#distance to look from transcritpion start site
+windowsize=2000
+
+[motifData]
+#motif matrices to be used
+tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
+#settings for scanning
+genome=hg19
+numthreads=4
+doNetwork=False
+tfDelimiter=.
+
+[expressionData]
+expressionFile=Fixed_exp.txt
+
