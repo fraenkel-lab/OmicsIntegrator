@@ -49,6 +49,7 @@ Garnet is a script that runs a series of smaller scripts to map epigenetic data
 to genes and then scan the genome to determine the likelihood of a transcription
 factor binding the genome near that gene. 
 
+```
 Usage: garnet.py [configfilename]
 
 Options:
@@ -56,7 +57,7 @@ Options:
   --useUniprot        Set this flag to use Uniprot identifies
   --utilpath=ADDPATH  Destination of chipsequtil library,
                       Default=../src
-
+```
 
 The configuration file should take the following format:
 
@@ -111,11 +112,11 @@ Running forest.py
 -----------------
 Forest **requires** the msgsteiner package as well as the boost library.
 
+```
 Usage: forest.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
-
 
 Options:
   -h, --help            show this help message and exit
@@ -188,8 +189,10 @@ Options:
                         generators. If you want to reproduce exact results,
                         supply the same seed. Default = None.
  
-
+```
                         
+### forest input files and parameters
+
 The first two options (-p and -e) are required. You should record your terminal
 nodes and prize values in a text file. The file "prizes.txt" is an example of
 what this file should look lie. You should record your interactome and edge
@@ -271,6 +274,8 @@ msgsteiner itself. If you want to reproduce exact results, you should supply
 the same seed every time. If you do not supply your own seed, system time is 
 used a seed.
 
+###running forest
+
 Once you submit your command to the command line the program will run. It will
 display messages as it completes, letting you know where in the process you
 are. If there is a warning or an error it will be displayed on the command
@@ -279,25 +284,27 @@ files can be imported into Cytoscape v.3.0 to view the results of the run.
 These files will be named first with the outputlabel that you provided (or
 "result" by default), and then with a phrase identifying which file type it is.
 
-objective.txt contains information about the algorithm run, including any error
+### forest output
+
+- **objective.txt** contains information about the algorithm run, including any error
 messages if there were any during the run.
 
-optimalForest.sif contains the optimal network output of the message-passing
+- *optimalForest.sif* contains the optimal network output of the message-passing
 algorithm (without the dummy node). It is a Simple Interaction Format file. To
 see the network, open Cytoscape, and click on File > Import > Network >
 File..., and then select this file to open. Click OK.
 
-augmentedForest.sif is the same thing, only it includes all the edges in the
+- *augmentedForest.sif* is the same thing, only it includes all the edges in the
 interactome that exist between nodes in the optimal Forest, even those edges
 not chosen by the algorithm. Betweenness centrality for all nodes was
 calculated with this network.
 
-dummyForest.sif is the same as optimalForest.sif, only it includes the dummy
+- *dummyForest.sif* is the same as optimalForest.sif, only it includes the dummy
 node and all edges connecting to it. This file is useful as a sanity check
 (i.e. are there any singleton nodes in your forest, nodes that are only
 connected to the network via the dummy node?).
 
-edgeattributes.tsv is a tab-seperated value file containing information for
+- *edgeattributes.tsv* is a tab-seperated value file containing information for
 each edge in the network, such as the weight in the interactome, and the
 fraction of optimal networks this edge was contained in (this will be 0 or 1
 for a standard run, or something in between if the results are merged together,
@@ -308,7 +315,7 @@ File..., and select this file. Specify that this file contains edge attributes,
 rather than node attributes, and that the first row of the file should be
 interpreted as column labels. Click OK.
 
-nodeattributes.tsv is a tab-seperated value file containing information for
+- *nodeattributes.tsv* is a tab-seperated value file containing information for
 each node in the network, such as the prize you assigned to it and betweenness
 centrality in the augmented network. To import this information into Cytoscape,
 first import the network .sif file you would like to view, and then click on
