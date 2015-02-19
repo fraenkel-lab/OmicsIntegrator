@@ -15,17 +15,17 @@ Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
 
 System Requirements:
 --------------------
-* Python 2.6 or higher: http://www.python.org
+1- Python 2.6 or higher: http://www.python.org
 
-* NetworkX Python Module: http://networkx.github.io
+2- NetworkX Python Module: http://networkx.github.io
 
-* Python packages: numpy, scipy,matplotlib
+3- Python packages: numpy, scipy,matplotlib
 
-* msgsteiner package:
+4- msgsteiner package:
 
-* Boost C++ library: http://www.boost.org
+5- Boost C++ library: http://www.boost.org
 
-* Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
+6- Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
 
 
 Features
@@ -42,7 +42,7 @@ Features
 
 
 Running garnet.py
--------------
+-----------------
 Garnet is a script that runs a series of smaller scripts to map epigenetic data
 to genes and then scan the genome to determine the likelihood of a transcription
 factor binding the genome near that gene. 
@@ -63,15 +63,11 @@ The configuration file should take the following format:
 #these files contain epigenetically interesting regions
 bedfile=bedfilecontainingregions.bed
 fastafile=fastafilemappedusinggalaxytools.fasta
-
 #these two files are provided in the package
 genefile=../../data/ucsc_hg19_knownGenes.txt
 xreffile=../../data/ucsc_hg19_kgXref.txt
-
-
 #distance to look from transcription start site
 windowsize=2000
-
 [motifData]
 #motif matrices to be used, data provided with the package
 tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
@@ -80,15 +76,14 @@ genome=hg19
 numthreads=4
 doNetwork=False
 tfDelimiter=.
-
 [expressionData]
 expressionFile=tabDelimitedExpressionData.txt
 pvalThresh=0.01
 qvalThresh=
-
 ```
+
 Running forest.py
--------------
+-----------------
 Forest **requires** the msgsteiner package as well as the boost library.
 
 Usage: forest.py [options]
