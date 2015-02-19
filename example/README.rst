@@ -12,8 +12,7 @@ a549/
 Here we have data from lung cancer-derived cell lines that we use to evaluate the role of TgfB-stimulation on gene expression and phospho-proteomic changes. Running `test-tgfb-data.py` at the prompt will first run garnet.py, then run forest with the result.
 
 - test-tgfb-data.py: A test script designed to show how to use garnet + forest to interpret real data.
-- tgfb_forest.cfg: Configuration file require to use forest to find interactions between altered proteins
-during TgfB stimulation.
+- tgfb_forest.cfg: Configuration file require to use forest to find interactions between altered proteins during TgfB stimulation.
 - tgfb_garnet.cfg: Configuration file required to use garnet to identify transcription factors from epigenetic data and expression data.
 - Tgfb_phos.txt: Changes in phospho-protein levels between TgfB-stimulated cells and untreated cells.
 - Tgfb_exp.txt:  Changes in gene expression levels between TgfB-stimulated cells and untreated cells.

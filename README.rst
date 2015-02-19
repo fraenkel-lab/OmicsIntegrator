@@ -60,8 +60,7 @@ Options:
 
 The configuration file should take the following format:
 
-```
-
+```ini
 [chromatinData]
 #these files contain epigenetically interesting regions   
 bedfile = bedfilecontainingregions.bed   
@@ -84,8 +83,7 @@ tfDelimiter = .
 [expressionData]
 expressionFile = tabDelimitedExpressionData.txt
 pvalThresh = 0.01
-qvalThresh =
-
+qvalThresh = 
 ```
 
 ### Chromatin Data
