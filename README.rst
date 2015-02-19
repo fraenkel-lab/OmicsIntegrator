@@ -59,7 +59,9 @@ Options:
 
 
 The configuration file should take the following format:
-```cfg
+
+```
+
 [chromatinData]
 #these files contain epigenetically interesting regions   
 bedfile = bedfilecontainingregions.bed   
@@ -83,7 +85,9 @@ tfDelimiter = .
 expressionFile = tabDelimitedExpressionData.txt
 pvalThresh = 0.01
 qvalThresh =
+
 ```
+
 ### Chromatin Data
 
 Many BED-formatted and FASTA-formatted files are included in the examples/ directory. 
