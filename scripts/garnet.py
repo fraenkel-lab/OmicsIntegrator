@@ -24,6 +24,8 @@ tfDelimiter=.
 
 [expressionData]
 expressionFile=[name of expression file]
+pvalThresh=0.01
+qvalThresh=
 =======================================================================
 
 '''

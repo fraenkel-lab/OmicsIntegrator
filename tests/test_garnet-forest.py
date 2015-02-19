@@ -5,7 +5,13 @@
 test_garnet-forest
 ----------------------------------
 
-Tests for `garnet-forest` module.
+Tests for `garnet-forest`: what tests should we run to ensure that future updates
+to garnet and forest do not break its usability.  Current use cases:
+
+1-garnet.py: no expression data
+2-garnet.py: with expression data
+3-forest.py: with garnet data and protein data
+4-forest.py: with only protein data
 """
 
 import unittest

@@ -15,17 +15,19 @@ Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
 
 System Requirements:
 --------------------
-1- Python 2.6 or higher: http://www.python.org
+1- Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org
 
-2- NetworkX Python Module: http://networkx.github.io
+2- Python depenencies (provided with install): 
+   - numpy: http://www.numpy.org/
+   - scipy: http://www.scipy.org/
+   - matplotlib: http://matplotlib.org/
+   - Networkx: http://networkx.github.io
 
-3- Python packages: numpy, scipy,matplotlib
+3- msgsteiner package: http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 
-4- msgsteiner package:
+4- Boost C++ library: http://www.boost.org
 
-5- Boost C++ library: http://www.boost.org
-
-6- Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
+5- Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
 
 
 Features
@@ -53,36 +55,55 @@ Options:
   -h, --help          show this help message and exit
   --useUniprot        Set this flag to use Uniprot identifies
   --utilpath=ADDPATH  Destination of chipsequtil library,
-                      Default=../../../tfMatrix/garnet/bin/../src
+                      Default=../src
 
 
 The configuration file should take the following format:
 
-
     [chromatinData]
-    #these files contain epigenetically interesting regions
-    bedfile=bedfilecontainingregions.bed
-    fastafile=fastafilemappedusinggalaxytools.fasta    
-    #these two files are provided in the package
-    genefile=../../data/ucsc_hg19_knownGenes.txt
-    xreffile=../../data/ucsc_hg19_kgXref.txt
-    #distance to look from transcription start site
-    windowsize=2000
+        #these files contain epigenetically interesting regions   
+    bedfile = bedfilecontainingregions.bed   
+    fastafile = fastafilemappedusinggalaxytools.fasta       
+        #these two files are provided in the package 
+    genefile = ../../data/ucsc_hg19_knownGenes.txt  
+    xreffile = ../../data/ucsc_hg19_kgXref.txt  
+        #distance to look from transcription start site  
+    windowsize = 2000  
 
     [motifData]
-    #motif matrices to be used, data provided with the package
-    tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
-    #settings for scanning
-    genome=hg19
-    numthreads=4
-    doNetwork=False
-    tfDelimiter=.
+        #motif matrices to be used, data provided with the package
+    tamo_file = ../../data/matrix_files/vertebrates_clustered_motifs.tamo
+        #settings for scanning
+    genome = hg19
+    numthreads = 4
+    doNetwork = False
+    tfDelimiter = .
 
     [expressionData]
-    expressionFile=tabDelimitedExpressionData.txt
-    pvalThresh=0.01
-    qvalThresh=
+    expressionFile = tabDelimitedExpressionData.txt
+    pvalThresh = 0.01
+    qvalThresh =
 
+###Chromatin Data
+Many BED-formatted and FASTA-formatted files are included in the examples/ directory. 
+To use your own epigenetic data, upload the BED-file to http://usegalaxy.org and select 
+'Fetch Genomic DNA' from the left menu to click on 'Extract Genomic DNA'. This will produce
+a FASTA-formatted file that will work with garnet.  We have provided gene and xref annotations 
+for both hg19 and mm9 - these files can be downloaded from http://genome.ucsc.edu/cgi-bin/hgTables 
+if needed. The `windowsize` parameter determines the maximum distance from a transcription start
+site to consider an epigenetic event associated. 2kb is a very conservative metric.
+
+###motifData
+We provide motif data in the proper TAMO format, the user just needs to enter the genome used.
+The default `numthreads` is 4, but the user can alter this depending on the processing power 
+of their machine. `doNetwork` will create a networkX object mapping transcription factors to 
+genes, required input for the [SAMNet algorithm](http://github.com/sgosline/SAMNet).  `tfDelimiter` is an internal parameter to tell garnet how to handle cases when many transcription factors map to the sam
+binding motif.
+
+###expressionData
+If the user has expression data to evaluate, provide a tab-delimited file under `expressionFile`. 
+P-value (`pvalThresh`) or Q-value (`qvalThresh`) thresholds will be used to select only those 
+transcription factors whose correlation with expression falls below the provided threshold.
 
 Running forest.py
 -----------------
