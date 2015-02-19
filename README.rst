@@ -12,9 +12,9 @@ Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
 
            
-==================================================================
+
 System Requirements:
-==================================================================
+--------------------
 1-Python 2.6 or higher: http://www.python.org
 
 2-NetworkX Python Module: http://networkx.github.io
@@ -41,7 +41,7 @@ Features
   biological hypotheses
 
 
-Garnet Module
+Running garnet.py
 -------------
 Garnet is a script that runs a series of smaller scripts to map epigenetic data
 to genes and then scan the genome to determine the likelihood of a transcription
@@ -84,7 +84,7 @@ expressionFile=tabDelimitedExpressionData.txt
 pvalThresh=0.01
 qvalThresh=
 
-Forest Module
+Running forest.py
 -------------
 Forest *requires* the msgsteiner package as well as the boost library.
 

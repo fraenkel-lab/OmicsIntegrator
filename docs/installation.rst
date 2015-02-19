@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install garnet=forest
+    $ easy_install garnetforest
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv garnet=forest
-    $ pip install garnet=forest
+    $ mkvirtualenv garnetforest
+    $ pip install garnetforest
