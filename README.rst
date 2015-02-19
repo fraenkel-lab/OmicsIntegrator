@@ -15,17 +15,17 @@ Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
 
 System Requirements:
 --------------------
-1-Python 2.6 or higher: http://www.python.org
+* Python 2.6 or higher: http://www.python.org
 
-2-NetworkX Python Module: http://networkx.github.io
+* NetworkX Python Module: http://networkx.github.io
 
-3-Python packages: numpy, scipy,matplotlib
+* Python packages: numpy, scipy,matplotlib
 
-4-msgsteiner package:
+* msgsteiner package:
 
-5-Boost C++ library: http://www.boost.org
+* Boost C++ library: http://www.boost.org
 
-6-Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
+* Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
 
 
 Features
@@ -55,8 +55,10 @@ Options:
   --utilpath=ADDPATH  Destination of chipsequtil library,
                       Default=../../../tfMatrix/garnet/bin/../src
 
+
 The configuration file should take the following format:
 
+```
 [chromatinData]
 #these files contain epigenetically interesting regions
 bedfile=bedfilecontainingregions.bed
@@ -84,9 +86,10 @@ expressionFile=tabDelimitedExpressionData.txt
 pvalThresh=0.01
 qvalThresh=
 
+```
 Running forest.py
 -------------
-Forest *requires* the msgsteiner package as well as the boost library.
+Forest **requires** the msgsteiner package as well as the boost library.
 
 Usage: forest.py [options]
 
