@@ -58,29 +58,31 @@ Options:
 
 The configuration file should take the following format:
 
-```
-[chromatinData]
-#these files contain epigenetically interesting regions
-bedfile=bedfilecontainingregions.bed
-fastafile=fastafilemappedusinggalaxytools.fasta
-#these two files are provided in the package
-genefile=../../data/ucsc_hg19_knownGenes.txt
-xreffile=../../data/ucsc_hg19_kgXref.txt
-#distance to look from transcription start site
-windowsize=2000
-[motifData]
-#motif matrices to be used, data provided with the package
-tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
-#settings for scanning
-genome=hg19
-numthreads=4
-doNetwork=False
-tfDelimiter=.
-[expressionData]
-expressionFile=tabDelimitedExpressionData.txt
-pvalThresh=0.01
-qvalThresh=
-```
+
+    [chromatinData]
+    #these files contain epigenetically interesting regions
+    bedfile=bedfilecontainingregions.bed
+    fastafile=fastafilemappedusinggalaxytools.fasta    
+    #these two files are provided in the package
+    genefile=../../data/ucsc_hg19_knownGenes.txt
+    xreffile=../../data/ucsc_hg19_kgXref.txt
+    #distance to look from transcription start site
+    windowsize=2000
+
+    [motifData]
+    #motif matrices to be used, data provided with the package
+    tamo_file=../../data/matrix_files/vertebrates_clustered_motifs.tamo
+    #settings for scanning
+    genome=hg19
+    numthreads=4
+    doNetwork=False
+    tfDelimiter=.
+
+    [expressionData]
+    expressionFile=tabDelimitedExpressionData.txt
+    pvalThresh=0.01
+    qvalThresh=
+
 
 Running forest.py
 -----------------
