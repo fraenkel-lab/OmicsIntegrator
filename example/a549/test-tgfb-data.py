@@ -21,7 +21,7 @@ if __name__=='__main__':
     
     #forest requires more inputs
     forest_conf='tgfb_forest.cfg' #provided config file
-    dummy_nodes='tgfb_interactors.txt' #use proteins that interact with TgfB as 'dummyNodes'
+    dummy_nodes='Tgfb_interactors.txt' #use proteins that interact with TgfB as 'dummyNodes'
     phos_weights='Tgfb_phos.txt' #proteins with changes in phosphorylation levels
     edge_file='../../data/iref_mitab_miscore_2013_08_12_interactome.txt' #interactome
 
