@@ -10,7 +10,7 @@ of origin.
 Files
 -----
 - **a549/**
-  Here we have data from lung cancer-derived cell lines that we use to evaluate the role of TgfB-stimulation on gene expression and phospho-proteomic changes. Running `test-tgfb-data.py` at the prompt will first run garnet.py, then run forest with the result.
+Here we have data from lung cancer-derived cell lines that we use to evaluate the role of TgfB-stimulation on gene expression and phospho-proteomic changes. Running `test-tgfb-data.py` at the prompt will first run garnet.py, then run forest with the result.
 
   - test-tgfb-data.py: A test script designed to show how to use garnet + forest to interpret real data.
   - tgfb_forest.cfg: Configuration file require to use forest to find interactions between altered proteins
@@ -23,7 +23,7 @@ during TgfB stimulation.
   - wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.fasta.gz: FASTA-formated file of the same regions.
 
 - **mcf7/**
-  Here we have data from a breast cancer-derived cell line that we can use to construct TF binding scores that can be used with any breast-cancer related gene expression dataset of choice.
+Here we have data from a breast cancer-derived cell line that we can use to construct TF binding scores that can be used with any breast-cancer related gene expression dataset of choice.
 
   - test-mcf7-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
   - mcf7_garnet.cfg
@@ -31,7 +31,7 @@ during TgfB stimulation.
   - wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.fasta.gz
 
 - **dnaseClus/**
-  Here we have clustered DNase-I hypersensitive regions across the human genome. This data can be used in cases where the user has no specific epigenetic data. 
+Here we have clustered DNase-I hypersensitive regions across the human genome. This data can be used in cases where the user has no specific epigenetic data. 
 
   - test-dnase-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
   - dnaseClus_garnet.cfg:
@@ -39,8 +39,8 @@ during TgfB stimulation.
   - wgEncodeRegDnaseClusteredV2.fasta.gz:
 
 - **murineFib/**
-  Here we have DNase-I hypersensitive data from a murine fibroblast cell line. This data can be used
-  for mouse expressiond data.
+Here we have DNase-I hypersensitive data from a murine fibroblast cell line. This data can be used
+for mouse expressiond data.
 
   - test-murine-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
   - murineFib_garnet.cfg
