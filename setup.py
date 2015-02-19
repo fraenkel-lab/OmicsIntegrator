@@ -9,7 +9,7 @@ except ImportError:
     from distutils.core import setup
 
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -21,6 +21,11 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+import os
+
+gifdir='data/matrix_files/gifs/'
+gif_files=[gifdir+g for g in os.listdir(gifdir)]
+
 setup(
     name='garnet-forest',
     version='0.1.0',
@@ -29,15 +34,15 @@ setup(
     author="Sara Gosline",
     author_email='sgosline@mit.edu',
     url='https://github.com/sgosline/garnetforest',
-    packages=[
-        'garnet-forest',
-    ],
-    package_dir={'garnet-forest':
-                 'garnet-forest'},
+    packages=[],
+#        'garnet-forest',
+ #   ],
+    package_dir={},#'garnet-forest':
+                 #'garnet-forest'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",
-    zip_safe=False,
+    zip_safe=True,
     keywords='garnet-forest',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -48,10 +53,10 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     data_files=[('data',['data/ucsc_hg19_kgXref.txt','data/ucsc_mm9_kgXref.txt',
-                 'data/ucsc_hg19_knownGenes.txt','data/ucsc_mm9_knownGenes.txt','data/iref_mitab_miscore_2013_08_12_interactome.txt','data/README.rst']),
+                 'data/ucsc_hg19_knownGenes.txt','data/ucsc_mm9_knownGenes.txt','data/iref_mitab_miscore_2013_08_12_interactome.txt','data/README.md']),
                  ('data/matrix_files',['data/matrix_files/vertebrates_clustered_motifs.txt','data/matrix_files/vertebrates_clustered_motifs_mIDs.txt','data/matrix_files/vertebrates_clustered_motifs_tfids.txt','data/matrix_files/vertebrates_clustered_motifs_up_tfids.txt','data/matrix_files/motif_thresholds.pkl','data/matrix_files/vertebrates_clustered_motifs.tamo']),
-                 ('data/matrix_files/gifs',['data/matrix_files/gifs/*']),
-                 ('example',['example/README.rst']),
+                 ('data/matrix_files/gifs',gif_files),
+                 ('example',['example/README.md']),
                  ('example/a549',['example/a549/test-tgfb-data.py','example/a549/tgfb_forest.cfg',
 'example/a549/Tgfb_exp.txt','example/a549/Tgfb_phos.txt','example/a549/tgfb_garnet.cfg','example/a549/wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.bed','example/a549/wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.fasta.gz']),
                  ('example/dnaseClus',['example/dnaseClus/dnaseClus_garnet.cfg','example/dnaseClus/wgEncodeRegDnaseClusteredV2.bed','example/dnaseClus/wgEncodeRegDnaseClusteredV2.fasta.gz']),

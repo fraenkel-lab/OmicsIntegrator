@@ -2,10 +2,24 @@ include AUTHORS.rst
 include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
-include README.rst
+include README.md
 
-recursive-include tests *
+recursive-exclude garnet_forest.egg-info *
+
+exclude msgsteiner9
+exclude .* *.ini
+
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
-recursive-include docs *.rst conf.py Makefile make.bat
+prune tests
+
+recursive-include data *
+
+include example *
+recursive-include example *.cfg
+recursive-include example *.py
+recursive-include example *.bed
+recursive-include example *.gz
+recursive-include example *.narrowPeak
+recursive-include example Tgfb*.txt

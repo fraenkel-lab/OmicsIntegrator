@@ -12,6 +12,7 @@ from optparse import OptionParser
 if __name__=='__main__':
     parser=OptionParser()
     parser.add_option('--forest-only',dest='forest_only',action='store_true',default=False,help='Set this flag to run forest on phospho-proteomic data only.  DEFAULT:%default')
+    parser.add_option('--msgsteiner',dest='msgsteiner',type='string',help='Path to msgsteiner9 code, be sure to include!')
     opts,args=parser.parse_args()
     
     #garnet requires a configuration file that has all the data
@@ -24,7 +25,7 @@ if __name__=='__main__':
     phos_weights='Tgfb_phos.txt' #proteins with changes in phosphorylation levels
     edge_file='../../data/iref_mitab_miscore_2013_08_12_interactome.txt' #interactome
 
-    msgsteinerpath='../../msgsteiner9' ##HERE WE ASSUME THAT MSGSTEINER9 is in directory, replace if needed
+    msgsteinerpath=opts.msgsteiner ##WE NEED MSGSTEINER9 INSTALLED!!!
     forest_out='tgfb_forest_output'
     
     ##now ready to run commands

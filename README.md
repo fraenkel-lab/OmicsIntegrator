@@ -88,12 +88,9 @@ qvalThresh =
 
 ### Chromatin Data
 
-Many BED-formatted and FASTA-formatted files are included in the examples/ directory. 
-To use your own epigenetic data, upload the BED-file to http://usegalaxy.org and select 
+Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are included in the examples/ directory. To use your own epigenetic data, upload the BED-file to http://usegalaxy.org and select 
 'Fetch Genomic DNA' from the left menu to click on 'Extract Genomic DNA'. This will produce
-a FASTA-formatted file that will work with garnet.  We have provided gene and xref annotations 
-for both hg19 and mm9 - these files can be downloaded from http://genome.ucsc.edu/cgi-bin/hgTables 
-if needed. The `windowsize` parameter determines the maximum distance from a transcription start
+a FASTA-formatted file that will work with garnet.  We have provided gene (`genefile`) and xref (`xreffile`)  annotations for both hg19 and mm9 - these files can be downloaded from http://genome.ucsc.edu/cgi-bin/hgTables if needed. The `windowsize` parameter determines the maximum distance from a transcription start
 site to consider an epigenetic event associated. 2kb is a very conservative metric.
 
 ### motifData
