@@ -114,16 +114,16 @@ garnet produces a number of intermediate files that enable you to better interpr
 or re-run a sub-script that may have failed. All files are placed in the directory provided by 
 the `--outdir` option of the garnet script.
 
-- **events_to_genes.xls***: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
-- **events_to_genes.fsa***: This file is a FASTA-formated file that only contains those sequences that are near transcription start sites to avoid scanning regions out of range.
+- **events_to_genes.xls**: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
+- **events_to_genes.fsa**: This file is a FASTA-formated file that only contains those sequences that are near transcription start sites to avoid scanning regions out of range.
 
 - **events_to_genes_with_motifs.txt**: Result of motif scanning
 
-- **events_to_genes_with_motifs.pkl**: The scanning results are then mapped back to invidual genes
+- **events_to_genes_with_motifs.pkl**: The scanning results are then mapped back to individual genes
 and then compiled into a matrix with each row representing the value for a transcription factor 
 binding site and each column representing a value for a gene. This matrix, along with the row 
 names (transcritpion factor motif identifies) and column names (genes) are put into a dictionary 
-that is then compressed using the Python pickle library.  The individual data are also written out:
+that is then compressed using the Python pickle library.  The individual data are also written out to files:
   - **events_to_genes_with_motifs.tgm:** Numerical values weighting the probability a particular transcription factor is binding to a region near the gene transcription start site.
   - **events_to_genes_with_motifs_tfids.txt:** Row names of the .tgm file.
   - **events_to_genes_with_motifs_geneids.txt:** Column names of the .tgm file.
