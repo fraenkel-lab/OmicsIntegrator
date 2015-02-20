@@ -41,18 +41,26 @@ from ConfigParser import ConfigParser
 progdir=os.path.dirname(sys.argv[0])
 
 
-def mapGenesToRegions(genefile,xreffile,bedfile,window='2000'):
+def mapGenesToRegions(genefile,xreffile,bedfile,window='2000',outdir=None):
     '''
     First step of GARNET maps exposed regions in bedfile to closest gene wtihin rpovided window
     calls map_peaks_to_known_genes.py
     '''
-    outfile=os.path.splitext(os.path.basename(bedfile))[0]+'eventsWithin'+window+'bp_of_'+os.path.splitext(os.path.basename(genefile))[0]+'.xls'
+    if outdir is None:
+        outdir=os.path.splitext(os.path.basename(bedfile))[0]+'eventsWithin'+window
+    
+    outfile=outdir+'/events_to_genes.xls'
+    if not os.path.exists(outdir):
+        os.system('mkdir '+outdir)
+
+    #old file naming scheme:
+    #os.path.splitext(os.path.basename(bedfile))[0]+'eventsWithin'+window+'bp_of_'+os.path.splitext(os.path.basename(genefile))[0]+'.xls'
 
     ##Step 1: map chromatin regions to nearby genes/transcription start sites
     cmd='python '+os.path.join(progdir,'map_peaks_to_known_genes.py')+' --peaks-format=BED --utilpath='+os.path.join(progdir,'../src/')+' --upstream-window='+window+' --downstream-window='+window+' --tss --map-output='+outfile+' '+genefile+' '+xreffile+' '+bedfile
     if not os.path.exists(outfile):
-        print cmd
-        print 'Output-----------------------------mapGenesToRegion------------------------------------------'
+        print 'Running command:\n'+cmd+'\n'
+        print '\n-----------------------------Gene-region mapping output------------------------------------------\n'
         print 'Mapping genes from '+genefile+' to regions within '+window+' bp of events from '+bedfile+' and putting results in '+outfile
         os.system(cmd)
     else:
@@ -67,9 +75,9 @@ def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
     affinity scores
     '''
     if closest_gene_file=='':
-        motif_binding_out=re.sub('.fasta','_'+re.sub('.tamo','',os.path.basename(tamo_file))+'_motifs.txt',os.path.basename(fastafile))
+        motif_binding_out=re.sub('.fasta','_with_motifs.txt',os.path.basename(fastafile))
     else:
-        motif_binding_out=re.sub('.xls','_'+re.sub('.tamo','',os.path.basename(tamo_file))+'_motifs.txt',os.path.basename(closest_gene_file))
+        motif_binding_out=re.sub('.xls','_with_motifs.txt',os.path.basename(closest_gene_file))
 
 
     if os.path.exists(motif_binding_out):
@@ -78,8 +86,8 @@ def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
 
 
     scan_cmd='python '+os.path.join(progdir,'motif_fsa_scores.py')+' --motif='+tamo_file+' --genome='+genome+' --outfile='+motif_binding_out+' --genefile='+closest_gene_file+' --scale=10 --threads='+numthreads+' '+fastafile
-    print scan_cmd
-    print 'Output-----------------------------motifScanning------------------------------------------'
+    print 'Running command:\n'+scan_cmd+'\n'
+    print '\n-----------------------------Motif Scanning Output------------------------------------------\n'
     print 'Scanning regions from '+fastafile+' using matrices from '+tamo_file+' and putting results in '+motif_binding_out
     os.system(scan_cmd)
     return motif_binding_out
@@ -96,8 +104,9 @@ def createBindingMatrix(motif_binding_out,outfile,fastafile,tamo_file,use_unipro
         matfile=re.sub('.txt','.tgm',os.path.basename(motif_binding_out))
         tfs=re.sub('.tamo','_tfids.txt',tamo_file)
         
-    extra_file=re.sub('.tamo','mot_source_names.txt',os.path.basename(tamo_file))
-    tfs=tfs+','+extra_file
+    extra_file=re.sub('.tamo','_source_names.txt',os.path.basename(tamo_file))
+    if os.path.exists(extra_file):
+        tfs=tfs+','+extra_file
     
     ##using regular gene names here
     map_cmd='python '+os.path.join(progdir,'get_window_binding_matrix.py')+' '+motif_binding_out+' '+outfile+' '+' '+fastafile+" --distance-to-gene='' --motif-id-list="+tfs+' --outfile='+matfile
@@ -107,8 +116,8 @@ def createBindingMatrix(motif_binding_out,outfile,fastafile,tamo_file,use_unipro
         print 'Intermediate file '+pklfile+' already exists, if you would like to replace delete and re-run'
         return pklfile
 
-    print map_cmd
-    print 'Output-----------------------------createBindingMatrix------------------------------------------'
+    print 'Running command:\n'+map_cmd+'\n'
+    print '\n-----------------------------Binding Matrix Output------------------------------------------\n'
     os.system(map_cmd)
     
     return pklfile
@@ -119,11 +128,8 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
     Fourth step of GARNET is to perform regression with pickled matrix file and expression data
     '''
     print 'Running regression using '+expressionfile+' expression data and '+pickle_file+' binding data'
-#    tgm_base=re.sub('.tgm','',matrix_file)
-#    tfids=tgm_base+'_tfids.txt'
-#    gids=tgm_base+'_geneids.txt'
-
-    outdir=os.path.basename(expressionfile).split('.')[-2]+'_'+re.sub('.pkl','',os.path.basename(pickle_file))+'.xls'
+    outdir=re.sub('.pkl','regression_results.xls',os.path.basename(pickle_file))
+#    outdir=os.path.basename(expressionfile).split('.')[-2]+'_'+re.sub('.pkl','',os.path.basename(pickle_file))+'.xls'
     print outdir
     if not os.path.exists(outdir):
         cmd='python '+os.path.join(progdir,'motif_regression.py')+' --outdir='+outdir+' '+pickle_file+' '+expressionfile
@@ -137,8 +143,8 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
         else:
             thresh=pvalT
         cmd+=' --thresh='+thresh
-        print cmd
-        print 'Output-----------------------------getTfsFromRegression------------------------------------------'
+        print 'Running command:\n'+cmd+'\n'
+        print '\n-----------------------------Regression Output------------------------------------------\n'
         os.system(cmd)
     return outdir
     
@@ -148,8 +154,10 @@ def main():
     
     usage='Usage: %prog [configfilename]'
     parser=OptionParser(usage=usage)
-    parser.add_option('--useUniprot',dest='useUniprot',action='store_true',help='Set this flag to use Uniprot identifies',default=False)
-    parser.add_option('--utilpath',dest='addpath',help='Destination of chipsequtil library, Default=%default',default=srcdir)
+    #uniprot option will be deprecated, SAMNet should be able to map to human gene names
+    #    parser.add_option('--useUniprot',dest='useUniprot',action='store_true',help='Set this flag to use Uniprot identifies',default=False)
+    parser.add_option('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT:%default',default=None)
+    parser.add_option('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT:%default',default=srcdir)
 
 
     opts,args=parser.parse_args()
@@ -175,7 +183,7 @@ def main():
         window='2000'    
 
     if genefile is not None and bedfile is not None and xref is not None:
-        outfile=mapGenesToRegions(genefile,xref,bedfile,window)
+        outfile=mapGenesToRegions(genefile,xref,bedfile,window,opts.outdir)
     else:
         print 'Missing genefile,bedfile or xref file, cannot map genes to regions.'
         system.exit()
@@ -202,7 +210,7 @@ def main():
     ##step 3
     newfasta=re.sub('.xls','.fsa',outfile)
     if outfile is not None and outfile!='' and binding_out is not None and binding_out!='':
-        binding_matrix=createBindingMatrix(binding_out,outfile,newfasta,tamo_file=tamofile,use_uniprot=opts.useUniprot)
+        binding_matrix=createBindingMatrix(binding_out,outfile,newfasta,tamo_file=tamofile,use_uniprot=False)
     else:
         binding_matrix=''
 

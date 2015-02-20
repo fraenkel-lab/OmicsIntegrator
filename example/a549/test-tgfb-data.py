@@ -16,8 +16,9 @@ if __name__=='__main__':
     opts,args=parser.parse_args()
     
     #garnet requires a configuration file that has all the data
+    forest_out='tgfb_garnet_forest_output'
     garnet_conf='tgfb_garnet.cfg' #provided config file
-    gcmd='python ../scripts/garnet.py '+garnet_conf #command
+    gcmd='python ../../scripts/garnet.py --outdir=%s %s'%(forest_out,garnet_conf) #command
     
     #forest requires more inputs
     forest_conf='tgfb_forest.cfg' #provided config file
@@ -26,23 +27,22 @@ if __name__=='__main__':
     edge_file='../../data/iref_mitab_miscore_2013_08_12_interactome.txt' #interactome
 
     msgsteinerpath=opts.msgsteiner ##WE NEED MSGSTEINER9 INSTALLED!!!
-    forest_out='tgfb_forest_output'
+
+
     
     ##now ready to run commands
     if not opts.forest_only:
         print gcmd
         os.system(gcmd)
-        garnet_output=''
+        garnet_output=forest_out+'/events_to_genes_with_motifs_regression_results_FOREST_INPUT.xls'
         garnet_beta='2'
-        output=forest_out+'_with_garnet'
-        if not os.path.exists(output): ##BE SURE TO MAKE DIRECTORY RESULT
-            os.system('mkdir '+output)
-        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,output,msgsteinerpath,dummy_nodes)
+        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath,dummy_nodes)
         print fcmd
         os.system(fcmd)
 
     else:
-        if not os.path.exists(forest_out):##BE SURE TO MAKE DIRECTORY FOR RESULT
+        forest_out='tgfb_forest_output'
+        if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
             os.system('mkdir '+forest_out)
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath,dummy_nodes)
         print fcmd

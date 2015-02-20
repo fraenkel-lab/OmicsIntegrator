@@ -50,7 +50,7 @@ def motif_bestscan_matrix(F,motif,outfile,genome):
     #Load motif and background adjust PSSM
     m=MotifTools.load(motif)
 
-    fname=re.sub('.tamo','mot_source_names.txt',os.path.basename(motif))
+    fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
     writeMotNames(m,fname)
     seqs=F.values()
     n_seqs=len(seqs)
@@ -86,7 +86,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
 
     #Load motif and background adjust PSSM
     m=MotifTools.load(motif)
-    fname=re.sub('.tamo','mot_source_names.txt',os.path.basename(motif))
+    fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
     writeMotNames(m,fname)
 
 #    F=Fasta.load(fsa,key_func=lambda x:x)

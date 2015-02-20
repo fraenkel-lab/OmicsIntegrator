@@ -136,7 +136,7 @@ class SmartFileIter :
             raise Exception('Subclasses must define class members FIELD_NAMES and FIELD_TYPES')
         if isinstance(f,str) :
             f = open(f,'rU')
-        self._dict_reader = DictReader(f,delimiter='\t',fieldnames=self.FIELD_NAMES)
+        self._dict_reader = DictReader(filter(lambda row: row[0]!='#',f),delimiter='\t',fieldnames=self.FIELD_NAMES)
         self.fieldnames = self.FIELD_NAMES
         self.curr_line = self._dict_reader.next()
         self.skip_line_chars = skip_line_chars
@@ -446,7 +446,7 @@ class KnownGeneFile(SmartFileIter) :
         self.meta_data = []
         self.file_info = {}
         f = open(kg_fn,'rU')
-        self._dict_reader = DictReader(f,delimiter='\t',fieldnames=KnownGeneFile.FIELD_NAMES)
+        self._dict_reader = DictReader(filter(lambda row: row[0]!='#',f),delimiter='\t',fieldnames=KnownGeneFile.FIELD_NAMES)
 
     def __iter__(self) :
         return self

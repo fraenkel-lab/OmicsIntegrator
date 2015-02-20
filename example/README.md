@@ -5,6 +5,10 @@ garnet+forest examples
 This directory includes sample datasets **and test scripts** that can be used to run your own data
 analysis or test out the scripts with existing data. We divided the examples based on tissue
 of origin. 
+
+Files in the `a549` directory will enable you to run garnet + forest on your system.  `test-tgfb-data.py` is a script that will run both garnet + forest, or show you how to just run forest on a single dataset. 
+
+If you want to test out garnet + forest without providing epigenetic data, then you can run `build-dnase-matrix.py` in the `dnaseClust` directory (for human) or `build-murine-fib-matrix.py` in the `murineFib` directory (for mouse). 
            
 
 a549/
@@ -24,27 +28,27 @@ mcf7/
 ----
 Here we have data from a breast cancer-derived cell line that we can use to construct TF binding scores that can be used with any breast-cancer related gene expression dataset of choice.
 
-- test-mcf7-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
-- mcf7_garnet.cfg
-- wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.bed
-- wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.fasta.gz
+- build-mcf7-matrix.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
+- mcf7_garnet.cfg: Configuration file used.
+- wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.bed: DNase-I hypersensitive regions in MCF7 cell lines.
+- wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.fasta.gz: FASTA sequences derived from the above BED file.
 
 dnaseClus/
 ---------
 Here we have clustered DNase-I hypersensitive regions across the human genome. This data can be used in cases where the user has no specific epigenetic data. 
 
-- test-dnase-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
-- dnaseClus_garnet.cfg:
-- wgEncodeRegDnaseClusteredV2.bed:
-- wgEncodeRegDnaseClusteredV2.fasta.gz:
+- build-dnase-matrix.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
+- dnaseClus_garnet.cfg: Configuration file used.
+- wgEncodeRegDnaseClusteredV2.bed: DNase-I hypersensitive regions clustered across all human cell lines in ENCODE.
+- wgEncodeRegDnaseClusteredV2.fasta.gz:FASTA sequences derived from the above BED file.
 
 murineFib/
 ----------
 Here we have DNase-I hypersensitive data from a murine fibroblast cell line. This data can be used
-for mouse expressiond data.
+for mouse expression data.
 
-- test-murine-data.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
-- murineFib_garnet.cfg
-- wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.narrowPeak
-- wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.fasta.gz
+- build-murin-fib-matrix.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
+- murineFib_garnet.cfg: Configuration file used.
+- wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.narrowPeak: DNase-I hypersensitive regions from murine fibroblasts.
+- wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.fasta.gz: FASTA sequences derived from the above BED file.
 

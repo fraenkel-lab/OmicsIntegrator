@@ -8,26 +8,22 @@ network.
 
 Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 
-
 Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
-
-           
+     
 
 System Requirements:
 --------------------
-1. Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org
-
-2. Python dependencies (provided with install): 
+1. Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org and the following dependencies (provided with install): 
   - numpy: http://www.numpy.org/
   - scipy: http://www.scipy.org/
   - matplotlib: http://matplotlib.org/
   - Networkx: http://networkx.github.io
 
-3. msgsteiner package: http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
+2. msgsteiner package: http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 
-4. Boost C++ library: http://www.boost.org
+3. Boost C++ library: http://www.boost.org
 
-5.  Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
+4. Cytoscape 2.8 or 3.0 for viewing results graphically: http://www.cytoscape.org
 
 
 Features
@@ -54,12 +50,14 @@ Usage: garnet.py [configfilename]
 
 Options:
   -h, --help          show this help message and exit
-  --useUniprot        Set this flag to use Uniprot identifies
+  --outdir=OUTDIR     Name of directory to place garnet output. DEFAULT:none
   --utilpath=ADDPATH  Destination of chipsequtil library,
                       Default=../src
 ```
 
 The configuration file should take the following format:
+
+### garnet input
 
 ```ini
 [chromatinData]
@@ -87,14 +85,14 @@ pvalThresh = 0.01
 qvalThresh = 
 ```
 
-### Chromatin Data
+#### Chromatin Data
 
 Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are included in the examples/ directory. To use your own epigenetic data, upload the BED-file to http://usegalaxy.org and select 
 'Fetch Genomic DNA' from the left menu to click on 'Extract Genomic DNA'. This will produce
 a FASTA-formatted file that will work with garnet.  We have provided gene (`genefile`) and xref (`xreffile`)  annotations for both hg19 and mm9 - these files can be downloaded from http://genome.ucsc.edu/cgi-bin/hgTables if needed. The `windowsize` parameter determines the maximum distance from a transcription start
 site to consider an epigenetic event associated. 2kb is a very conservative metric.
 
-### motifData
+#### motifData
 
 We provide motif data in the proper TAMO format, the user just needs to enter the genome used.
 The default `numthreads` is 4, but the user can alter this depending on the processing power 
@@ -102,11 +100,31 @@ of their machine. `doNetwork` will create a networkX object mapping transcriptio
 genes, required input for the [SAMNet algorithm](http://github.com/sgosline/SAMNet).  `tfDelimiter` is an internal parameter to tell garnet how to handle cases when many transcription factors map to the sam
 binding motif.
 
-### expressionData
+#### expressionData
 
 If the user has expression data to evaluate, provide a tab-delimited file under `expressionFile`. 
 P-value (`pvalThresh`) or Q-value (`qvalThresh`) thresholds will be used to select only those 
 transcription factors whose correlation with expression falls below the provided threshold.
+
+### garnet output
+garnet produces a number of intermediate files that enable you to better interpret your data
+or re-run a sub-script that may have failed. All files are placed in the directory provided by 
+the `--outdir` option of the garnet script.
+
+- ***events_to_genes.xls***: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
+
+- ***events_to_genes_motifs.xls***:
+
+- ***full matrix file***:
+
+- ***matrix divided by transcription factor***:
+
+  - ***tgm file***
+  - ***tfids ***
+  - ***gene ids ***
+- ***regression results***
+
+
 
 Running forest.py
 -----------------
@@ -193,13 +211,12 @@ Options:
                         
 ### forest input files and parameters
 
+#### Required inputs
+
 The first two options (-p and -e) are required. You should record your terminal
-nodes and prize values in a text file. The file "prizes.txt" is an example of
+nodes and prize values in a text file. The file `example/a549/Tgfb_phos.txt` is an example of
 what this file should look lie. You should record your interactome and edge
-weights in a text file with 3 or 4 columns. The file "edges.txt" is an example
-of this. If you have run the GARNET module to create scores for transcription
-factors, you can also include that output file with the --garnet option and 
---garnetBeta options.
+weights in a text file with 3 or 4 columns. We provide the file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is an example of this. 
 
 The program will read in these files and create the interactome graph. It will
 print warnings whenever it comes across something unexpected, such as an edge
@@ -210,7 +227,7 @@ interactome listed in the edge file. This error may result from using two
 different naming schemes for the proteins, or using the wrong interactome for
 your purposes.
 
-A sample configuration file, "conf.txt" is supplied. The user can change the
+A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can change the
 values included in this file directly or can supply their own similarly
 formatted file. If the -c option is not included in the command line the
 program will attempt to read "conf.txt". For explanations of the parameters
@@ -223,14 +240,15 @@ sets the random noise on the edge costs, and optional parameter g, which
 is a reinforcement parameter that affects convergence.  See the msgsteiner
 PNAS publication for details about r and g.
 
-The rest of the command line options are optional. The --dummyMode option will 
-change which nodes in the terminal are connected to the dummy node in the 
+#### Optional inputs
+
+The rest of the command line options are optional. If you have run the GARNET module to create scores for 
+transcription factors, you can also include that output file with the --garnet option and 
+--garnetBeta options. The --dummyMode option will change which nodes in the terminal are connected to the dummy node in the 
 interactome. For an explanation of the dummy node, see our original publication
-on the PCSF problem. If the user is not keeping the file "msgsteiner9" in the 
-same directory as PCSF.py, you should specify its location with the --msgpath 
-option (i.e., if you are on the Fraenkel lab cluster, use
-"--msgpath /nfs/apps/bin/msgsteiner9"). If you would like the output files to 
-be stored in a directory other than the one you are running the code from, you 
+on the PCSF problem. If the user is not keeping the file `msgsteiner9` in the 
+same directory as forest.py, you should specify its location with the --msgpath 
+option. If you would like the output files to be stored in a directory other than the one you are running the code from, you 
 can specify this directory with the --outputpath option. The names of the 
 output files will all start with the word "result" unless you specify another 
 word or phrase, such as an identifying label for this experiment or run, with 
