@@ -75,9 +75,9 @@ def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
     affinity scores
     '''
     if closest_gene_file=='':
-        motif_binding_out=re.sub('.fasta','_with_motifs.txt',os.path.basename(fastafile))
+        motif_binding_out=re.sub('.fasta','_with_motifs.txt',fastafile)
     else:
-        motif_binding_out=re.sub('.xls','_with_motifs.txt',os.path.basename(closest_gene_file))
+        motif_binding_out=re.sub('.xls','_with_motifs.txt',closest_gene_file)
 
 
     if os.path.exists(motif_binding_out):
@@ -99,9 +99,9 @@ def createBindingMatrix(motif_binding_out,outfile,fastafile,tamo_file,use_unipro
     '''
     if use_uniprot:
         tfs=re.sub('.tamo','_up_tfids.txt',tamo_file)
-        matfile=re.sub('.txt','.tgm',os.path.basename(motif_binding_out))
+        matfile=re.sub('.txt','.tgm',motif_binding_out)
     else:
-        matfile=re.sub('.txt','.tgm',os.path.basename(motif_binding_out))
+        matfile=re.sub('.txt','.tgm',motif_binding_out)
         tfs=re.sub('.tamo','_tfids.txt',tamo_file)
         
     extra_file=re.sub('.tamo','_source_names.txt',os.path.basename(tamo_file))
@@ -128,7 +128,7 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
     Fourth step of GARNET is to perform regression with pickled matrix file and expression data
     '''
     print 'Running regression using '+expressionfile+' expression data and '+pickle_file+' binding data'
-    outdir=re.sub('.pkl','regression_results.xls',os.path.basename(pickle_file))
+    outdir=re.sub('.pkl','regression_results.xls',pickle_file)
 #    outdir=os.path.basename(expressionfile).split('.')[-2]+'_'+re.sub('.pkl','',os.path.basename(pickle_file))+'.xls'
     print outdir
     if not os.path.exists(outdir):
