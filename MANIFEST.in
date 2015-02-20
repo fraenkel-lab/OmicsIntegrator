@@ -4,10 +4,6 @@ include HISTORY.rst
 include LICENSE
 include README.md
 
-recursive-exclude garnet_forest.egg-info *
-
-exclude msgsteiner9
-exclude .* *.ini
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
@@ -23,3 +19,11 @@ recursive-include example *.bed
 recursive-include example *.gz
 recursive-include example *.narrowPeak
 recursive-include example Tgfb*.txt
+
+exclude msgsteiner9
+exclude .* *.ini
+recursive-exclude garnet_forest.egg-info *
+
+
+
+

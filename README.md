@@ -115,6 +115,7 @@ or re-run a sub-script that may have failed. All files are placed in the directo
 the `--outdir` option of the garnet script.
 
 - **events_to_genes.xls***: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
+- **events_to_genes.fsa***: This file is a FASTA-formated file that only contains those sequences that are near transcription start sites to avoid scanning regions out of range.
 
 - **events_to_genes_with_motifs.txt**: Result of motif scanning
 
@@ -123,11 +124,11 @@ and then compiled into a matrix with each row representing the value for a trans
 binding site and each column representing a value for a gene. This matrix, along with the row 
 names (transcritpion factor motif identifies) and column names (genes) are put into a dictionary 
 that is then compressed using the Python pickle library.  The individual data are also written out:
-  - ***events_to_genes_with_motifs.tgm:*** Numerical values weighting the probability a particular transcription factor is binding to a region near the gene transcription start site.
-  - ***events_to_genes_with_motifs_tfids.txt:*** Row names of the .tgm file.
-  - ***events_to_genes_with_motifs_geneids.txt:*** Column names of the .tgm file.
-- ***events_to_genes_with_motifs_geneid_regression_results.xls***:
-- ***events_to_genes_with_motifs_geneid_regression_results_FOREST_INPUT.xls***:
+  - **events_to_genes_with_motifs.tgm:** Numerical values weighting the probability a particular transcription factor is binding to a region near the gene transcription start site.
+  - **events_to_genes_with_motifs_tfids.txt:** Row names of the .tgm file.
+  - **events_to_genes_with_motifs_geneids.txt:** Column names of the .tgm file.
+- **events_to_genes_with_motifs_geneid_regression_results.xls**:
+- **events_to_genes_with_motifs_geneid_regression_results_FOREST_INPUT.xls**:
 
 
 
@@ -313,7 +314,7 @@ are. If there is a warning or an error it will be displayed on the command
 line. If the run completes successfully, several files will be created. These
 files can be imported into Cytoscape v.3.0 to view the results of the run.
 These files will be named first with the outputlabel that you provided (or
-"result" by default), and then with a phrase identifying which file type it is.
+`result` by default), and then with a phrase identifying which file type it is.
 
 ### forest output
 
