@@ -103,26 +103,31 @@ binding motif.
 #### expressionData
 
 If the user has expression data to evaluate, provide a tab-delimited file under `expressionFile`. 
-P-value (`pvalThresh`) or Q-value (`qvalThresh`) thresholds will be used to select only those 
-transcription factors whose correlation with expression falls below the provided threshold.
+File should have two columns, one containing the name of the gene and the second containing the 
+log fold change of that gene in a particular condition. We recommend only including those genes 
+whose change in expression is statistically significant. P-value (`pvalThresh`) or Q-value 
+(`qvalThresh`) thresholds will be used to select only those transcription factors whose 
+correlation with expression falls below the provided threshold.
 
 ### garnet output
 garnet produces a number of intermediate files that enable you to better interpret your data
 or re-run a sub-script that may have failed. All files are placed in the directory provided by 
 the `--outdir` option of the garnet script.
 
-- ***events_to_genes.xls***: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
+- **events_to_genes.xls***: This file is a tab-delimited file that takes every epigenetic event and maps it to the closest gene and records its distance to the transcription start site. 
 
-- ***events_to_genes_motifs.xls***:
+- **events_to_genes_with_motifs.txt**: Result of motif scanning
 
-- ***full matrix file***:
-
-- ***matrix divided by transcription factor***:
-
-  - ***tgm file***
-  - ***tfids ***
-  - ***gene ids ***
-- ***regression results***
+- **events_to_genes_with_motifs.pkl**: The scanning results are then mapped back to invidual genes
+and then compiled into a matrix with each row representing the value for a transcription factor 
+binding site and each column representing a value for a gene. This matrix, along with the row 
+names (transcritpion factor motif identifies) and column names (genes) are put into a dictionary 
+that is then compressed using the Python pickle library.  The individual data are also written out:
+  - ***events_to_genes_with_motifs.tgm:*** Numerical values weighting the probability a particular transcription factor is binding to a region near the gene transcription start site.
+  - ***events_to_genes_with_motifs_tfids.txt:*** Row names of the .tgm file.
+  - ***events_to_genes_with_motifs_geneids.txt:*** Column names of the .tgm file.
+- ***events_to_genes_with_motifs_geneid_regression_results.xls***:
+- ***events_to_genes_with_motifs_geneid_regression_results_FOREST_INPUT.xls***:
 
 
 
@@ -213,10 +218,11 @@ Options:
 
 #### Required inputs
 
-The first two options (-p and -e) are required. You should record your terminal
+The first two options (`-p` and `-e`) are required. You should record your terminal
 nodes and prize values in a text file. The file `example/a549/Tgfb_phos.txt` is an example of
 what this file should look lie. You should record your interactome and edge
-weights in a text file with 3 or 4 columns. We provide the file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is an example of this. 
+weights in a text file with 3 or 4 columns. We provide the file 
+`data/iref_mitab_miscore_2013_08_12_interactome.txt` is an example of this. 
 
 The program will read in these files and create the interactome graph. It will
 print warnings whenever it comes across something unexpected, such as an edge
@@ -230,63 +236,70 @@ your purposes.
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can change the
 values included in this file directly or can supply their own similarly
 formatted file. If the -c option is not included in the command line the
-program will attempt to read "conf.txt". For explanations of the parameters
+program will attempt to read `conf.txt`. For explanations of the parameters
 w (omega), b (beta), and D, see our original publication on this use of the 
-PCSF problem. There are also optional parameter mu, which is used to assign 
-negative prizes to nodes in the interactome with high degrees (larger mu means 
-a larger penalty for hub nodes), optional parameter n, which sets the noise 
-level for option --noisyPrizes (see below), optional parameter r, which
-sets the random noise on the edge costs, and optional parameter g, which
-is a reinforcement parameter that affects convergence.  See the msgsteiner
-PNAS publication for details about r and g.
+PCSF problem. 
+
+
 
 #### Optional inputs
 
-The rest of the command line options are optional. If you have run the GARNET module to create scores for 
-transcription factors, you can also include that output file with the --garnet option and 
---garnetBeta options. The --dummyMode option will change which nodes in the terminal are connected to the dummy node in the 
-interactome. For an explanation of the dummy node, see our original publication
-on the PCSF problem. If the user is not keeping the file `msgsteiner9` in the 
-same directory as forest.py, you should specify its location with the --msgpath 
-option. If you would like the output files to be stored in a directory other than the one you are running the code from, you 
-can specify this directory with the --outputpath option. The names of the 
-output files will all start with the word "result" unless you specify another 
+The rest of the command line options are optional. 
+
+If you have run the GARNET module to create scores for transcription factors, you can 
+include that output file with the `--garnet` option and `--garnetBeta` options. 
+
+The `--dummyMode` option will change which nodes in the terminal are connected to the dummy node in the 
+interactome. We provide an example of this using `a549/Tgfb_interactors.txt`. For an explanation of the dummy node, see our original publication on the PCSF problem. 
+
+If the user is not keeping the file `msgsteiner9` in the same directory as forest.py, 
+the path needs to be specified using the `--msgpath` option. 
+
+If you would like the output files to be stored in a directory other than the one you are running 
+the code from, you can specify this directory with the `--outputpath` option. The names of the 
+output files will all start with the word `result` unless you specify another 
 word or phrase, such as an identifying label for this experiment or run, with 
-the --outputlabel option. The --cyto30 and --cyto28 tags can be used to 
+the `--outputlabel option`. The `--cyto30` and `--cyto28` tags can be used to 
 specify which version of Cytoscape you would like the output files to be 
 compatiable with. 
 
-The next two options, --noisyEdges and --shuffledPrizes only need to be
-included if you want to look at how robust your results are by comparing them
-to results with slightly altered input values. To use these options, supply a
-number for either parameter greater than 0. If the number you give is more 
-than 1, it will altar values and run the program that number of times and 
+We include two options, `--noisyEdges` and `--shuffledPrizes`, to determine
+how robust your results are by comparing them to results with slightly altered 
+input values. To use these options, supply a number for either parameter greater than 0. 
+If the number you give is more than 1, it will alter values and run the program that number of times and 
 merge the results together. The program will add Gaussian noise to the edge 
-values you gave in edges.txt or shuffle the prizes around all the network 
-proteins in prizes.txt, according to which option you use. In --noisyEdges, the
+values you gave in the `-e` option or shuffle the prizes around all the network 
+proteins in the `-p` option, according to which option you use. In `--noisyEdges`, the
 standard deviation of the Gaussian noise will be the value the user supplied 
-for the parameter n in conf.txt, if given. If not given, the standard 
+for the parameter `n` in the `-c` configuration file, if given. If not given, the standard 
 deviation will be the 0.333. The results from these runs will be stored in 
 seperate files from the results of the run with the original prize or edge 
 values, and both will be outputted by the program to the same directory.
+
+Additional parameters can be set in the configuration file. To reduce the weight 
+of hubs we define the parameter `mu`, to assign negative prizes to nodes in the interactome with high degrees (larger mu means a larger penalty for hub nodes), optional parameter `n`, which sets the noise 
+level for option `--noisyPrizes`, optional parameter `r`, which
+sets the random noise on the edge costs, and optional parameter `g`, which
+is a reinforcement parameter that affects convergence.  See the msgsteiner
+PNAS publication for details about `r` and `g`.
 
 The knockout option can be used if you would like to simulate a knockout 
 experiment by removing a node from your interactome. Specify your knockout 
 proteins in a list, i.e. ['TP53'] or ['TP53', 'EGFR'].
 
-The -k or --cv option can be used if you would like to run k-fold cross 
+The `-k` or `--cv` option can be used if you would like to run k-fold cross 
 validation. This will partition the proteins with prizes into k equal 
 subsamples. It will run msgsteiner k times, leaving one subsample of prizes out
-each time. The --cv-reps option can be used if you would like to run k-fold 
+each time. The `--cv-reps` option can be used if you would like to run k-fold 
 cross validation multiple times, each time with a different random 
-partitioning of terminals. If you do not supply --cv-reps but do provide a k,
+partitioning of terminals. If you do not supply `--cv-reps` but do provide a k,
 cross validation will be run once. Each time it is run, a file called 
-<outputlabel>_cvResults_<rep>.txt will be created. For each of the k 
+`<outputlabel>_cvResults_<rep>.txt` will be created. For each of the k 
 iterations, it will display the number of terminals held out of the prizes 
 dictionary, the number of those that were recovered in the optimal network as 
 Steiner nodes, and the total number of Steiner nodes in the optimal network. 
 
-The seed option will supply a seed option to the pseudo-random number 
+The `-s` option will supply a seed option to the pseudo-random number 
 generators used in noisyPrizes, shuffledPrizes, and the optimization in 
 msgsteiner itself. If you want to reproduce exact results, you should supply 
 the same seed every time. If you do not supply your own seed, system time is 
