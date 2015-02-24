@@ -22,7 +22,8 @@ if __name__=='__main__':
     
     #forest requires more inputs
     forest_conf='tgfb_forest.cfg' #provided config file
-    dummy_nodes='Tgfb_interactors.txt' #use proteins that interact with TgfB as 'dummyNodes'
+  #  dummy_nodes='Tgfb_interactors.txt' #use proteins that interact with TgfB as 'dummyNodes'
+    dummy_nodes='tgfb_receptors.txt'
     phos_weights='Tgfb_phos.txt' #proteins with changes in phosphorylation levels
     edge_file='../../data/iref_mitab_miscore_2013_08_12_interactome.txt' #interactome
 
@@ -33,11 +34,14 @@ if __name__=='__main__':
     ##now ready to run commands
     if not opts.forest_only:
         print gcmd
-        os.system(gcmd)
-        garnet_output=forest_out+'/events_to_genes_with_motifs_regression_results_FOREST_INPUT.xls'
-        garnet_beta='2'
+        res=os.system(gcmd)
+        if res!=0:
+            print 'Error executing garnet, will not execute forest'
+            system.exit()
+        garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.xls'
+        garnet_beta='.5'
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath,dummy_nodes)
-        print fcmd
+        print '\n'+fcmd
         os.system(fcmd)
 
     else:
@@ -45,7 +49,8 @@ if __name__=='__main__':
         if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
             os.system('mkdir '+forest_out)
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath,dummy_nodes)
-        print fcmd
+        print '\n'+fcmd
+
         os.system(fcmd)
 
     
