@@ -1,10 +1,11 @@
 ===============================
-garnet-forest
+Omics Integrator
 ===============================
 
-Garnet + Forest is a package designed to integrate gene expression
+Omics Integrator is a package designed to integrate gene expression
 data and/or proteomics data using the protein-protein interaction
-network.
+network. It is comprised of two modules, garnet and forest, that perform 
+data integration of various types of data.
 
 Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 
