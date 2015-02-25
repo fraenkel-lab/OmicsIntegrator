@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/sgosline/garnetforest/issues.
+Report bugs at https://github.com/sgosline/OmicsIntegrator/issues.
 
 If you are reporting a bug, please include:
 
@@ -43,7 +43,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/sgosline/garnetforest/issues.
+The best way to send feedback is to file an issue at https://github.com/sgosline/OmicsIntegrator/issues.
 
 If you are proposing a feature:
 
@@ -55,17 +55,17 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `garnetforest` for local development.
+Ready to contribute? Here's how to set up `OmicsIntegrator` for local development.
 
-1. Fork the `garnetforest` repo on GitHub.
+1. Fork the `OmicsIntegrator` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/garnetforest.git
+    $ git clone git@github.com:your_name_here/OmicsIntegrator.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv garnetforest
-    $ cd garnetforest/
+    $ mkvirtualenv OmicsIntegrator
+    $ cd OmicsIntegrator/
     $ python setup.py develop
 
 4. Create a branch for local development::
@@ -76,7 +76,7 @@ Ready to contribute? Here's how to set up `garnetforest` for local development.
 
 5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
 
-    $ flake8 garnetforest tests
+    $ flake8 OmicsIntegrator tests
     $ python setup.py test
     $ tox
 
@@ -100,7 +100,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and for PyPy. Check
-   https://travis-ci.org/sgosline/garnetforest/pull_requests
+   https://travis-ci.org/sgosline/OmicsIntegrator/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips
@@ -108,4 +108,4 @@ Tips
 
 To run a subset of tests::
 
-    $ python -m unittest tests.test_garnetforest
+    $ python -m unittest tests.test_OmicsIntegrator

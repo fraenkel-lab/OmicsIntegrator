@@ -27,13 +27,13 @@ gifdir='data/matrix_files/gifs/'
 gif_files=[gifdir+g for g in os.listdir(gifdir)]
 
 setup(
-    name='garnet-forest',
+    name='OmicsIntegrator',
     version='0.1.0',
-    description="Python + Forest",
+    description="Python tool for high throughput data integration",
     long_description=readme + '\n\n' + history,
     author="Sara Gosline",
     author_email='sgosline@mit.edu',
-    url='https://github.com/sgosline/garnetforest',
+    url='https://github.com/sgosline/OmicsIntegrator',
     packages=[],
 #        'garnet-forest',
  #   ],
@@ -43,7 +43,7 @@ setup(
     install_requires=requirements,
     license="BSD",
     zip_safe=True,
-    keywords='garnet-forest',
+    keywords='OmicsIntegrator',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Biologists with basic programming skills',
