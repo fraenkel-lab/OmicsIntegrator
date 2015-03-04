@@ -1167,7 +1167,16 @@ def main():
     (edgeList, objective) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,objective,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
-    
+
+    #now, compare input and output objects to provide the user with some parameter guidance
+    nodesInSolution=outputObj.optForest.nodes()
+    #input nodes
+    origNodes=inputObj.origPrizes.keys()
+    nodesinsel=[a for a in origNodes if a in nodesInSolution]
+    if float(len(nodesinsel))/float(len(origNodes))<0.7:
+        print "Number of nodes found in solution (%d) is less than 70% of number of input nodes (%d). You might want to increase Beta or GarnetBeta to select more nodes"%(len(nodesinsel),len(origNodes))
+    else:
+        print "Solution found a sufficient fraction (%d out of %d) of your input nodes"%(len(nodesinsel),len(origNodes))
     #Get merged results of adding noise to edge values
     if options.noiseNum > 0:
         merged = changeValuesAndMergeResults(noiseEdges, options.seed, inputObj, 

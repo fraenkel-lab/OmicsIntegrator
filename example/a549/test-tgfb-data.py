@@ -13,6 +13,8 @@ if __name__=='__main__':
     parser=OptionParser()
     parser.add_option('--forest-only',dest='forest_only',action='store_true',default=False,help='Set this flag to run forest on phospho-proteomic data only.  DEFAULT:%default')
     parser.add_option('--msgsteiner',dest='msgsteiner',type='string',help='Path to msgsteiner9 code, be sure to include!')
+    parser.add_option('--doRandom',dest='rand',action='store_true',help='THIS WILL TAKE A LONG TIME: set this flag to do 100 permutations of forest using the --noisyEdges flag',default=False)
+    
     opts,args=parser.parse_args()
     
     #garnet requires a configuration file that has all the data
@@ -41,6 +43,8 @@ if __name__=='__main__':
         garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.xls'
         garnet_beta='.5'
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath,dummy_nodes)
+        if opts.rand:
+            fcmd=fcmd+' --noisyEdges=100'
         print '\n'+fcmd
         os.system(fcmd)
 
@@ -49,6 +53,8 @@ if __name__=='__main__':
         if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
             os.system('mkdir '+forest_out)
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath,dummy_nodes)
+        if opts.rand:
+            fcmd=fcmd+' --noisyEdges=100'
         print '\n'+fcmd
 
         os.system(fcmd)
