@@ -194,10 +194,10 @@ def main():
         keeprunning,outfile=mapGenesToRegions(genefile,xref,bedfile,window,opts.outdir)
     else:
         print 'Missing genefile,bedfile or xref file, cannot map genes to regions.'
-        system.exit()
+        sys.exit()
     if keeprunning!=0:
         print 'Error running gene mapping step, check your files and try again'
-        system.exit()
+        sys.exit()
         
     tamofile=config.get('motifData','tamo_file')
     genome=config.get('motifData','genome')
@@ -218,7 +218,7 @@ def main():
 
         if keeprunning!=0:
             print 'Error running motif-scanning step, check your files and try again'
-            system.exit()
+            sys.exit()
         
 
     ##step 3
@@ -230,7 +230,7 @@ def main():
 
     if keeprunning!=0:
         print 'Error running matrix creation step, check your files and try again'
-        system.exit()
+        sys.exit()
 
 #        pklfile=config.get('motifData','pkl')
     do_network=config.get('motifData','doNetwork')
@@ -255,7 +255,7 @@ def main():
             print 'Cannot perform regression because binding matrix or expression datasets are missing'
     if keeprunning!=0:
         print 'Error running regression step, check your files and try again'
-        system.exit()
+        sys.exit()
    
     
 if __name__=='__main__':

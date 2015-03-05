@@ -11,6 +11,7 @@ recursive-exclude * *.py[co]
 prune tests
 
 recursive-include data *
+recursive-include src *
 
 include example *
 recursive-include example *.cfg

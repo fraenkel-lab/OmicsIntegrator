@@ -12,6 +12,6 @@ Contributors
 ------------
 * Nurcan Tuncbag <ntuncbag@mit.edu>
 * Anthony Soltis <asoltis@mit.edu>
-* Anthony Gitter <angit@microsoft.com>
+* Anthony Gitter <gitter@biostat.wisc.edu>
 
  
