@@ -250,12 +250,12 @@ class PCSFInput(object):
         self.interactomeNodes = interactomeNodes
         if above1>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99. These '\
-            'were changed to 0.99...\n'
+            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99.'\
+	    ' These were changed to 0.99...\n'
         if below_0>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. These'\
-            'were changed to 0...\n'
+            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. '\
+	    'These were changed to 0...\n'
 
         print 'Reading text file containing prizes: %s...\n' %prizeFile
         origPrizes = {}
@@ -308,8 +308,8 @@ class PCSFInput(object):
                      'interactome! Make sure the protein names you are using are the same in your '\
                      'prize file as in your edge file. Aborting program.\n' %percentexcluded)
         elif percentexcluded > 0:
-            print 'WARNING!! %.3f percent of your prize nodes are not included in the interactome! '\
-                  'These nodes were ignored. Make sure the protein names you are using are the '\
+            print 'WARNING!! %.3f percent of your prize nodes are not included in the interactome!'\
+                  ' These nodes were ignored. Make sure the protein names you are using are the '\
                   'same in your prize file as in your edge file. Continuing program...\n' \
                   %percentexcluded
             warnings += 1
@@ -995,34 +995,32 @@ def randomTerminals(PCSFInputObj, seed):
         for node in PCSFInputObj.dirEdges:
             degrees.append((node,len(PCSFInputObj.dirEdges[node])))
     degrees.sort(key=itemgetter(1))
-    #Bin the degree dist into 5 so that each bin has equal number of nodes (last might have more)
-    numPerBin = len(degrees)/5
-    thresholds = [0,numPerBin,2*numPerBin,3*numPerBin,4*numPerBin,len(degrees)]
-    #Find which bin each terminal belongs to, and choose a diff node in that bin to hold its prize
-    cs = [0,0,0,0,0]
+    #Find index of current terminal in degrees list
     for k,terminal in enumerate(PCSFInputObj.origPrizes):
         for i,value in enumerate(degrees):
             if terminal == value[0]:
                 index = i
                 break
-        for i in range(1,6):
-            if index < thresholds[i]:
-                nodesInBin = degrees[thresholds[i-1]:thresholds[i]]
-		break
-        cs[i-1] += 1
-        #Make sure new terminal chosen is not already chosen on a previous round
+        #Choose an index offset to select new terminal (distance from orig terminal in degrees list)
+        #Make sure newly chosen terminal is not already chosen on a previous round
         newTerm = ''
-        while newTerm in newPCSFInputObj.origPrizes:
+        i = -1
+        while newTerm in newPCSFInputObj.origPrizes and i<=10000:
+            i+=1
             if seed != None:
-                random.seed(seed+k+1)
-            newTerm = random.choice(nodesInBin)[0]
+                random.seed(seed+k+i)
+            offset = int(random.gauss(0.0,100.0))
+            try:
+                newTerm = degrees[i+offset][0]
+            except KeyError:
+                #if offset points outside list, try loop again
+                pass
+        #if we've tried 10000 times, throw error to avoid infinite loop
+        if newTerm in newPCSFInputObj.origPrizes:
+            sys.exit('There was a problem with --randomTerminals. Aborting.')
+        #Assign prize to newly chosen terminal
         newPCSFInputObj.origPrizes[newTerm] = PCSFInputObj.origPrizes[terminal]
     del newPCSFInputObj.origPrizes['']
-    #Print out the degree thresholds for each bin and the # of terminals in each bin
-    print 'Out of about %i nodes in each bin in the interactome,'%numPerBin
-    for c in range(0,5):
-        print '%i prizes were assigned to nodes with degrees between %i and %i'%(cs[c],
-               degrees[thresholds[c]][1], degrees[thresholds[c+1]-1][1])
     newPCSFInputObj.assignNegPrizes()
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
@@ -1237,9 +1235,9 @@ def main():
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
                          options.knockout, options.garnet, options.gb, options.shuffleNum)
-    (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
-    outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
-    outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
+    #(edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
+    #outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
+    #outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
     
     #Get merged results of adding noise to edge values
     if options.noiseNum > 0:
