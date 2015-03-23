@@ -1,4 +1,6 @@
-=============================== Omics Integrator ===============================
+=============================== 
+Omics Integrator 
+===============================
 
 Omics Integrator is a package designed to integrate gene expression data and/or
 proteomics data using the protein-protein interaction network. It is comprised
@@ -10,7 +12,8 @@ Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
      
 
-System Requirements: --------------------
+System Requirements: 
+--------------------
 1. Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org and
 the following dependencies (provided with install): 
   - numpy: http://www.numpy.org/
@@ -26,26 +29,29 @@ the following dependencies (provided with install):
 http://www.cytoscape.org
 
 
-Features --------
+Features 
+--------
 
 * Maps gene expression data to transcription factors using chromatin
   accessibility data
 
-* Identifies proteins in the same pathway as 'hits' using protein interaction
+* Identifies proteins in the same pathway as `hits` using protein interaction
   network
 
 * Integrates numerous high throughput data types to determine testable
   biological hypotheses
 
 
-Running garnet.py ----------------- 
+Running garnet.py 
+----------------- 
 
 Garnet is a script that runs a series of
 smaller scripts to map epigenetic data to genes and then scan the genome to
 determine the likelihood of a transcription factor binding the genome near that
 gene. 
 
-``` Usage: garnet.py [configfilename]
+```
+Usage: garnet.py [configfilename]
 
   -s SEED, --seed=SEED  An integer seed for the pseudo-random number
                         generators. If you want to reproduce exact results,
@@ -55,13 +61,15 @@ gene.
 Options:
   -h, --help            show this help message and exit 
   --outdir=OUTDIR       Name of directory to place garnet output. DEFAULT:none 
-  --utilpath=ADDPATH    Destination of chipsequtil library, Default=../src ```
+  --utilpath=ADDPATH    Destination of chipsequtil library, Default=../src 
+```
 
 The configuration file should take the following format:
 
 ### garnet input
 
-```ini [chromatinData] 
+```
+[chromatinData] 
 #these files contain epigenetically interesting regions
 bedfile = bedfilecontainingregions.bed   
 fastafile = fastafilemappedusinggalaxytools.fasta       
@@ -83,14 +91,15 @@ tfDelimiter = .
 [expressionData] 
 expressionFile = tabDelimitedExpressionData.txt 
 pvalThresh = 0.01 
-qvalThresh = ```
+qvalThresh = 
+```
 
 #### Chromatin Data
 
 Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are
 included in the examples/ directory. To use your own epigenetic data, upload the
-BED-file to http://usegalaxy.org and select 'Fetch Genomic DNA' from the left
-menu to click on 'Extract Genomic DNA'. This will produce a FASTA-formatted file
+BED-file to http://usegalaxy.org and select `Fetch Genomic DNA` from the left
+menu to click on `Extract Genomic DNA`. This will produce a FASTA-formatted file
 that will work with garnet.  We have provided gene (`genefile`) and xref
 (`xreffile`)  annotations for both hg19 and mm9 - these files can be downloaded
 from http://genome.ucsc.edu/cgi-bin/hgTables if needed. The `windowsize`
@@ -124,45 +133,49 @@ to better interpret your data or re-run a sub-script that may have failed. All
 files are placed in the directory provided by the `--outdir` option of the
 garnet script.
 
--events_to_genes.fsa: This file contains the regions of the fastafile provided
-  in the configuration file that are within the specified distance to a
+- **events_to_genes.fsa**: This file contains the regions of the fastafile 
+  provided in the configuration file that are within the specified distance to a
   transcription start site.
 
--events_to_genes.xls: This file contains each region, the epigenetic acitivity
-  in that region, and the relationship of that region to the closest gene. 
+- **events_to_genes.xls**: This file contains each region, the epigenetic
+  activity in that region, and the relationship of that region to the closest 
+  gene. 
 
--events_to_genes_with_motifs.txt: This contains the raw transcription factor
-  scoring data for each region in the fasta file.
+- **events_to_genes_with_motifs.txt**: This contains the raw transcription 
+  factor scoring data for each region in the fasta file.
 
--events_to_genes_with_motifs.tgm: This contains the transcription factor binding
-  matrix scoring data mapped to the closest gene.
+- **events_to_genes_with_motifs.tgm**: This contains the transcription factor 
+  binding matrix scoring data mapped to the closest gene.
 
--events_To_genes_with_motifs_tfids.txt: Names of transcription factors (or
+- **events_To_genes_with_motifs_tfids.txt**: Names of transcription factors (or
   columns) of the matrix.
 
--events_to_genes_with_motifs_geneids.txt: Names of genes (or rows) of the matrix
+- **events_to_genes_with_motifs_geneids.txt**: Names of genes (or rows) of the
+  matrix.
 
--events_to_genes_with_motifs.pkl: A Pickle-compressed Python File containing a 
-  dictionary data structure that contains files 4-6 (under the keys ‘tgm’,’tfs’,
-  and ‘genes’) respectively as well as a ‘delim’ key that describes what
-  delimiter was used to separate out TFs in the case where there are multiple
-  TFs in the same family.
+- **events_to_genes_with_motifs.pkl**: A Pickle-compressed Python File 
+  containing a dictionary data structure that contains files 4-6 (under the keys
+  ‘tgm’,’tfs’, and ‘genes’) respectively as well as a ‘delim’ key that describes
+  what delimiter was used to separate out TFs in the case where there are
+  multiple TFs in the same family.
 
--events_to_genes_with_motifsregression_results.xls: Results from linear
+- **events_to_genes_with_motifsregression_results.xls**: Results from linear
   regression.
 
--events_to_genes_with_motifsregression_results_FOREST_INPUT.xls: Only those 
+- **events_to_genes_with_motifsregression_results_FOREST_INPUT.xls**: Only those 
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to Forest. 
 
 
 
 
-Running forest.py ----------------- 
+Running forest.py 
+----------------- 
 
 Forest **requires** the msgsteiner package as well as the boost library.
 
-'''Usage: PCSF.py [options]
+```
+Usage: PCSF.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
@@ -261,8 +274,8 @@ human interactome example.
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
-the program will attempt to read `conf.txt`. The parameters 'w', 'b', and 'D'
-must be set in this file. Optional parameters 'mu' and  'g' may also be
+the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
+must be set in this file. Optional parameters `mu` and  `g` may also be
 included. For explanations of the parameters, see publication. 
 
 
@@ -292,7 +305,7 @@ for this experiment or run, with the `--outlabel option`. The `--cyto30` and
 the output files to be compatiable with. 
 
 We include three options, `--noisyEdges`, `--shuffledPrizes`, and
-'--randomTerminals' to determine how robust your results are by comparing them
+`--randomTerminals` to determine how robust your results are by comparing them
 to results with slightly altered input values. To use these options, supply a
 number for either parameter greater than 0.  If the number you give is more than
 1, it will alter values and run the program that number of times and merge the
@@ -376,4 +389,3 @@ first row of the file should be interpreted as column labels. Click OK.
 
 When the network and the attributes are imported into Cytoscape, you can alter
 the appearance of the network as you usually would using VizMapper.
-
