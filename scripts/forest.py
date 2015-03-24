@@ -1010,11 +1010,28 @@ def randomTerminals(PCSFInputObj, seed):
             if seed != None:
                 random.seed(seed+k+i)
             offset = int(random.gauss(0.0,100.0))
+            newIndex = i + offset
             try:
-                newTerm = degrees[i+offset][0]
+                newNode = degrees[newIndex]
             except KeyError:
                 #if offset points outside list, try loop again
-                pass
+                continue
+            #To make truly random, need to choose randomly between all nodes with the same degree
+            #Otherwise, ordering of dict iteration matters
+            nodesWithSameDegree = []
+            for node in degrees[newIndex:]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            for node in degrees[newIndex-1::-1]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            print nodesWithSameDegree
+            newTerm = random.choice(nodesWithSameDegree)[0]
+            print newTerm
         #if we've tried 10000 times, throw error to avoid infinite loop
         if newTerm in newPCSFInputObj.origPrizes:
             sys.exit('There was a problem with --randomTerminals. Aborting.')
@@ -1235,9 +1252,9 @@ def main():
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
                          options.knockout, options.garnet, options.gb, options.shuffleNum)
-    #(edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
-    #outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
-    #outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
+    (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
+    outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
+    outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
     
     #Get merged results of adding noise to edge values
     if options.noiseNum > 0:
