@@ -1029,9 +1029,7 @@ def randomTerminals(PCSFInputObj, seed):
                     nodesWithSameDegree.append(node)
                 else:
                     break
-            print nodesWithSameDegree
             newTerm = random.choice(nodesWithSameDegree)[0]
-            print newTerm
         #if we've tried 10000 times, throw error to avoid infinite loop
         if newTerm in newPCSFInputObj.origPrizes:
             sys.exit('There was a problem with --randomTerminals. Aborting.')
