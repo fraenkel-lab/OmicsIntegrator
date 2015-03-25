@@ -38,9 +38,7 @@ class PCSFInput(object):
                 self.dummyNodeNeighbors - a list of all proteins that the dummy node should have
                                           edges to.
                 self.interactomeNodes - a list of all nodes in the interactome
-                self.w, self.b, self.D, self.n, self.mu, self.g, self.r - floats (D is an int) 
-                                                                          indicating the 
-                                                                          parameters.
+                self.w, self.b, self.D, self.n, self.mu, self.g, self.r, self.threads - parameters
         """
         if prizeFile==None or edgeFile==None:
             sys.exit('PCSF.py failed. Needs -p and -e arguments. Run PCSF.py -h for help.')
@@ -74,6 +72,8 @@ class PCSFInput(object):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
+            if line.startswith('threads = '):
+                threads = line.strip().split()[1]
         c.close()
         try:
             mu = float(mu)
@@ -92,6 +92,10 @@ class PCSFInput(object):
         except:
             g = 1e-3 # Default g
         try:
+            threads = int(threads)
+        except:
+            threads = 1
+        try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f.' \
                   %(float(w), float(b), int(D), mu, g)
         except:
@@ -105,6 +109,7 @@ class PCSFInput(object):
         self.n = n
         self.r = r
         self.g = g
+        self.threads = threads
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -515,7 +520,7 @@ class PCSFInput(object):
         #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
-                       str(self.r), '-g', str(self.g)] #'-j', str(threads)
+                       str(self.r), '-g', str(self.g), '-j', str(self.threads)]
         #Only supply seed to msgsteiner if one is given by user
         #Use the seed to set the -s (instance seed, which controls random noise on edge weights)
         #and the -z (message seed, which affects the message passing) msgsteiner seeds
