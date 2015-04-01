@@ -44,7 +44,7 @@ if __name__=='__main__':
         garnet_beta='.5'
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath,dummy_nodes)
         if opts.rand:
-            fcmd=fcmd+' --noisyEdges=100'
+            fcmd=fcmd+' --noisyEdges=20'
         print '\n'+fcmd
         os.system(fcmd)
 
@@ -54,7 +54,7 @@ if __name__=='__main__':
             os.system('mkdir '+forest_out)
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath,dummy_nodes)
         if opts.rand:
-            fcmd=fcmd+' --noisyEdges=100'
+            fcmd=fcmd+' --noisyEdges=20'
         print '\n'+fcmd
 
         os.system(fcmd)
