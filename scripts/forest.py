@@ -7,6 +7,7 @@
 import os, sys, optparse, random, copy
 import subprocess, tempfile
 import networkx as nx
+from operator import itemgetter
 
 class PCSFInput(object):
     def __init__(self, prizeFile, edgeFile, confFile, dummyMode, knockout, garnet, gb, shuffle):
@@ -17,7 +18,7 @@ class PCSFInput(object):
                            formatted like "ProteinName\tPrizeValue"
                edgeFile - tab-delimited text file containing edges in interactome and their weights
                           formatted like "ProteinA\tProteinB\tWeight\t
-                          Directionality(U or D, optional)
+                          Directionality(U or D, optional)"
                confFile - text file containing values for all parameters. Should include the lines
                           "w=<value>", "D=<value>", and "b=<value>".
                dummyMode - a string that indicates which nodes in the interactome to connect the 
@@ -37,9 +38,7 @@ class PCSFInput(object):
                 self.dummyNodeNeighbors - a list of all proteins that the dummy node should have
                                           edges to.
                 self.interactomeNodes - a list of all nodes in the interactome
-                self.w, self.b, self.D, self.n, self.mu, self.g, self.r - floats (D is an int) 
-                                                                          indicating the 
-                                                                          parameters.
+                self.w, self.b, self.D, self.n, self.mu, self.g, self.r, self.threads - parameters
         """
         if prizeFile==None or edgeFile==None:
             sys.exit('PCSF.py failed. Needs -p and -e arguments. Run PCSF.py -h for help.')
@@ -73,6 +72,8 @@ class PCSFInput(object):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
+            if line.startswith('threads = '):
+                threads = line.strip().split()[1]
         c.close()
         try:
             mu = float(mu)
@@ -85,17 +86,21 @@ class PCSFInput(object):
         try:
             r = float(r)
         except:
-            r = 1e-5 # Default r
+            r = 0 # Default r
         try:
             g = float(g)
         except:
             g = 1e-3 # Default g
         try:
-            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, r = %f, g = %f.' \
-                  %(float(w), float(b), int(D), mu, r, g)
+            threads = int(threads)
+        except:
+            threads = 1
+        try:
+            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f.' \
+                  %(float(w), float(b), int(D), mu, g)
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
-                     'include appropriate values for w, b, D, and optionally mu, n, r, or g.')
+                     'include appropriate values for w, b, D, and optionally mu, n, or g.')
                      
         self.w = float(w)
         self.b = float(b)
@@ -104,6 +109,7 @@ class PCSFInput(object):
         self.n = n
         self.r = r
         self.g = g
+        self.threads = threads
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -249,12 +255,12 @@ class PCSFInput(object):
         self.interactomeNodes = interactomeNodes
         if above1>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99. These '\
-            'were changed to 0.99...\n'
+            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99.'\
+	    ' These were changed to 0.99...\n'
         if below_0>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. These'\
-            'were changed to 0...\n'
+            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. '\
+	    'These were changed to 0...\n'
 
         print 'Reading text file containing prizes: %s...\n' %prizeFile
         origPrizes = {}
@@ -307,8 +313,8 @@ class PCSFInput(object):
                      'interactome! Make sure the protein names you are using are the same in your '\
                      'prize file as in your edge file. Aborting program.\n' %percentexcluded)
         elif percentexcluded > 0:
-            print 'WARNING!! %i percent of your prize nodes are not included in the interactome! '\
-                  'These nodes were ignored. Make sure the protein names you are using are the '\
+            print 'WARNING!! %.3f percent of your prize nodes are not included in the interactome!'\
+                  ' These nodes were ignored. Make sure the protein names you are using are the '\
                   'same in your prize file as in your edge file. Continuing program...\n' \
                   %percentexcluded
             warnings += 1
@@ -474,7 +480,7 @@ class PCSFInput(object):
                
         RETURNS: edgeList - the contents of stdout from msgsteiner: a list of edges in the 
                             optimal Forest
-                 objective - the contents of stderr from msgsteiner: if all goes well, a report on
+                 info - the contents of stderr from msgsteiner: if all goes well, a report on
                              the optimization
         """
         print 'Preparing information to send to the message passing algorithm...\n'
@@ -514,7 +520,7 @@ class PCSFInput(object):
         #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
-                       str(self.r), '-g', str(self.g)] #'-j', str(threads)
+                       str(self.r), '-g', str(self.g), '-j', str(self.threads)]
         #Only supply seed to msgsteiner if one is given by user
         #Use the seed to set the -s (instance seed, which controls random noise on edge weights)
         #and the -z (message seed, which affects the message passing) msgsteiner seeds
@@ -533,25 +539,25 @@ class PCSFInput(object):
             sys.exit('ERROR: There was a problem running the message passing algorithm. <%s>: %s' \
                      %(errcode, errmess))
         print 'Message passing run finished with the parameters: w = %s, b = %s, D = %s, mu = %s' \
-              ', r = %s, g = %s\n' \
-              %(self.w, self.b, self.D, self.mu, self.r, self.g)
+              ', g = %s\n' \
+              %(self.w, self.b, self.D, self.mu, self.g)
         input.close()
-        objective = subproc.stderr.read()
+        info = subproc.stderr.read()
         subproc.stderr.close()
         out.seek(0)
         edgeList = out.read()
         out.close()
-        return (edgeList, objective)
+        return (edgeList, info)
         
 class PCSFOutput(object):
-    def __init__(self, inputObj, edgeList, objective, outputpath, outputlabel, betweenness):
+    def __init__(self, inputObj, edgeList, info, outputpath, outputlabel, betweenness):
         """
         Takes the forest output given by msgsteiner and converts it to two networkx graphs.
         
         INPUT: inputObj - a reference to the PCSFInput object that stores the correct edges and 
                           prizes dictionaries for this output object
                edgeList - the edges in the forest output given by msgsteiner, contents of stdout
-               objective - stats about the msgsteiner run, contents of stderr
+               info - stats about the msgsteiner run, contents of stderr
                outputpath - path to the directory where output files should be stored
                outputlabel - a label with which to name all of the output files for this run
                betweenness - a T/F flag indicating whether we should do the costly betweenness
@@ -563,12 +569,12 @@ class PCSFOutput(object):
                 self.dumForest - a networkx digraph storing the dummy node edges in the optimal 
                                  forest
                 self.inputObj - a reference to the PCSFInput object that created this output object
-                <outputlabel>_objective.txt - a text file containing the contents of objective
+                <outputlabel>_info.txt - a text file containing the contents of stderr and info
         """
         #Write output stderr file before attempting to do anything else so the info is 
         #there if the program breaks
-        err = open('%s/%s_objective.txt' %(outputpath,outputlabel), 'wb')
-        err.write(objective)
+        err = open('%s/%s_info.txt' %(outputpath,outputlabel), 'wb')
+        err.write(info)
         
         #Create networkx graph storing the result of msgsteiner
         optForest = nx.DiGraph()
@@ -644,7 +650,7 @@ class PCSFOutput(object):
             for node in augForest.nodes():
                 augForest.node[node]['betweenness'] = 0
         
-        #Write info about results in objective file
+        #Write info about results in info file
         err.write('\n')
         err.write('There were %i terminals in the interactome.\n' %len(inputObj.origPrizes.keys()))
         err.write('There are %i terminals in the optimal forest.\n' %terminalCount)
@@ -851,7 +857,6 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
         try:
             #if the node is not in outputObj2 this will return a KeyError
             numRuns2 = PCSFOutputObj2.optForest.node[node]['fracOptContaining'] * n2
-            print numRuns2
         except KeyError:
             numRuns2 = 0.0
         mergedObj.optForest.node[node]['fracOptContaining'] = (numRuns1 + numRuns2)/(n1+n2)
@@ -962,6 +967,84 @@ def noiseEdges(PCSFInputObj, seed):
     print 'Noise has been added to all edge values.\n'
     return newPCSFInputObj
     
+def randomTerminals(PCSFInputObj, seed):
+    """
+    Selects nodes with a similar degree distribution to the original terminals, and assigns the
+    prizes to them.
+
+    INPUT: a PCSFInput object
+           seed - number to give to the random number generator
+    RETURNS: a new PCSFInput object with a new list of terminals
+    """
+    #Only can do this if the interactome is big enough
+    if len(PCSFInputObj.undirEdges) + len(PCSFInputObj.dirEdges) < 50:
+        sys.exit("Cannot use --randomNodes with such a small interactome.")
+    #Make a new PCSFInput object that contains all the same values as the original but empty prizes
+    newPCSFInputObj = copy.deepcopy(PCSFInputObj)
+    newPCSFInputObj.origPrizes = {'':0}
+    #degrees is a sorted list that will hold outdegree of every node in interactome
+    degrees = []
+    if len(PCSFInputObj.undirEdges) > 0 and len(PCSFInputObj.dirEdges) > 0:
+        for node in PCSFInputObj.undirEdges:
+            try:
+                degrees.append((node,len(PCSFInputObj.undirEdges[node])+ \
+                        len(PCSFInputObj.dirEdges[node])))
+            except KeyError:
+                degrees.append((node,len(PCSFInputObj.undirEdges[node])))
+        for node in PCSFInputObj.dirEdges:
+            if node not in PCSFInputObj.undirEdges:
+                degrees.append((node,len(PCSFInputObj.dirEdges[node])))
+    else:
+        for node in PCSFInputObj.undirEdges:
+            degrees.append((node,len(PCSFInputObj.undirEdges[node])))
+        for node in PCSFInputObj.dirEdges:
+            degrees.append((node,len(PCSFInputObj.dirEdges[node])))
+    degrees.sort(key=itemgetter(1))
+    #Find index of current terminal in degrees list
+    for k,terminal in enumerate(PCSFInputObj.origPrizes):
+        for i,value in enumerate(degrees):
+            if terminal == value[0]:
+                index = i
+                break
+        #Choose an index offset to select new terminal (distance from orig terminal in degrees list)
+        #Make sure newly chosen terminal is not already chosen on a previous round
+        newTerm = ''
+        i = -1
+        while newTerm in newPCSFInputObj.origPrizes and i<=10000:
+            i+=1
+            if seed != None:
+                random.seed(seed+k+i)
+            offset = int(random.gauss(0.0,100.0))
+            newIndex = i + offset
+            try:
+                newNode = degrees[newIndex]
+            except KeyError:
+                #if offset points outside list, try loop again
+                continue
+            #To make truly random, need to choose randomly between all nodes with the same degree
+            #Otherwise, ordering of dict iteration matters
+            nodesWithSameDegree = []
+            for node in degrees[newIndex:]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            for node in degrees[newIndex-1::-1]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            newTerm = random.choice(nodesWithSameDegree)[0]
+        #if we've tried 10000 times, throw error to avoid infinite loop
+        if newTerm in newPCSFInputObj.origPrizes:
+            sys.exit('There was a problem with --randomTerminals. Aborting.')
+        #Assign prize to newly chosen terminal
+        newPCSFInputObj.origPrizes[newTerm] = PCSFInputObj.origPrizes[terminal]
+    del newPCSFInputObj.origPrizes['']
+    newPCSFInputObj.assignNegPrizes()
+    print 'New degree-matched terminals have been chosen.\n'
+    return newPCSFInputObj
+
 def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel):
     """
     Changes the prizes/edges in the PCSFInput object according to func and runs the msgsteiner 
@@ -976,32 +1059,35 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
            outputpath - path to the directory where output files should be stored
            outputlabel - a label with which to name all of the output files for this run
            
-    OUTPUT: <outputlabel>_changed_#_objective.txt - a text file FOR EACH RUN containing the
+    OUTPUT: <outputlabel>_changed_#_info.txt - a text file FOR EACH RUN containing the
                       contents of stderr for all msgsteiner runs
     RETURNS: merged - the PCSFOutput object that is a result of all the merges
 
     """ 
-    print 'Preparing to change prize values %i times and get merged results of running the '\
+    print 'Preparing to change values %i times and get merged results of running the '\
           'algorithm on new values.\n' %numRuns
     i = 0
     while i <= numRuns-1:
         #Change prize/edge values and run msgsteiner with new values
-        #NOTE: there will be an objective file written for every run
+        #NOTE: there will be an info file written for every run
         if seed != None:
             changedInputObj = func(inputObj, seed+i)
-            (newEdgeList, newObjective) = changedInputObj.runPCSF(msgpath, seed+i)
+            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed+i)
         else:
             changedInputObj = func(inputObj, seed)
-            (newEdgeList, newObjective) = changedInputObj.runPCSF(msgpath, seed)
+            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed)
         #By creating the output object with inputObj instead of changedInputObj, 
         #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes, 
         #not the changed prizes.
         if str(func)[10:23]  == 'shufflePrizes':
-            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newObjective, outputpath, 
+            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath, 
                                           outputlabel+'_shuffledPrizes_%i'%i, 0)
         elif str(func)[10:20] == 'noiseEdges':
-            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newObjective, outputpath, 
+            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath, 
                                           outputlabel+'_noisyEdges_%i'%i, 0)
+        elif str(func)[10:25] == 'randomTerminals':
+            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath,
+                                          outputlabel+'_randomTerminals_%i'%i, 0)
         if i == 0:
             #first run
             merged = changedOutputObj
@@ -1055,7 +1141,7 @@ def crossValidation(k, rep, PCSFInputObj, seed, msgpath, outputpath, outputlabel
             #Remove held out original prize and update total prize to reflect only negPrize
             del newPCSFInputObj.origPrizes[p]
             newPCSFInputObj.totalPrizes[p] = newPCSFInputObj.negPrizes[p]
-        (newEdgeList, newObjective) = newPCSFInputObj.runPCSF(msgpath, seed)
+        (newEdgeList, newInfo) = newPCSFInputObj.runPCSF(msgpath, seed)
         #See if held out proteins appear in newEdgeList
         edges = newEdgeList.split('\n')
         for edge in edges:
@@ -1118,9 +1204,9 @@ def main():
     parser.add_option("--garnet", dest='garnet', help='Path to the text file containing '\
         'the output of the GARNET module regression. Should be a tab delimited file with 2 '\
         'columns: "TranscriptionFactorName\tScore". Default = "None"', default=None)
-    parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the GARNET module '\
-    	'scores. Use to make the GARNET scores on the same scale as the provided scores. Default'\
-    	' = 0.01.', default='0.01')
+    parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the '\
+        'GARNET module scores. Use to make the GARNET scores on the same scale as the provided '\
+        'scores. Default = 0.01.', default='0.01')
     parser.add_option("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
         'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
     parser.add_option("--outpath", dest = 'outputpath', help='Path to the directory which will '\
@@ -1140,6 +1226,11 @@ def main():
         'many times you would like to shuffle around the given prizes and re-run the algorithm. '\
         'Results of these runs will be merged together and written in files with the word '\
         '"_shuffledPrizes_" added to their names. Default = 0', type='int', default=0)
+    parser.add_option("--randomTerminals", dest='termNum', help='An integer specifying how many '\
+        'times you would like to apply your given prizes to random nodes in the interactome (with'\
+        ' a similar degree distribution) and re-run the algorithm. Results of these runs will be '\
+        'merged together and written in files with the word "_randomTerminals_" added to their '\
+        'names. Default = 0', type='int', default=0)
     parser.add_option("--knockout", dest='knockout', help='A list specifying protein(s) you '\
         'would like to "knock out" of the interactome to simulate a knockout experiment, '\
         "i.e. ['TP53'] or ['TP53', 'EGFR'].", type='string', default='[]')
@@ -1164,19 +1255,10 @@ def main():
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
                          options.knockout, options.garnet, options.gb, options.shuffleNum)
-    (edgeList, objective) = inputObj.runPCSF(options.msgpath, options.seed)
-    outputObj = PCSFOutput(inputObj,edgeList,objective,options.outputpath,options.outputlabel,1)
+    (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
+    outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
-
-    #now, compare input and output objects to provide the user with some parameter guidance
-    nodesInSolution=outputObj.optForest.nodes()
-    #input nodes
-    origNodes=inputObj.origPrizes.keys()
-    nodesinsel=[a for a in origNodes if a in nodesInSolution]
-    if float(len(nodesinsel))/float(len(origNodes))<0.7:
-        print "Number of nodes found in solution (%d) is less than 70% of number of input nodes (%d). You might want to increase Beta or GarnetBeta to select more nodes"%(len(nodesinsel),len(origNodes))
-    else:
-        print "Solution found a sufficient fraction (%d out of %d) of your input nodes"%(len(nodesinsel),len(origNodes))
+    
     #Get merged results of adding noise to edge values
     if options.noiseNum > 0:
         merged = changeValuesAndMergeResults(noiseEdges, options.seed, inputObj, 
@@ -1190,6 +1272,14 @@ def main():
                                              options.shuffleNum, options.msgpath, 
                                              options.outputpath, options.outputlabel)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_shuffled', options.cyto30)
+
+    #Get merged results of randomizing terminals
+    if options.termNum > 0:
+        merged = changeValuesAndMergeResults(randomTerminals,options.seed, inputObj,
+                                             options.termNum, options.msgpath,
+                                             options.outputpath, options.outputlabel)
+        merged.writeCytoFiles(options.outputpath, options.outputlabel+'_randomTerminals', 
+                              options.cyto30)
     
     #If k is supplied, run k-fold cross validation
     if options.cv != None:
