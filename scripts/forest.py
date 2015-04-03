@@ -10,7 +10,7 @@ import networkx as nx
 from operator import itemgetter
 
 class PCSFInput(object):
-    def __init__(self, prizeFile, edgeFile, confFile, dummyMode, knockout, garnet, gb, shuffle):
+    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,gb,shuffle,musquared):
         """
         Converts input information into dictionaries to be used in the message passing algorithm
         
@@ -393,13 +393,14 @@ class PCSFInput(object):
         self.dirEdges = dirEdges
         self.undirEdges = undirEdges
         self.dummyNodeNeighbors = dummyNodeNeighbors
-        
-        self.assignNegPrizes()
+        self.musquared = musquared
+ 
+        self.assignNegPrizes(musquared)
         
         if warnings > 0:
             print 'THERE WERE %s WARNING(S) WHEN READING THE INPUT FILES.\n' %warnings
         
-    def assignNegPrizes(self):     
+    def assignNegPrizes(self, musquared):     
         """        
         Add negative prizes to penalize nodes with high degrees
         """
@@ -407,12 +408,14 @@ class PCSFInput(object):
         totalPrizes = {}
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
+            if musquared: print 'Negative prizes will be proportional to node degree^2.'
             DegreeDict = self.degreeNegPrize()
             for prot in self.origPrizes:
                 try:
                     degree = DegreeDict[prot]
-                    prize = (self.b * float(self.origPrizes[prot])) + self.score(degree,self.mu)
-                    negprize = self.score(degree,self.mu)
+                    prize = (self.b * float(self.origPrizes[prot])) +\
+                            self.score(degree,self.mu,musquared)
+                    negprize = self.score(degree,self.mu,musquared)
                     totalPrizes[prot] = prize
                     negPrizes[prot] = negprize
                 except KeyError:
@@ -421,7 +424,7 @@ class PCSFInput(object):
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
                     if degree > 0:
-                        negprize = self.score(degree,self.mu)
+                        negprize = self.score(degree,self.mu,musquared)
                         if negprize != 0:
                             negPrizes[protein] = negprize
                             totalPrizes[protein] = negprize
@@ -450,7 +453,7 @@ class PCSFInput(object):
             degreeDict[node] = G.degree(node)
         return degreeDict
 
-    def score(self, value, mu):
+    def score(self, value, mu, musquared):
         """
         Helper function for use in assigning negative prizes (when mu != 0)
         """
@@ -458,6 +461,8 @@ class PCSFInput(object):
             return 0
         else:
             newvalue = -float(value) #-math.log(float(value),2)
+            if musquared: 
+                newvalue = newvalue*newvalue
             newvalue = newvalue * mu
             return newvalue
 
@@ -937,7 +942,7 @@ def shufflePrizes(PCSFInputObj, seed):
     newPCSFInputObj = copy.deepcopy(PCSFInputObj)
     #Change the prizes to be the new dictionary
     newPCSFInputObj.origPrizes = shuffledValues
-    newPCSFInputObj.assignNegPrizes()
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
     return newPCSFInputObj
     
 def noiseEdges(PCSFInputObj, seed):
@@ -978,7 +983,7 @@ def randomTerminals(PCSFInputObj, seed):
     """
     #Only can do this if the interactome is big enough
     if len(PCSFInputObj.undirEdges) + len(PCSFInputObj.dirEdges) < 50:
-        sys.exit("Cannot use --randomNodes with such a small interactome.")
+        sys.exit("Cannot use --randomTerminals with such a small interactome.")
     #Make a new PCSFInput object that contains all the same values as the original but empty prizes
     newPCSFInputObj = copy.deepcopy(PCSFInputObj)
     newPCSFInputObj.origPrizes = {'':0}
@@ -1041,7 +1046,7 @@ def randomTerminals(PCSFInputObj, seed):
         #Assign prize to newly chosen terminal
         newPCSFInputObj.origPrizes[newTerm] = PCSFInputObj.origPrizes[terminal]
     del newPCSFInputObj.origPrizes['']
-    newPCSFInputObj.assignNegPrizes()
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
 
@@ -1207,6 +1212,9 @@ def main():
     parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the '\
         'GARNET module scores. Use to make the GARNET scores on the same scale as the provided '\
         'scores. Default = 0.01.', default='0.01')
+    parser.add_option("--musquared", action='store_true', dest='musquared', help='Flag to add '\
+        'negative prizes to hub nodes proportional to their degree^2, rather than degree. Must '\
+        'specify a positive mu in conf file.', default=False)
     parser.add_option("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
         'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
     parser.add_option("--outpath", dest = 'outputpath', help='Path to the directory which will '\
@@ -1254,7 +1262,8 @@ def main():
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
-                         options.knockout, options.garnet, options.gb, options.shuffleNum)
+                         options.knockout, options.garnet, options.gb, options.shuffleNum,
+                         options.musquared)
     (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)

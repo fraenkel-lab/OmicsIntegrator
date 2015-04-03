@@ -214,6 +214,9 @@ Options:
   --garnetBeta=GB       Parameter for scaling the GARNET module scores. Use to
                         make the GARNET scores on the same scale as the
                         provided scores. Default = 0.01.
+  --musquared           Flag to add negative prizes to hub nodes proportional
+                        to their degree^2, rather than degree. Must specify a
+                        positive mu in conf file.
   --msgpath=MSGPATH     Full path to the message passing code. Default =
                         "<current directory>/msgsteiner9"
   --outpath=OUTPUTPATH  Path to the directory which will hold the output
@@ -292,6 +295,11 @@ The `--dummyMode` option will change which nodes in the terminal are connected
 to the dummy node in the interactome. We provide an example of this using
 `a549/Tgfb_interactors.txt`. For an explanation of the dummy node, see
 publication.
+
+The `--musquared` option will apply negative prizes to nodes based on their
+squared degree, as opposed to linear degree. This is helpful if the default
+mu behavior is not strict enough to eliminate irrelevant hub nodes from your
+network.
 
 If the user is not keeping the file `msgsteiner9` in the same directory as
 forest.py, the path needs to be specified using the `--msgpath` option. 
