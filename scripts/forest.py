@@ -264,6 +264,7 @@ class PCSFInput(object):
 
         print 'Reading text file containing prizes: %s...\n' %prizeFile
         origPrizes = {}
+        terminalTypes = {}
         try:
             p = open(prizeFile, 'rb')
         except IOError:
@@ -283,6 +284,7 @@ class PCSFInput(object):
                 count += 1
             else:
                 origPrizes[words[0]] = float(words[1])
+                terminalTypes[words[0]] = 'Proteomic'
             line = p.readline()
         p.close()
         
@@ -303,6 +305,10 @@ class PCSFInput(object):
                     prize = float(words[1])*gb
                     #If the TF already has a prize value this will replace it.
                     origPrizes[words[0]] = prize
+                    if words[0] in terminalTypes.keys():
+                        terminalTypes[words[0]]+='_TF'
+                    else:
+                        terminalTypes[words[0]]='TF'
                 line = g.readline()
             g.close()
         
@@ -388,7 +394,8 @@ class PCSFInput(object):
                 warnings += 1
             print 'Dummy node has been added, with edges to all %i nodes in the interactome '\
                   'listed in your dummyMode file.\n' %int(countNeighbors)
-        
+
+        self.terminalTypes = terminalTypes
         self.origPrizes = origPrizes
         self.dirEdges = dirEdges
         self.undirEdges = undirEdges
@@ -623,6 +630,12 @@ class PCSFOutput(object):
             except KeyError:
                 optForest.node[node]['prize'] = 0
             optForest.node[node]['fracOptContaining'] = 1.0
+            ##Added by sgosline: store terminal type to improve visualization
+            try:
+                ttype=inputObj.terminalTypes[node]
+            except KeyError:
+                ttype=''
+            optForest.node[node]['TerminalType'] =ttype
 
         #Create networkx graph storing the "augmented forest", 
         #the result of msgsteiner plus all interactome edges between nodes present in the forest
@@ -695,7 +708,7 @@ class PCSFOutput(object):
             #The first lines of these files contains the variable names
             noa = open('%s/%s_nodeattributes.tsv'%(outputpath, outputlabel), 'wb')
             noa.write('Protein\tPrize\tBetweennessCentrality\t'\
-                      'FractionOfOptimalForestsContaining\n')
+                      'FractionOfOptimalForestsContaining\tTerminalType\n')
             eda = open('%s/%s_edgeattributes.tsv'%(outputpath, outputlabel), 'wb')
             eda.write('Edge\tWeight\tFractionOfOptimalForestsContaining\n')
         
@@ -733,7 +746,7 @@ class PCSFOutput(object):
             #iterate through nodes to record node attributes
             for (node,data) in self.augForest.nodes(data=True):
                 noa.write(node+'\t'+str(data['prize'])+'\t'+str(data['betweenness'])+'\t'+
-                          str(data['fracOptContaining'])+'\n')
+                          str(data['fracOptContaining'])+'\t'+data['TerminalType']+'\n')
         
             #Record dummy edges
             for (node1,node2) in self.dumForest.edges():
