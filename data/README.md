@@ -15,7 +15,7 @@ all vertebrate motifs from TRANSFAC, reduced to clusters by affinity propagation
 and a second set of motifs that were filtered by information content (total bits >8.0). This file is used
 by default for Garnet: `vertebrates_clustered_ic8_motifs.tamo`
 
-###gXrefFiles
+###kgXrefFiles
 These files map UCSC identifiers to human and mouse gene names.
   - `ucsc_hg19_kgXref.txt`: Annotations for hg19
   - `ucsc_mm9_kgXref.txt`: Annotations for mm9

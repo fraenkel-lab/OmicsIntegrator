@@ -780,7 +780,9 @@ class PCSFOutput(object):
             prizeNoa.write('Prize (class=Double)\n')
             fracNoa = open('%s/%s_fracOptContaining.noa'%(outputpath, outputlabel), 'wb')
             fracNoa.write('FractionOptimalForestsContaining (class=Double)\n')
-        
+            ttypeNoa =  open('%s/%s_termTypes.noa'%(outputpath, outputlabel), 'wb')
+            ttypeNoa.write('TerminalType\n')
+            
             #Write edge attribute files in a format supported by Cytoscape
             weightEda = open('%s/%s_weights.eda'%(outputpath, outputlabel), 'wb')
             weightEda.write('Weight (class=Double)\n')
@@ -823,7 +825,7 @@ class PCSFOutput(object):
                 bcNoa.write(node+' = '+str(data['betweenness'])+'\n')
                 prizeNoa.write(node+' = '+str(data['prize'])+'\n')
                 fracNoa.write(node+ ' = '+str(data['fracOptContaining'])+'\n')
-                
+                ttypeNoa.write(node+ ' = '+str(data['TerminalType'])+'\n')
             #Record dummy edges
             for (node1,node2) in self.dumForest.edges():
                 if node1 == 'DUMMY':
@@ -889,11 +891,13 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
             if node1 not in mergedObj.optForest.nodes():
                 mergedObj.optForest.add_node(node1, 
                                              prize=PCSFOutputObj2.optForest.node[node1]['prize'],
+                                             TerminalType=PCSFOutputObj2.optForest.node[node1]['TerminalType'],
                                              fracOptContaining=numRuns2/(n1+n2))
             if node2 not in mergedObj.optForest.nodes():
                 mergedObj.optForest.add_node(node2, 
-                                             prize=PCSFOutputObj2.optForest.node[node2]['prize'],
-                                             fracOptContaining=numRuns2/(n1+n2))
+                                            prize=PCSFOutputObj2.optForest.node[node2]['prize'],
+                                            TerminalType=PCSFOutputObj2.optForest.node[node2]['TerminalType'],
+                                            fracOptContaining=numRuns2/(n1+n2))
             mergedObj.optForest.add_edge(node1, node2, weight=data['weight'], 
                                          fracOptContaining=numRuns2/(n1+n2))
     #Add dumForest edges to mergedObj that appear in outputObj2 but not in outputObj1
