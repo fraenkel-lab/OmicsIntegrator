@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##This script collects all the files needed to build a wheel of garnet-forest:
-##populate these data strucutres, then type 'setup.py bdist_wheel'
+##This script collects all the files needed to build a distribution of OmicsIntegrator:
+##populate these data strucutres, then type 'setup.py sdist'
 
 try:
     from setuptools import setup
@@ -35,10 +35,10 @@ setup(
     author_email='sgosline@mit.edu',
     url='https://github.com/sgosline/OmicsIntegrator',
     packages=[],
-#        'garnet-forest',
+#        'OmicsIntegrator',
  #   ],
-    package_dir={},#'garnet-forest':
-                 #'garnet-forest'},
+    package_dir={},#'OmicsIntegrator':
+                 #'OmicsIntegrator'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",
