@@ -55,10 +55,15 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
     inds=cgo[0].strip().split('\t')
     for row in cgo[1:]:
         arr=row.strip().split('\t')
-        gene=arr[inds.index('geneSymbol')]
+        if 'geneSymbol' in inds: #this is true if we used an xref file
+            gene=arr[inds.index('geneSymbol')]        
+            mid=arr[2]+':'+str(int(arr[3])+(int(arr[4])-int(arr[3]))/2)
+        else: #otherwise we just gene id
+            gene=arr[inds.index('knownGeneID')]
+            mid=arr[1]+':'+str(int(arr[2])+(int(arr[3])-int(arr[2]))/2)
+
         
-        mid=arr[2]+':'+str(int(arr[3])+(int(arr[4])-int(arr[3]))/2)
-       # print mid
+        #print gene,mid
         dist=arr[inds.index('dist from feature')]
         sv=arr[inds.index('score')]
         if sv!='':
