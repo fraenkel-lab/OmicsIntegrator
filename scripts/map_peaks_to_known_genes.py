@@ -7,10 +7,10 @@ from csv import DictReader, DictWriter
 
 
 
-usage = '%prog [options] <knownGene file> <knownGene xRef file> <peaks file>'
+usage = '%prog [options] <knownGene file> <peaks file>'
 description = """
 Map the peaks in <peaks file> to genes in <knownGene file>.  <knownGene file> is\
-format is as specified in http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/knownGene.sql.\
+format is as specified in http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/knownGene.sql, though BED format is also accepted.\
 <peaks file> format is as produced by MACS or BED.  If *auto* is chosen (default) file extension \
 is examined for *.xls* for default MACS format or *.bed* for BED format.  
 """
@@ -26,7 +26,7 @@ parser.add_option('--peaks-format',dest='peaks_fmt',default='auto',type='choice'
 
 parser.add_option('--intergenic',dest='intergenic',action='store_true',help='write intergenic peaks to the gene file as well with None as gene ID')
 parser.add_option('--utilpath',default='../src/',dest='addpath',help='Destination of chipsequtil library')
-#parser.add_option('--symbol-xref',dest='symbol_xref',default=None,help='use the kgXref table file supplied to find a gene symbol, output as second column')
+parser.add_option('--symbol-xref',dest='symbol_xref',default=None,help='Provide kgXref table file supplied to find a gene symbol and add as second column of output')
 
 # TODO - options
 #parser.add_option('--use-cds',dest='use_cds',action='store_true',help='use cdsStart and cdsEnd fields instead of txStart and txEnd to do mapping')
@@ -35,9 +35,18 @@ parser.add_option('--utilpath',default='../src/',dest='addpath',help='Destinatio
 #parser.add_option('--stats-format',dest='stats_format',type='choice',choices=['human','python'],help='format of summary stats output [default: %default]')
 
 def parse_gene_ref(ref_gene) :
-    reader = KnownGeneFile(ref_gene)
+    ##some gene ids are not in txt form, provide ability to parse BED
+    path,ext=os.path.splitext(ref_gene)
+    if ext.lower()=='.bed':
+        reader=BEDFile(ref_gene)
+    else:
+        reader = KnownGeneFile(ref_gene)
     gene_ref = dd(list)
     for ref_dict in reader :
+        if ext.lower()=='.bed':
+            ref_dict['txStart']=ref_dict['chromStart']
+            ref_dict['txEnd']=ref_dict['chromEnd']
+            
         gene_ref[ref_dict['chrom']].append(ref_dict)
 
     return gene_ref
@@ -59,12 +68,12 @@ if __name__ == '__main__' :
  #  from chipsequtil.util import MultiLineHelpFormatter
 
 
-    if len(args) < 3 :
-        parser.error('Must provide three filename arguments')
+    if len(args) < 2 :
+        parser.error('Must provide two filename arguments')
 
     gene_ref = parse_gene_ref(args[0])
-    xref_fn = args[1]
-    peaks_fn = args[2]
+#    xref_fn = args[1]
+    peaks_fn = args[1]
     if opts.peaks_fmt == 'auto' :
         path,ext = os.path.splitext(peaks_fn)
         if ext.lower() == '.xls' :
@@ -104,7 +113,9 @@ if __name__ == '__main__' :
 
     # see if the user wants gene symbols too
     # TODO - actually make this an option, or make it required
-    opts.symbol_xref = xref_fn
+
+    xref_fn=opts.symbol_xref
+        
     if opts.symbol_xref :
         kgXref_fieldnames = ['kgID','mRNA','spID','spDisplayID','geneSymbol','refseq','protAcc','description']
         try:

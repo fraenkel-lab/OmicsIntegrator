@@ -58,7 +58,7 @@ def mapGenesToRegions(genefile,xreffile,bedfile,window='2000',outdir=None):
     #os.path.splitext(os.path.basename(bedfile))[0]+'eventsWithin'+window+'bp_of_'+os.path.splitext(os.path.basename(genefile))[0]+'.xls'
 
     ##Step 1: map chromatin regions to nearby genes/transcription start sites
-    cmd='python '+os.path.join(progdir,'map_peaks_to_known_genes.py')+' --peaks-format=BED --utilpath='+os.path.join(progdir,'../src/')+' --upstream-window='+window+' --downstream-window='+window+' --tss --map-output='+outfile+' '+genefile+' '+xreffile+' '+bedfile
+    cmd='python '+os.path.join(progdir,'map_peaks_to_known_genes.py')+' --peaks-format=BED --utilpath='+os.path.join(progdir,'../src/')+' --upstream-window='+window+' --downstream-window='+window+' --tss --map-output='+outfile+' --symbol-xref='+xreffile+' '+genefile+' '+bedfile
     if not os.path.exists(outfile):
         print '\n-----------------------------Gene-region mapping output------------------------------------------\n'
         print 'Running command:\n'+cmd+'\n'
@@ -162,7 +162,7 @@ def main():
     #    parser.add_option('--useUniprot',dest='useUniprot',action='store_true',help='Set this flag to use Uniprot identifies',default=False)
     parser.add_option('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT:%default',default=None)
     parser.add_option('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT:%default',default=srcdir)
-
+    parser.add_option('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show know evidence of encoding proteins.',action='store_true',default=False)
 
 
     opts,args=parser.parse_args()
@@ -190,7 +190,7 @@ def main():
     #This variable tracks the results of all the commands. If it becomes non zero, stop.
     keeprunning=0
     
-    if genefile is not None and bedfile is not None and xref is not None:
+    if genefile is not None and bedfile is not None:
         keeprunning,outfile=mapGenesToRegions(genefile,xref,bedfile,window,opts.outdir)
     else:
         print 'Missing genefile,bedfile or xref file, cannot map genes to regions.'
@@ -240,6 +240,8 @@ def main():
 
     if do_network is not None and do_network!='' and do_network!='False':
         cmd='python '+os.path.join(progdir,'zipTgms.py')+' --pkl='+binding_matrix+' --genome '+genome+' --as-network --tf-delimiter='+delim
+        if opts.allgenes:
+            cmd=cmd+' --allGenes'
         print cmd
         os.system(cmd)
 

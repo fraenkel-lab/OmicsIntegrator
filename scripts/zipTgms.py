@@ -52,6 +52,7 @@ def get_transcriptional_network_from_tgm(tgm,addmrna=True,score_thresh=0.1,expre
                 continue
             gscore=zip(gs,score)##zip each gene name to score vector
             for g,sc in gscore:
+               # print tf,g,sc
                 if len(expressed_genes)>0 and g not in expressed_genes:
                     continue
                 if sc<=score_thresh:
@@ -85,6 +86,7 @@ if __name__=='__main__':
     parser.add_option('--as-network',dest='as_network',action='store_true',default=False,help='Set this flag to save network as networkx object instead of matrix/names')
     parser.add_option('--genome',dest='genome',default='hg19',help='Genome build for species-specific filtering')
     parser.add_option('--minscore',dest='minscore',default='0.3',type='string',help='If building networkX object, will remove edges with weight less than this value')
+    parser.add_option('--allGenes',dest='use_all_genes',default=False,action='store_true',help='Set this argument to avoid filtering target genes (use for ncRNAs)')
     opts,args=parser.parse_args()
 
     if len(args)!=3:
@@ -133,7 +135,10 @@ if __name__=='__main__':
             spec=row['Organism']
             ps=set([row['Entry'],row['Entry name']])|set(row['Gene names'].split())
             prots['mammal']|=set(ps)
-            if spec=='Mus musculus (Mouse)':
+            if opts.use_all_genes:
+                prots['mouse']=set()
+                prots['human']=set()
+            elif spec=='Mus musculus (Mouse)':
                 prots['mouse']|=set(ps)
             else:
                 prots['human']|=set(ps)

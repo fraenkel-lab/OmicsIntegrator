@@ -44,15 +44,15 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source garnet=forest setup.py test
+	coverage run --source OmicsIntegrator setup.py test
 	coverage report -m
 	coverage html
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/garnet=forest.rst
+	rm -f docs/OmicsIntegrator.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ garnet=forest
+	sphinx-apidoc -o docs/ OmicsIntegrator
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html
@@ -63,7 +63,6 @@ release: clean
 
 dist: clean
 	python setup.py sdist
-	python setup.py bdist_wheel
 	ls -l dist
 
 install: clean

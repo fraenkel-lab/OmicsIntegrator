@@ -10,7 +10,7 @@ import networkx as nx
 from operator import itemgetter
 
 class PCSFInput(object):
-    def __init__(self, prizeFile, edgeFile, confFile, dummyMode, knockout, garnet, gb, shuffle):
+    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,gb,shuffle,musquared):
         """
         Converts input information into dictionaries to be used in the message passing algorithm
         
@@ -38,9 +38,7 @@ class PCSFInput(object):
                 self.dummyNodeNeighbors - a list of all proteins that the dummy node should have
                                           edges to.
                 self.interactomeNodes - a list of all nodes in the interactome
-                self.w, self.b, self.D, self.n, self.mu, self.g, self.r - floats (D is an int) 
-                                                                          indicating the 
-                                                                          parameters.
+                self.w, self.b, self.D, self.n, self.mu, self.g, self.r, self.threads - parameters
         """
         if prizeFile==None or edgeFile==None:
             sys.exit('PCSF.py failed. Needs -p and -e arguments. Run PCSF.py -h for help.')
@@ -74,6 +72,8 @@ class PCSFInput(object):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
+            if line.startswith('threads = '):
+                threads = line.strip().split()[1]
         c.close()
         try:
             mu = float(mu)
@@ -92,6 +92,10 @@ class PCSFInput(object):
         except:
             g = 1e-3 # Default g
         try:
+            threads = int(threads)
+        except:
+            threads = 1
+        try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f.' \
                   %(float(w), float(b), int(D), mu, g)
         except:
@@ -105,6 +109,7 @@ class PCSFInput(object):
         self.n = n
         self.r = r
         self.g = g
+        self.threads = threads
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -250,15 +255,16 @@ class PCSFInput(object):
         self.interactomeNodes = interactomeNodes
         if above1>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99. These '\
-            'were changed to 0.99...\n'
+            'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99.'\
+	    ' These were changed to 0.99...\n'
         if below_0>0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
-            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. These'\
-            'were changed to 0...\n'
+            'interaction. '+str(below_0)+' of your edge weights include a number below than 0. '\
+	    'These were changed to 0...\n'
 
         print 'Reading text file containing prizes: %s...\n' %prizeFile
         origPrizes = {}
+        terminalTypes = {}
         try:
             p = open(prizeFile, 'rb')
         except IOError:
@@ -278,6 +284,7 @@ class PCSFInput(object):
                 count += 1
             else:
                 origPrizes[words[0]] = float(words[1])
+                terminalTypes[words[0]] = 'Proteomic'
             line = p.readline()
         p.close()
         
@@ -298,6 +305,10 @@ class PCSFInput(object):
                     prize = float(words[1])*gb
                     #If the TF already has a prize value this will replace it.
                     origPrizes[words[0]] = prize
+                    if words[0] in terminalTypes.keys():
+                        terminalTypes[words[0]]+='_TF'
+                    else:
+                        terminalTypes[words[0]]='TF'
                 line = g.readline()
             g.close()
         
@@ -308,8 +319,8 @@ class PCSFInput(object):
                      'interactome! Make sure the protein names you are using are the same in your '\
                      'prize file as in your edge file. Aborting program.\n' %percentexcluded)
         elif percentexcluded > 0:
-            print 'WARNING!! %.3f percent of your prize nodes are not included in the interactome! '\
-                  'These nodes were ignored. Make sure the protein names you are using are the '\
+            print 'WARNING!! %.3f percent of your prize nodes are not included in the interactome!'\
+                  ' These nodes were ignored. Make sure the protein names you are using are the '\
                   'same in your prize file as in your edge file. Continuing program...\n' \
                   %percentexcluded
             warnings += 1
@@ -383,18 +394,20 @@ class PCSFInput(object):
                 warnings += 1
             print 'Dummy node has been added, with edges to all %i nodes in the interactome '\
                   'listed in your dummyMode file.\n' %int(countNeighbors)
-        
+
+        self.terminalTypes = terminalTypes
         self.origPrizes = origPrizes
         self.dirEdges = dirEdges
         self.undirEdges = undirEdges
         self.dummyNodeNeighbors = dummyNodeNeighbors
-        
-        self.assignNegPrizes()
+        self.musquared = musquared
+ 
+        self.assignNegPrizes(musquared)
         
         if warnings > 0:
             print 'THERE WERE %s WARNING(S) WHEN READING THE INPUT FILES.\n' %warnings
         
-    def assignNegPrizes(self):     
+    def assignNegPrizes(self, musquared):     
         """        
         Add negative prizes to penalize nodes with high degrees
         """
@@ -402,12 +415,14 @@ class PCSFInput(object):
         totalPrizes = {}
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
+            if musquared: print 'Negative prizes will be proportional to node degree^2.'
             DegreeDict = self.degreeNegPrize()
             for prot in self.origPrizes:
                 try:
                     degree = DegreeDict[prot]
-                    prize = (self.b * float(self.origPrizes[prot])) + self.score(degree,self.mu)
-                    negprize = self.score(degree,self.mu)
+                    prize = (self.b * float(self.origPrizes[prot])) +\
+                            self.score(degree,self.mu,musquared)
+                    negprize = self.score(degree,self.mu,musquared)
                     totalPrizes[prot] = prize
                     negPrizes[prot] = negprize
                 except KeyError:
@@ -416,7 +431,7 @@ class PCSFInput(object):
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
                     if degree > 0:
-                        negprize = self.score(degree,self.mu)
+                        negprize = self.score(degree,self.mu,musquared)
                         if negprize != 0:
                             negPrizes[protein] = negprize
                             totalPrizes[protein] = negprize
@@ -445,7 +460,7 @@ class PCSFInput(object):
             degreeDict[node] = G.degree(node)
         return degreeDict
 
-    def score(self, value, mu):
+    def score(self, value, mu, musquared):
         """
         Helper function for use in assigning negative prizes (when mu != 0)
         """
@@ -453,6 +468,8 @@ class PCSFInput(object):
             return 0
         else:
             newvalue = -float(value) #-math.log(float(value),2)
+            if musquared: 
+                newvalue = newvalue*newvalue
             newvalue = newvalue * mu
             return newvalue
 
@@ -515,7 +532,7 @@ class PCSFInput(object):
         #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
-                       str(self.r), '-g', str(self.g)] #'-j', str(threads)
+                       str(self.r), '-g', str(self.g), '-j', str(self.threads)]
         #Only supply seed to msgsteiner if one is given by user
         #Use the seed to set the -s (instance seed, which controls random noise on edge weights)
         #and the -z (message seed, which affects the message passing) msgsteiner seeds
@@ -618,6 +635,12 @@ class PCSFOutput(object):
             except KeyError:
                 optForest.node[node]['prize'] = 0
             optForest.node[node]['fracOptContaining'] = 1.0
+            ##Added by sgosline: store terminal type to improve visualization
+            try:
+                ttype=inputObj.terminalTypes[node]
+            except KeyError:
+                ttype=''
+            optForest.node[node]['TerminalType'] =ttype
 
         #Create networkx graph storing the "augmented forest", 
         #the result of msgsteiner plus all interactome edges between nodes present in the forest
@@ -690,7 +713,7 @@ class PCSFOutput(object):
             #The first lines of these files contains the variable names
             noa = open('%s/%s_nodeattributes.tsv'%(outputpath, outputlabel), 'wb')
             noa.write('Protein\tPrize\tBetweennessCentrality\t'\
-                      'FractionOfOptimalForestsContaining\n')
+                      'FractionOfOptimalForestsContaining\tTerminalType\n')
             eda = open('%s/%s_edgeattributes.tsv'%(outputpath, outputlabel), 'wb')
             eda.write('Edge\tWeight\tFractionOfOptimalForestsContaining\n')
         
@@ -728,7 +751,7 @@ class PCSFOutput(object):
             #iterate through nodes to record node attributes
             for (node,data) in self.augForest.nodes(data=True):
                 noa.write(node+'\t'+str(data['prize'])+'\t'+str(data['betweenness'])+'\t'+
-                          str(data['fracOptContaining'])+'\n')
+                          str(data['fracOptContaining'])+'\t'+data['TerminalType']+'\n')
         
             #Record dummy edges
             for (node1,node2) in self.dumForest.edges():
@@ -757,7 +780,9 @@ class PCSFOutput(object):
             prizeNoa.write('Prize (class=Double)\n')
             fracNoa = open('%s/%s_fracOptContaining.noa'%(outputpath, outputlabel), 'wb')
             fracNoa.write('FractionOptimalForestsContaining (class=Double)\n')
-        
+            ttypeNoa =  open('%s/%s_termTypes.noa'%(outputpath, outputlabel), 'wb')
+            ttypeNoa.write('TerminalType\n')
+            
             #Write edge attribute files in a format supported by Cytoscape
             weightEda = open('%s/%s_weights.eda'%(outputpath, outputlabel), 'wb')
             weightEda.write('Weight (class=Double)\n')
@@ -800,7 +825,7 @@ class PCSFOutput(object):
                 bcNoa.write(node+' = '+str(data['betweenness'])+'\n')
                 prizeNoa.write(node+' = '+str(data['prize'])+'\n')
                 fracNoa.write(node+ ' = '+str(data['fracOptContaining'])+'\n')
-                
+                ttypeNoa.write(node+ ' = '+str(data['TerminalType'])+'\n')
             #Record dummy edges
             for (node1,node2) in self.dumForest.edges():
                 if node1 == 'DUMMY':
@@ -866,11 +891,13 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
             if node1 not in mergedObj.optForest.nodes():
                 mergedObj.optForest.add_node(node1, 
                                              prize=PCSFOutputObj2.optForest.node[node1]['prize'],
+                                             TerminalType=PCSFOutputObj2.optForest.node[node1]['TerminalType'],
                                              fracOptContaining=numRuns2/(n1+n2))
             if node2 not in mergedObj.optForest.nodes():
                 mergedObj.optForest.add_node(node2, 
-                                             prize=PCSFOutputObj2.optForest.node[node2]['prize'],
-                                             fracOptContaining=numRuns2/(n1+n2))
+                                            prize=PCSFOutputObj2.optForest.node[node2]['prize'],
+                                            TerminalType=PCSFOutputObj2.optForest.node[node2]['TerminalType'],
+                                            fracOptContaining=numRuns2/(n1+n2))
             mergedObj.optForest.add_edge(node1, node2, weight=data['weight'], 
                                          fracOptContaining=numRuns2/(n1+n2))
     #Add dumForest edges to mergedObj that appear in outputObj2 but not in outputObj1
@@ -932,7 +959,7 @@ def shufflePrizes(PCSFInputObj, seed):
     newPCSFInputObj = copy.deepcopy(PCSFInputObj)
     #Change the prizes to be the new dictionary
     newPCSFInputObj.origPrizes = shuffledValues
-    newPCSFInputObj.assignNegPrizes()
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
     return newPCSFInputObj
     
 def noiseEdges(PCSFInputObj, seed):
@@ -973,7 +1000,7 @@ def randomTerminals(PCSFInputObj, seed):
     """
     #Only can do this if the interactome is big enough
     if len(PCSFInputObj.undirEdges) + len(PCSFInputObj.dirEdges) < 50:
-        sys.exit("Cannot use --randomNodes with such a small interactome.")
+        sys.exit("Cannot use --randomTerminals with such a small interactome.")
     #Make a new PCSFInput object that contains all the same values as the original but empty prizes
     newPCSFInputObj = copy.deepcopy(PCSFInputObj)
     newPCSFInputObj.origPrizes = {'':0}
@@ -995,35 +1022,48 @@ def randomTerminals(PCSFInputObj, seed):
         for node in PCSFInputObj.dirEdges:
             degrees.append((node,len(PCSFInputObj.dirEdges[node])))
     degrees.sort(key=itemgetter(1))
-    #Bin the degree dist into 5 so that each bin has equal number of nodes (last might have more)
-    numPerBin = len(degrees)/5
-    thresholds = [0,numPerBin,2*numPerBin,3*numPerBin,4*numPerBin,len(degrees)]
-    #Find which bin each terminal belongs to, and choose a diff node in that bin to hold its prize
-    cs = [0,0,0,0,0]
+    #Find index of current terminal in degrees list
     for k,terminal in enumerate(PCSFInputObj.origPrizes):
         for i,value in enumerate(degrees):
             if terminal == value[0]:
                 index = i
                 break
-        for i in range(1,6):
-            if index < thresholds[i]:
-                nodesInBin = degrees[thresholds[i-1]:thresholds[i]]
-		break
-        cs[i-1] += 1
-        #Make sure new terminal chosen is not already chosen on a previous round
+        #Choose an index offset to select new terminal (distance from orig terminal in degrees list)
+        #Make sure newly chosen terminal is not already chosen on a previous round
         newTerm = ''
-        while newTerm in newPCSFInputObj.origPrizes:
+        i = -1
+        while newTerm in newPCSFInputObj.origPrizes and i<=10000:
+            i+=1
             if seed != None:
-                random.seed(seed+k+1)
-            newTerm = random.choice(nodesInBin)[0]
+                random.seed(seed+k+i)
+            offset = int(random.gauss(0.0,100.0))
+            newIndex = i + offset
+            try:
+                newNode = degrees[newIndex]
+            except KeyError:
+                #if offset points outside list, try loop again
+                continue
+            #To make truly random, need to choose randomly between all nodes with the same degree
+            #Otherwise, ordering of dict iteration matters
+            nodesWithSameDegree = []
+            for node in degrees[newIndex:]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            for node in degrees[newIndex-1::-1]:
+                if node[1] == newNode[1]:
+                    nodesWithSameDegree.append(node)
+                else:
+                    break
+            newTerm = random.choice(nodesWithSameDegree)[0]
+        #if we've tried 10000 times, throw error to avoid infinite loop
+        if newTerm in newPCSFInputObj.origPrizes:
+            sys.exit('There was a problem with --randomTerminals. Aborting.')
+        #Assign prize to newly chosen terminal
         newPCSFInputObj.origPrizes[newTerm] = PCSFInputObj.origPrizes[terminal]
     del newPCSFInputObj.origPrizes['']
-    #Print out the degree thresholds for each bin and the # of terminals in each bin
-    print 'Out of about %i nodes in each bin in the interactome,'%numPerBin
-    for c in range(0,5):
-        print '%i prizes were assigned to nodes with degrees between %i and %i'%(cs[c],
-               degrees[thresholds[c]][1], degrees[thresholds[c+1]-1][1])
-    newPCSFInputObj.assignNegPrizes()
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
 
@@ -1189,6 +1229,9 @@ def main():
     parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the '\
         'GARNET module scores. Use to make the GARNET scores on the same scale as the provided '\
         'scores. Default = 0.01.', default='0.01')
+    parser.add_option("--musquared", action='store_true', dest='musquared', help='Flag to add '\
+        'negative prizes to hub nodes proportional to their degree^2, rather than degree. Must '\
+        'specify a positive mu in conf file.', default=False)
     parser.add_option("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
         'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
     parser.add_option("--outpath", dest = 'outputpath', help='Path to the directory which will '\
@@ -1236,7 +1279,8 @@ def main():
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
-                         options.knockout, options.garnet, options.gb, options.shuffleNum)
+                         options.knockout, options.garnet, options.gb, options.shuffleNum,
+                         options.musquared)
     (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
