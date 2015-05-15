@@ -51,7 +51,7 @@ if __name__=='__main__':
         forest_out='tgfb_forest_output'
         if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
             os.system('mkdir '+forest_out)
-        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --dummyMode=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath,dummy_nodes)
+        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath)
         if opts.rand:
             fcmd=fcmd+' --noisyEdges=50'
         print '\n'+fcmd
