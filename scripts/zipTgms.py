@@ -121,10 +121,8 @@ if __name__=='__main__':
 
         fname=opts.pkl
 
-
     ##create dictionary object for regression
     resfile={'matrix':mat,'tfs':tfs,'genes':geneids,'delim':tf_delimiter}
-
 
     if opts.as_network: ##now create network DiGraph if desired
         #first filter by expressed proteins
