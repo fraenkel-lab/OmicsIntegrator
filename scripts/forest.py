@@ -10,7 +10,7 @@ import networkx as nx
 from operator import itemgetter
 
 class PCSFInput(object):
-    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,gb,shuffle,musquared):
+    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared):
         """
         Converts input information into dictionaries to be used in the message passing algorithm
         
@@ -82,7 +82,7 @@ class PCSFInput(object):
         try:
             n = float(n)
         except:
-            n = None
+            n = 0.01 # Default n
         try:
             r = float(r)
         except:
@@ -96,8 +96,8 @@ class PCSFInput(object):
         except:
             threads = 1
         try:
-            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f.' \
-                  %(float(w), float(b), int(D), mu, g)
+            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
+                  %(float(w), float(b), int(D), mu, g, n)
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
                      'include appropriate values for w, b, D, and optionally mu, n, or g.')
@@ -302,7 +302,7 @@ class PCSFInput(object):
                 if words[0] not in undirEdges and words[0] not in dirEdges:
                     count += 1
                 else:
-                    prize = float(words[1])*gb
+                    prize = float(words[1])*self.n
                     #If the TF already has a prize value this will replace it.
                     origPrizes[words[0]] = prize
                     if words[0] in terminalTypes.keys():
@@ -1226,9 +1226,6 @@ def main():
     parser.add_option("--garnet", dest='garnet', help='Path to the text file containing '\
         'the output of the GARNET module regression. Should be a tab delimited file with 2 '\
         'columns: "TranscriptionFactorName\tScore". Default = "None"', default=None)
-    parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the '\
-        'GARNET module scores. Use to make the GARNET scores on the same scale as the provided '\
-        'scores. Default = 0.01.', default='0.01')
     parser.add_option("--musquared", action='store_true', dest='musquared', help='Flag to add '\
         'negative prizes to hub nodes proportional to their degree^2, rather than degree. Must '\
         'specify a positive mu in conf file.', default=False)
@@ -1279,7 +1276,7 @@ def main():
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
-                         options.knockout, options.garnet, options.gb, options.shuffleNum,
+                         options.knockout, options.garnet, options.shuffleNum,
                          options.musquared)
     (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
