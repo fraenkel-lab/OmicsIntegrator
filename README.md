@@ -211,12 +211,12 @@ Options:
                         GARNET module regression. Should be a tab delimited
                         file with 2 columns: "TranscriptionFactorName
                         Score". Default = "None"
-  --garnetBeta=GB       Parameter for scaling the GARNET module scores. Use to
-                        make the GARNET scores on the same scale as the
-                        provided scores. Default = 0.01.
   --musquared           Flag to add negative prizes to hub nodes proportional
                         to their degree^2, rather than degree. Must specify a
                         positive mu in conf file.
+  --excludeTerms        Flag to exclude terminals when calculating negative
+                        prizes. Use if you want terminals to keep exact
+                        assigned prize regardless of degree.
   --msgpath=MSGPATH     Full path to the message passing code. Default =
                         "<current directory>/msgsteiner9"
   --outpath=OUTPUTPATH  Path to the directory which will hold the output
@@ -260,7 +260,7 @@ Options:
   -s SEED, --seed=SEED  An integer seed for the pseudo-random number
                         generators. If you want to reproduce exact results,
                         supply the same seed. Default = None.
- 
+
 ```
                         
 ### forest input files and parameters
@@ -272,13 +272,14 @@ terminal nodes and prize values in a text file. The file
 `example/a549/Tgfb_phos.txt` is an example of what this file should look like.
 You should record your interactome and edge weights in a text file with 3 or 4
 columns. The file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is a
-human interactome example. 
+human interactome example (this interactome comes from iRefIndex v13,scored and
+ formatted for our code). 
 
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
 the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu` and  `g` may also be
+must be set in this file. Optional parameters `mu`, `n`, and  `g` may also be
 included. For explanations of the parameters, see publication. 
 
 
