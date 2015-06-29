@@ -9,6 +9,21 @@ import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
 
+
+
+def score(self, value, mu, musquared):
+	"""
+	Helper function for use in assigning negative prizes (when mu != 0)
+	"""
+	if value == 1:
+		return 0
+	else:
+		newvalue = -float(value) #-math.log(float(value),2)
+		if musquared: 
+			newvalue = -(newvalue * newvalue)
+		newvalue = newvalue * mu
+		return newvalue
+			
 class PCSFInput(object):
     def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,gb,shuffle,musquared):
         """
@@ -421,8 +436,8 @@ class PCSFInput(object):
                 try:
                     degree = DegreeDict[prot]
                     prize = (self.b * float(self.origPrizes[prot])) +\
-                            self.score(degree,self.mu,musquared)
-                    negprize = self.score(degree,self.mu,musquared)
+                            score(degree,self.mu,musquared)
+                    negprize = score(degree,self.mu,musquared)
                     totalPrizes[prot] = prize
                     negPrizes[prot] = negprize
                 except KeyError:
@@ -430,8 +445,8 @@ class PCSFInput(object):
             for protein in DegreeDict:
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
+                    negprize = self.score(degree,self.mu,musquared)
                     if degree > 0:
-                        negprize = self.score(degree,self.mu,musquared)
                         if negprize != 0:
                             negPrizes[protein] = negprize
                             totalPrizes[protein] = negprize
@@ -459,19 +474,6 @@ class PCSFInput(object):
         for node in G.nodes():
             degreeDict[node] = G.degree(node)
         return degreeDict
-
-    def score(self, value, mu, musquared):
-        """
-        Helper function for use in assigning negative prizes (when mu != 0)
-        """
-        if value == 1:
-            return 0
-        else:
-            newvalue = -float(value) #-math.log(float(value),2)
-            if musquared: 
-                newvalue = newvalue*newvalue
-            newvalue = newvalue * mu
-            return newvalue
 
     def getInputInfo(self):
         """
