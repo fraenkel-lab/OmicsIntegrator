@@ -416,6 +416,7 @@ class PCSFInput(object):
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
             if musquared: print 'Negative prizes will be proportional to node degree^2.'
+            if excludeT: print 'Terminals will retain their assigned prizes, no negative prizes.'
             DegreeDict = self.degreeNegPrize()
             for prot in self.origPrizes:
                 if not excludeT:
@@ -428,10 +429,9 @@ class PCSFInput(object):
                         negPrizes[prot] = negprize
                     except KeyError:
                         continue
-            else:
-                totalPrizes[prot] = self.b * float(self.origPrizes[prot])
-                negPrizes[prot] = 0
-                print 'Terminals will retain their assigned prizes, no negative prizes.'
+                else:
+                    totalPrizes[prot] = self.b * float(self.origPrizes[prot])
+                    negPrizes[prot] = 0
             for protein in DegreeDict:
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
