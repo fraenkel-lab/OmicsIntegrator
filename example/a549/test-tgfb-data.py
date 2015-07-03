@@ -6,7 +6,7 @@ A test script to run through the sample dataset provided with garnet-forest
 __author__='Sara JG Gosline'
 __email__='sgosline@mit.edu'
 
-import os
+import os, sys
 from optparse import OptionParser
 
 if __name__=='__main__':
@@ -37,8 +37,7 @@ if __name__=='__main__':
         print gcmd
         res=os.system(gcmd)
         if res!=0:
-            print 'Error executing garnet, will not execute forest'
-            system.exit()
+            sys.exit('Error executing garnet, will not execute forest')
         garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.xls'
         garnet_beta='0.1'
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath)
@@ -50,7 +49,7 @@ if __name__=='__main__':
     else:
         forest_out='tgfb_forest_output'
         if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
-            os.system('mkdir '+forest_out)
+            os.makedirs(forest_out)
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,forest_out,msgsteinerpath)
         if opts.rand:
             fcmd=fcmd+' --noisyEdges=50'
