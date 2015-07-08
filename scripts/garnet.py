@@ -58,7 +58,7 @@ def mapGenesToRegions(genefile,xreffile,bedfile,window='2000',outdir=None):
     #os.path.splitext(os.path.basename(bedfile))[0]+'eventsWithin'+window+'bp_of_'+os.path.splitext(os.path.basename(genefile))[0]+'.xls'
 
     ##Step 1: map chromatin regions to nearby genes/transcription start sites
-    cmd='python '+os.path.join(progdir,'map_peaks_to_known_genes.py')+' --peaks-format=BED --utilpath='+os.path.join(progdir,'../src/')+' --upstream-window='+window+' --downstream-window='+window+' --tss --map-output='+outfile+' --symbol-xref='+xreffile+' '+genefile+' '+bedfile
+    cmd='python '+os.path.join(progdir,'map_peaks_to_known_genes.py')+' --peaks-format=auto --utilpath='+os.path.join(progdir,'../src/')+' --upstream-window='+window+' --downstream-window='+window+' --tss --map-output='+outfile+' --symbol-xref='+xreffile+' '+genefile+' '+bedfile
     if not os.path.exists(outfile):
         print '\n-----------------------------Gene-region mapping output------------------------------------------\n'
         print 'Running command:\n'+cmd+'\n'
@@ -130,7 +130,7 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
     Fourth step of GARNET is to perform regression with pickled matrix file and expression data
     '''
 #    print '\nRunning regression using '+expressionfile+' expression data and '+pickle_file+' binding data'
-    outdir=re.sub('.pkl','regression_results.xls',pickle_file)
+    outdir=re.sub('.pkl','regression_results.tsv',pickle_file)
 #    outdir=os.path.basename(expressionfile).split('.')[-2]+'_'+re.sub('.pkl','',os.path.basename(pickle_file))+'.xls'
     print outdir
     if not os.path.exists(outdir):

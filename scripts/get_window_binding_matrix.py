@@ -57,15 +57,27 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
         arr=row.strip().split('\t')
         if 'geneSymbol' in inds: #this is true if we used an xref file
             gene=arr[inds.index('geneSymbol')]        
-            mid=arr[2]+':'+str(int(arr[3])+(int(arr[4])-int(arr[3]))/2)
+#            mid=arr[2]+':'+str(int(arr[3])+(int(arr[4])-int(arr[3]))/2)
         else: #otherwise we just gene id
             gene=arr[inds.index('knownGeneID')]
-            mid=arr[1]+':'+str(int(arr[2])+(int(arr[3])-int(arr[2]))/2)
+        #position mapping is different
+        if 'Position' in inds: #this is for GPS
+            mid='chr'+arr[inds.index('Position')]
+        elif 'chrom' in inds: #this is for BED
+            mid=arr[inds.index('chrom')]+':'+str(int(arr[inds.index('chromStart')])+(int(arr[inds.index('chromEnd')])-int(arr[inds.index('chromStart')]))/2)
+        else: #this is for MACS
+            mid=arr[inds.index('chr')]+':'+str(int(arr[inds.index('start')])+(int(arr[inds.index('end')])-int(arr[inds.index('start')]))/2)
 
         
         #print gene,mid
         dist=arr[inds.index('dist from feature')]
-        sv=arr[inds.index('score')]
+        try:
+            sv=arr[inds.index('score')]
+        except:
+            try:
+                sv=arr[inds.index('IPvsCTR')]
+            except:
+                fc=0.0
         if sv!='':
             fc=float(sv)
         else:

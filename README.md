@@ -97,7 +97,9 @@ qvalThresh =
 #### Chromatin Data
 
 Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are
-included in the examples/ directory. To use your own epigenetic data, upload the
+included in the examples/ directory. `bedfile` can also be output from MACS 
+(with a `.xls` extension) or GPS/GEM (with a `.txt` extension). 
+To use your own epigenetic data, convert to BED and upload the
 BED-file to http://usegalaxy.org and select `Fetch Genomic DNA` from the left
 menu to click on `Extract Genomic DNA`. This will produce a FASTA-formatted file
 that will work with garnet.  We have provided gene (`genefile`) and xref
@@ -155,14 +157,14 @@ garnet script.
 
 - **events_to_genes_with_motifs.pkl**: A Pickle-compressed Python File 
   containing a dictionary data structure that contains files 4-6 (under the keys
-  ‘tgm’,’tfs’, and ‘genes’) respectively as well as a ‘delim’ key that describes
+  `tgm`,`tfs`, and `genes`) respectively as well as a `delim` key that describes
   what delimiter was used to separate out TFs in the case where there are
   multiple TFs in the same family.
 
-- **events_to_genes_with_motifsregression_results.xls**: Results from linear
+- **events_to_genes_with_motifsregression_results.tsv**: Results from linear
   regression.
 
-- **events_to_genes_with_motifsregression_results_FOREST_INPUT.xls**: Only those 
+- **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those 
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to Forest. 
 

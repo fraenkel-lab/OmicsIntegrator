@@ -40,7 +40,7 @@ def writeMotNames(m,fname):
             elif 'Species' not in i and 'included' not in i and i.strip() not in gns:
                 gns.append(i.strip())
             #print gns
-        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g])
+        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g])
         genenames.append('.'.join(gns))
     open(fname,'w').writelines([g+'\n' for g in genenames])
     print fname
@@ -195,7 +195,13 @@ def reduce_fasta(fsa_dict,gene_file):
     closest_gene=DictReader(open(gene_file,'rU'),delimiter='\t')
     count=0
     for g in closest_gene:
-        mapped_mids.add(g['chrom']+':'+str(int(g['chromStart'])+(int(g['chromEnd'])-int(g['chromStart']))/2))
+        try: #this will work for bed
+            mapped_mids.add(g['chrom']+':'+str(int(g['chromStart'])+(int(g['chromEnd'])-int(g['chromStart']))/2))
+        except:
+            try: #this will work for MACS
+                mapped_mids.add(g['chr']+':'+str(int(g['start'])+(int(g['end'])-int(g['start']))/2))
+            except:#this will work for GPS
+                mapped_mids.add('chr'+g['Position'])
         count=count+1
     ##then reduce fasta dict to only get those genes that map
     new_seq={}    

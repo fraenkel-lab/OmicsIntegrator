@@ -236,6 +236,7 @@ class BEDOutput :
         pass
 
 
+    
 class BEDFile(SmartFileIter) :
     '''An iterable object containing the records in the supplied BED formatted 
     file.  Fieldnames are::
