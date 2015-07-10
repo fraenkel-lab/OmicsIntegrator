@@ -236,6 +236,7 @@ class BEDOutput :
         pass
 
 
+    
 class BEDFile(SmartFileIter) :
     '''An iterable object containing the records in the supplied BED formatted 
     file.  Fieldnames are::
@@ -584,7 +585,7 @@ class MACSFile(SmartFileIter) :
                     if m is not None :
                         self.file_info[m.group(1).strip()] = parse_number(m.group(2).strip())
                 self.meta_data.append(l)
-            elif l.startswith('\t'.join(MACSOutput.FIELD_NAMES[:5])) :
+            elif l.startswith('\t'.join(MACSOutput.FIELD_NAMES[:4])) :
                 self.meta_data.append(l)
                 done_with_header = True
 

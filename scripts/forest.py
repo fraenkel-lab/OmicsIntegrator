@@ -11,7 +11,7 @@ from operator import itemgetter
 
 
 
-def score(self, value, mu, musquared):
+def score(value, mu, musquared):
 	"""
 	Helper function for use in assigning negative prizes (when mu != 0)
 	"""
@@ -25,7 +25,7 @@ def score(self, value, mu, musquared):
 		return newvalue
 			
 class PCSFInput(object):
-    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,gb,shuffle,musquared):
+    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared,excludeT):
         """
         Converts input information into dictionaries to be used in the message passing algorithm
         
@@ -97,7 +97,7 @@ class PCSFInput(object):
         try:
             n = float(n)
         except:
-            n = None
+            n = 0.01 # Default n
         try:
             r = float(r)
         except:
@@ -111,8 +111,8 @@ class PCSFInput(object):
         except:
             threads = 1
         try:
-            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f.' \
-                  %(float(w), float(b), int(D), mu, g)
+            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
+                  %(float(w), float(b), int(D), mu, g, n)
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
                      'include appropriate values for w, b, D, and optionally mu, n, or g.')
@@ -317,7 +317,7 @@ class PCSFInput(object):
                 if words[0] not in undirEdges and words[0] not in dirEdges:
                     count += 1
                 else:
-                    prize = float(words[1])*gb
+                    prize = float(words[1])*self.n
                     #If the TF already has a prize value this will replace it.
                     origPrizes[words[0]] = prize
                     if words[0] in terminalTypes.keys():
@@ -417,12 +417,12 @@ class PCSFInput(object):
         self.dummyNodeNeighbors = dummyNodeNeighbors
         self.musquared = musquared
  
-        self.assignNegPrizes(musquared)
+        self.assignNegPrizes(musquared, excludeT)
         
         if warnings > 0:
             print 'THERE WERE %s WARNING(S) WHEN READING THE INPUT FILES.\n' %warnings
         
-    def assignNegPrizes(self, musquared):     
+    def assignNegPrizes(self, musquared, excludeT):     
         """        
         Add negative prizes to penalize nodes with high degrees
         """
@@ -431,22 +431,27 @@ class PCSFInput(object):
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
             if musquared: print 'Negative prizes will be proportional to node degree^2.'
+            if excludeT: print 'Terminals will retain their assigned prizes, no negative prizes.'
             DegreeDict = self.degreeNegPrize()
             for prot in self.origPrizes:
-                try:
-                    degree = DegreeDict[prot]
-                    prize = (self.b * float(self.origPrizes[prot])) +\
-                            score(degree,self.mu,musquared)
-                    negprize = score(degree,self.mu,musquared)
-                    totalPrizes[prot] = prize
-                    negPrizes[prot] = negprize
-                except KeyError:
-                    continue
+                if not excludeT:
+                    try:
+                        degree = DegreeDict[prot]
+                        prize = (self.b * float(self.origPrizes[prot])) +\
+                                 score(degree,self.mu,musquared)
+                        negprize = score(degree,self.mu,musquared)
+                        totalPrizes[prot] = prize
+                        negPrizes[prot] = negprize
+                    except KeyError:
+                        continue
+                else:
+                    totalPrizes[prot] = self.b * float(self.origPrizes[prot])
+                    negPrizes[prot] = 0
             for protein in DegreeDict:
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
-                    negprize = self.score(degree,self.mu,musquared)
                     if degree > 0:
+                        negprize = score(degree,self.mu,musquared)
                         if negprize != 0:
                             negPrizes[protein] = negprize
                             totalPrizes[protein] = negprize
@@ -940,7 +945,7 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
     return mergedObj
    
     
-def shufflePrizes(PCSFInputObj, seed):
+def shufflePrizes(PCSFInputObj, seed, excludeT):
     """
     Shuffles the prizes over all the nodes in PCSFInputObj.
     
@@ -961,10 +966,10 @@ def shufflePrizes(PCSFInputObj, seed):
     newPCSFInputObj = copy.deepcopy(PCSFInputObj)
     #Change the prizes to be the new dictionary
     newPCSFInputObj.origPrizes = shuffledValues
-    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared,excludeT)
     return newPCSFInputObj
     
-def noiseEdges(PCSFInputObj, seed):
+def noiseEdges(PCSFInputObj, seed, excludeT):
     """
     Adds gaussian noise to all edges in the PCSFInputObj prize dictionary.
     
@@ -991,7 +996,7 @@ def noiseEdges(PCSFInputObj, seed):
     print 'Noise has been added to all edge values.\n'
     return newPCSFInputObj
     
-def randomTerminals(PCSFInputObj, seed):
+def randomTerminals(PCSFInputObj, seed, excludeT):
     """
     Selects nodes with a similar degree distribution to the original terminals, and assigns the
     prizes to them.
@@ -1065,11 +1070,12 @@ def randomTerminals(PCSFInputObj, seed):
         #Assign prize to newly chosen terminal
         newPCSFInputObj.origPrizes[newTerm] = PCSFInputObj.origPrizes[terminal]
     del newPCSFInputObj.origPrizes['']
-    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared)
+    newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared,excludeT)
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
 
-def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel):
+def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel,
+                                excludeT):
     """
     Changes the prizes/edges in the PCSFInput object according to func and runs the msgsteiner 
     algorithm, then merges the results together with the given PCSFOutput object. Writes 
@@ -1095,10 +1101,10 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
         #Change prize/edge values and run msgsteiner with new values
         #NOTE: there will be an info file written for every run
         if seed != None:
-            changedInputObj = func(inputObj, seed+i)
+            changedInputObj = func(inputObj, seed+i, excludeT)
             (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed+i)
         else:
-            changedInputObj = func(inputObj, seed)
+            changedInputObj = func(inputObj, seed, excludeT)
             (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed)
         #By creating the output object with inputObj instead of changedInputObj, 
         #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes, 
@@ -1228,12 +1234,12 @@ def main():
     parser.add_option("--garnet", dest='garnet', help='Path to the text file containing '\
         'the output of the GARNET module regression. Should be a tab delimited file with 2 '\
         'columns: "TranscriptionFactorName\tScore". Default = "None"', default=None)
-    parser.add_option("--garnetBeta", dest='gb', type=float, help='Parameter for scaling the '\
-        'GARNET module scores. Use to make the GARNET scores on the same scale as the provided '\
-        'scores. Default = 0.01.', default='0.01')
     parser.add_option("--musquared", action='store_true', dest='musquared', help='Flag to add '\
         'negative prizes to hub nodes proportional to their degree^2, rather than degree. Must '\
         'specify a positive mu in conf file.', default=False)
+    parser.add_option("--excludeTerms", action='store_true', dest='excludeT', help='Flag to '\
+        'exclude terminals when calculating negative prizes. Use if you want terminals to keep '\
+        'exact assigned prize regardless of degree.', default=False)
     parser.add_option("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
         'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
     parser.add_option("--outpath", dest = 'outputpath', help='Path to the directory which will '\
@@ -1281,8 +1287,8 @@ def main():
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
-                         options.knockout, options.garnet, options.gb, options.shuffleNum,
-                         options.musquared)
+                         options.knockout, options.garnet, options.shuffleNum,
+                         options.musquared, options.excludeT)
     (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
@@ -1291,21 +1297,24 @@ def main():
     if options.noiseNum > 0:
         merged = changeValuesAndMergeResults(noiseEdges, options.seed, inputObj, 
                                              options.noiseNum, options.msgpath, 
-                                             options.outputpath, options.outputlabel)
+                                             options.outputpath, options.outputlabel,
+                                             options.excludeT)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_noisy', options.cyto30)
     
     #Get merged results of shuffling prizes
     if options.shuffleNum > 0:
         merged = changeValuesAndMergeResults(shufflePrizes, options.seed, inputObj, 
                                              options.shuffleNum, options.msgpath, 
-                                             options.outputpath, options.outputlabel)
+                                             options.outputpath, options.outputlabel,
+                                             options.excludeT)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_shuffled', options.cyto30)
 
     #Get merged results of randomizing terminals
     if options.termNum > 0:
         merged = changeValuesAndMergeResults(randomTerminals,options.seed, inputObj,
                                              options.termNum, options.msgpath,
-                                             options.outputpath, options.outputlabel)
+                                             options.outputpath, options.outputlabel,
+                                             options.excludeT)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_randomTerminals', 
                               options.cyto30)
     
