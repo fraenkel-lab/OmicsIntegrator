@@ -105,7 +105,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 Tips
 ----
+Testing requires installation of PyTest (from command line: pip install -U pytest).
 
-To run a subset of tests::
+To run a subset of tests, navigate to the .\tests directory, and run::
 
-    $ python -m unittest tests.test_OmicsIntegrator
+    $ py.test -q test_name_of_test.py
