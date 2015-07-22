@@ -116,6 +116,7 @@ if __name__ == '__main__' :
     fieldnames += ["peak loc","dist from feature","gene pos","map type","map subtype"]
     output_fields = ['knownGeneID']+fieldnames
 
+
     # see if the user wants gene symbols too
     # TODO - actually make this an option, or make it required
 
@@ -152,7 +153,7 @@ if __name__ == '__main__' :
 
         # MACS output gives us summit
         if opts.peaks_fmt == 'MACS' :
-            peak_loc = peak[start_field]+peak['summit']
+            peak_loc = int(peak[start_field])+int(peak['summit'])
         elif opts.peaks_fmt == 'GPS' :
             #get position and also add in a real window
             ch,mid,tot = peak['Position']##reader already parses this into tuple
@@ -162,7 +163,7 @@ if __name__ == '__main__' :
             peak[start_field] = peak_loc-125
             peak[end_field] = peak_loc+125
         else : # peak assumed to be in the middle of the reported peak range
-            peak_loc = (peak[start_field]+peak[end_field])/2
+            peak_loc = (int(peak[start_field])+int(peak[end_field]))/2
 
         chrom_genes = gene_ref[peak[chr_field]]
         

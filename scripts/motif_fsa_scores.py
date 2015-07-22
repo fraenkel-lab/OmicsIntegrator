@@ -231,6 +231,7 @@ def reduce_fasta(fsa_dict,gene_file):
             seq_mid=chr+':'+mid
         #print seq_mid
         if seq_mid in mapped_mids:
+           # print seq_mid,mapped_mids[0]
             new_seq[k]=fsa_dict[k]
     
     print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(count)+' event-gene matches out of '+str(len(fsa_dict))+' events'
