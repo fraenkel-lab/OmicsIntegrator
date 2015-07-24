@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_garnet-forest
+test_OmicsIntegrator
 ----------------------------------
 
-Tests for `garnet-forest`: what tests should we run to ensure that future updates
+Tests for `OmicsIntegrator`: what tests should we run to ensure that future updates
 to garnet and forest do not break its usability.  Current use cases:
 
 1-garnet.py: no expression data
@@ -16,10 +16,10 @@ to garnet and forest do not break its usability.  Current use cases:
 
 import unittest
 
-from garnet-forest import garnet-forest
+from OmicsIntegrator import garnet-forest
 
 
-class TestGarnet-forest(unittest.TestCase):
+class TestOmicsIntegrator(unittest.TestCase):
 
     def setUp(self):
         pass
