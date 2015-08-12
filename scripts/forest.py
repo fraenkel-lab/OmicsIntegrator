@@ -15,14 +15,17 @@ def score(value, mu, musquared):
 	"""
 	Helper function for use in assigning negative prizes (when mu != 0)
 	"""
-	if value == 1:
-		return 0
+	if mu <= 0:
+		raise ValueError('User variable mu is not greater than zero.')
 	else:
-		newvalue = -float(value) #-math.log(float(value),2)
-		if musquared: 
-			newvalue = -(newvalue * newvalue)
-		newvalue = newvalue * mu
-		return newvalue
+		if value == 1:
+			return 0
+		else:
+			newvalue = -float(value) #-math.log(float(value),2)
+			if musquared: 
+				newvalue = -(newvalue * newvalue)
+			newvalue = newvalue * mu
+			return newvalue
 			
 class PCSFInput(object):
     def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared,excludeT):
@@ -428,6 +431,7 @@ class PCSFInput(object):
         """
         negPrizes = {}
         totalPrizes = {}
+		
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
             if musquared: print 'Negative prizes will be proportional to node degree^2.'
