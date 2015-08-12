@@ -1,7 +1,6 @@
 # Test functions for forest.score()
 # score(value, mu, musquared)
 
-import unittest
 import sys
 sys.path.insert(0, '../scripts')
 

@@ -17,9 +17,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = ["networkx","scipy","numpy","matplotlib"]
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+test_requirements = ['pytest']
 
 import os
 
@@ -41,13 +39,13 @@ setup(
                  #'OmicsIntegrator'},
     include_package_data=True,
     install_requires=requirements,
-    license="BSD",
+    license="MIT",
     zip_safe=True,
     keywords='OmicsIntegrator',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Biologists with basic programming skills',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
