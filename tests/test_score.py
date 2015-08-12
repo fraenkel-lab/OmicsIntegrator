@@ -31,3 +31,4 @@ class TestScore:
 		
 	def test_musquaredTrue(self):
 		assert score(2, 2, 1) == -8
+  
