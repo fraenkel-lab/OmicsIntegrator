@@ -3,6 +3,8 @@
 ##This script collects all the files needed to build a distribution of OmicsIntegrator:
 ##populate these data strucutres, then type 'setup.py sdist'
 
+import sys, os
+
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -14,9 +16,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = ["networkx","scipy","numpy","matplotlib"]
-test_requirements = ['pytest']
 
-import os, sys
+test_requirements = ['pytest']
 
 gifdir='data/matrix_files/gifs/'
 gif_files=[gifdir+g for g in os.listdir(gifdir)]
@@ -29,7 +30,7 @@ class PyTest(TestCommand):
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
-        self.pytest_args = []
+        self.pytest_args = ['tests']
 
     def finalize_options(self):
         TestCommand.finalize_options(self)

@@ -1,8 +1,12 @@
 # Test functions for forest.score()
 # score(value, mu, musquared)
 
-import sys
-sys.path.insert(0, '../scripts')
+import os, sys
+
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+if not path in sys.path:
+    sys.path.insert(1, path)
+del path
 
 from forest import score
 
