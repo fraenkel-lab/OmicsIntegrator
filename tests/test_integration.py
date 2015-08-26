@@ -26,27 +26,27 @@ def test_integration(msgsteiner):
     msgsteinerpath=msgsteiner ##WE NEED MSGSTEINER9 INSTALLED!!!
     
     if msgsteinerpath == None:
-	print 'Please provide path to msgsteiner using --msgsteiner option'
-	assert 0
+        print 'Please provide path to msgsteiner using --msgsteiner option'
+        assert 0
 	
     forest_out='temp'
     seed = 2
     if not os.path.exists(forest_out): ##FOREST WILL NOT CREATE DIRECTORY FOR YOU, GARNET WILL
 	
-	script_dir = os.path.dirname(__file_)
-	abs_file_path = os.path.join(script_dir, forest_out)
+        script_dir = os.path.dirname(__file__)
+        abs_file_path = os.path.join(script_dir, forest_out)
         os.makedirs(abs_file_path)
 
         fcmd='python ../scripts/forest.py --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s'%(phos_weights, edge_file, forest_conf, forest_out, msgsteinerpath, seed)
         subprocess.call(shlex.split(fcmd), shell=False)	
 
-	results = filecmp.cmpfiles('temp', 'tgfb_forest_output', ['result_augmentedForest.sif', 'result_dummyForest.sif', 'result_edgeattributes.tsv',
+        results = filecmp.cmpfiles('temp', 'tgfb_forest_output', ['result_augmentedForest.sif', 'result_dummyForest.sif', 'result_edgeattributes.tsv',
 							  'result_info.txt', 'result_nodeattributes.tsv', 'result_optimalForest.sif'], shallow=False)
-	shutil.rmtree('temp')
-	if len(results[0]) != 6:
-		assert 0
-	else:
-		assert 1
+        shutil.rmtree('temp')
+        if len(results[0]) != 6:
+            assert 0
+        else:
+            assert 1
 
 
 
