@@ -14,9 +14,6 @@ def test_integration(msgsteiner):
 
     phos_weights = os.path.join(os.path.dirname(__file__), '..', 'example', 'a549', 'Tgfb_phos.txt')
 
-    #garnet requires a configuration file that has all the data
-    forest_out = os.path.join(os.path.dirname(__file__), '..', 'example', 'a549', 'tgfb_garnet_forest_output')
-
     #provided config file
     garnet_conf = os.path.join(os.path.dirname(__file__), '..', 'example', 'a549', 'tgfb_garnet.cfg')
 
@@ -44,11 +41,11 @@ def test_integration(msgsteiner):
     forest_path = os.path.join(script_dir, '..', 'scripts', 'forest.py')
 
     fcmd='python %s --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s'%(
-        forest_path, phos_weights, edge_file, forest_conf, forest_out, msgsteinerpath, seed)
+        forest_path, phos_weights, edge_file, forest_conf, abs_file_path, msgsteinerpath, seed)
     subprocess.call(shlex.split(fcmd), shell=False)	
 
     curr_dir = os.path.dirname(__file__)
-    results = filecmp.cmpfiles(os.path.join(curr_dir, 'temp'), os.path.join(curr_dir, 'integration_test_standard'), 
+    results = filecmp.cmpfiles(abs_file_path, os.path.join(curr_dir, 'integration_test_standard'), 
 		['result_augmentedForest.sif', 'result_dummyForest.sif', 'result_edgeattributes.tsv',
 		'result_info.txt', 'result_nodeattributes.tsv', 'result_optimalForest.sif'], 
 		shallow=False)
