@@ -4,11 +4,29 @@
 #2013-2014
 
 
-import os, sys, optparse, random, copy
+import sys, optparse, random, copy
 import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
 
+
+
+def score(value, mu, musquared):
+    """
+    Helper function for use in assigning negative prizes (when mu > 0)
+    """
+    if mu <= 0:
+        raise ValueError('User variable mu is not greater than zero.')
+
+    if value == 1:
+        return 0
+    else:
+        newvalue = -float(value) #-math.log(float(value),2)
+        if musquared: 
+            newvalue = -(newvalue * newvalue)
+        newvalue = newvalue * mu
+        return newvalue
+            
 class PCSFInput(object):
     def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared,excludeT):
         """
@@ -77,6 +95,12 @@ class PCSFInput(object):
         c.close()
         try:
             mu = float(mu)
+            #Warning for negative mu
+            if mu < 0:
+                print 'WARNING: mu = %f but must be a non-negative value. '\
+                      'Changing mu to 0.\n' % mu
+                warnings += 1
+                mu = 0.0
         except:
             mu = 0.0
         try:
@@ -253,14 +277,14 @@ class PCSFInput(object):
             line = e.readline()
         e.close()
         self.interactomeNodes = interactomeNodes
-        if above1>0:
+        if above1 > 0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
             'interaction. '+str(above1)+' of your edge weights include a number greater than 0.99.'\
-	    ' These were changed to 0.99...\n'
-        if below_0>0:
+            ' These were changed to 0.99...\n'
+        if below_0 > 0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
             'interaction. '+str(below_0)+' of your edge weights include a number below than 0. '\
-	    'These were changed to 0...\n'
+            'These were changed to 0...\n'
 
         print 'Reading text file containing prizes: %s...\n' %prizeFile
         origPrizes = {}
@@ -409,10 +433,14 @@ class PCSFInput(object):
         
     def assignNegPrizes(self, musquared, excludeT):     
         """        
-        Add negative prizes to penalize nodes with high degrees
+        Scales original prizes by beta and adds negative prizes to penalize
+        nodes with high degrees if mu > 0.
+        Scales original prizes by beta if mu = 0.
+        mu < 0 will cause score function to throw a ValueError.
         """
         negPrizes = {}
         totalPrizes = {}
+        
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
             if musquared: print 'Negative prizes will be proportional to node degree^2.'
@@ -423,8 +451,8 @@ class PCSFInput(object):
                     try:
                         degree = DegreeDict[prot]
                         prize = (self.b * float(self.origPrizes[prot])) +\
-                                 self.score(degree,self.mu,musquared)
-                        negprize = self.score(degree,self.mu,musquared)
+                                 score(degree,self.mu,musquared)
+                        negprize = score(degree,self.mu,musquared)
                         totalPrizes[prot] = prize
                         negPrizes[prot] = negprize
                     except KeyError:
@@ -436,7 +464,7 @@ class PCSFInput(object):
                 if protein not in self.origPrizes:
                     degree = DegreeDict[protein]
                     if degree > 0:
-                        negprize = self.score(degree,self.mu,musquared)
+                        negprize = score(degree,self.mu,musquared)
                         if negprize != 0:
                             negPrizes[protein] = negprize
                             totalPrizes[protein] = negprize
@@ -464,19 +492,6 @@ class PCSFInput(object):
         for node in G.nodes():
             degreeDict[node] = G.degree(node)
         return degreeDict
-
-    def score(self, value, mu, musquared):
-        """
-        Helper function for use in assigning negative prizes (when mu != 0)
-        """
-        if value == 1:
-            return 0
-        else:
-            newvalue = -float(value) #-math.log(float(value),2)
-            if musquared: 
-                newvalue = newvalue*newvalue
-            newvalue = newvalue * mu
-            return newvalue
 
     def getInputInfo(self):
         """
