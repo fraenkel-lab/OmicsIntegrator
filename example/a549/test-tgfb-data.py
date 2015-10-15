@@ -38,9 +38,10 @@ if __name__=='__main__':
         res=os.system(gcmd)
         if res!=0:
             sys.exit('Error executing garnet, will not execute forest')
-        garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.xls'
-        garnet_beta='0.1'
-        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --garnetBeta=%s --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,garnet_output,garnet_beta,forest_out,msgsteinerpath)
+        garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv'
+        #garnet_beta='0.1'
+        #when did the garnet_beta get removed? 
+        fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,garnet_output,forest_out,msgsteinerpath)
         if opts.rand:
             fcmd=fcmd+' --noisyEdges=20'
         print '\n'+fcmd

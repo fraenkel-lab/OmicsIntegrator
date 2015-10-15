@@ -100,7 +100,8 @@ if __name__ == '__main__' :
 
     #peaks_reader = DictReader(open(args[1]),fieldnames=fieldnames,delimiter='\t')
     peaks_reader = peaks_reader_cls(peaks_fn)
-
+    totalrows=len(list(peaks_reader))
+    peaks_reader = peaks_reader_cls(peaks_fn)#reopen to iterate
     # default output format:
     if opts.peak_output :
         try:
@@ -140,8 +141,20 @@ if __name__ == '__main__' :
     peaks_writer.writerow(dict([(k,k) for k in output_fields]))
     unique_genes = set()
     map_stats = dd(int)
-    for peak in peaks_reader :
+    rowcount=0
 
+
+    interval=1000
+    if totalrows > 100000:
+        interval = 10000
+
+    print '\nParsing %d rows from peak file and will provide update every %d rows'%(totalrows,interval)
+    
+    for peak in peaks_reader :
+        rowcount+=1
+        if rowcount % interval ==0:
+            print 'Processing row %d out of %d...'%(rowcount,totalrows)
+                                                
         # if this is a comment or header line get skip it
         #removed 'startswith' call so that this can work with tuples
         if peak[fieldnames[0]][0]=='#' or \
