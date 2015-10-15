@@ -1057,10 +1057,12 @@ def randomTerminals(PCSFInputObj, seed, excludeT):
             if seed != None:
                 random.seed(seed+k+i)
             offset = int(random.gauss(0.0,100.0))
-            newIndex = i + offset
+            newIndex = index + offset
+            #if offset causes the index to wraparound to the other side of the list, try again
+            if newIndex<0: continue
             try:
                 newNode = degrees[newIndex]
-            except KeyError:
+            except IndexError:
                 #if offset points outside list, try loop again
                 continue
             #To make truly random, need to choose randomly between all nodes with the same degree
