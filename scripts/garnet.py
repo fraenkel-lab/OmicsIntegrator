@@ -71,10 +71,17 @@ def mapGenesToRegions(genefile,xreffile,bedfile,window='2000',outdir=None):
     return res,outfile
 
 
-def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
+def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file='',gene_list=''):
     '''
     Second step of GARNET scans chromatin regions provided in galaxy-produced FASTA for motif matrix 
     affinity scores
+    Arguments:
+    tamo_file: TAMO-formatted list of motifs to scan
+    fastafile: FASTA-formatted file to scan
+    numthreads: number of threads to run, this process can take a while
+    genome: which genome build to use
+    closest_gene_file: output of map_peaks_to_known_genes.py so that only those fasta sequences that map to genes will be scanned.
+    gene_list: list of genes to focus on (i.e. diff ex genes), based on closest_gene_file mappings.
     '''
     if closest_gene_file=='':
         motif_binding_out=re.sub('.fasta','_with_motifs.txt',fastafile)
@@ -87,7 +94,7 @@ def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
         return 0,motif_binding_out
 
 
-    scan_cmd='python '+os.path.join(progdir,'motif_fsa_scores.py')+' --motif='+tamo_file+' --genome='+genome+' --outfile='+motif_binding_out+' --genefile='+closest_gene_file+' --scale=10 --threads='+numthreads+' '+fastafile
+    scan_cmd='python '+os.path.join(progdir,'motif_fsa_scores.py')+' --motif='+tamo_file+' --genome='+genome+' --outfile='+motif_binding_out+' --genemappingfile='+closest_gene_file+' --scale=10 --threads='+numthreads+' '+fastafile+' --genelist='+gene_list
     print '\n-----------------------------Motif Scanning Output------------------------------------------\n'
     print 'Running command:\n'+scan_cmd+'\n'
     print 'Scanning regions from '+fastafile+' using matrices from '+tamo_file+' and putting results in '+motif_binding_out
@@ -208,10 +215,13 @@ def main():
 
     fastafile=config.get('chromatinData','fastafile')
 
+    expr=config.get('expressionData','expressionFile')
+
+    
     ##step 2
     if tamofile is not None and tamofile!='' and genome is not None and fastafile is not None and fastafile!='':
         if os.path.exists(tamofile) and os.path.exists(fastafile):
-            keeprunning,binding_out=motifScanning(tamofile,fastafile,numthreads,genome,outfile)
+            keeprunning,binding_out=motifScanning(tamofile,fastafile,numthreads,genome,outfile,expr)
         else:
             binding_out=''
             print 'Missing FASTA file or TAMO file - check your config file and try again.'
@@ -244,10 +254,10 @@ def main():
             cmd=cmd+' --allGenes'
         print cmd
         os.system(cmd)
-
-    expr=config.get('expressionData','expressionFile')
+        
     pvt=config.get('expressionData','pvalThresh')
     qvt=config.get('expressionData','qvalThresh')
+
     ##step 4: regression
     if expr is not None and expr!='':
         #print binding_matrix,expr

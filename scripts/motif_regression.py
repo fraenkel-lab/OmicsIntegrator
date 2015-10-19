@@ -67,13 +67,18 @@ def map_data(Xdata,Xnames,Ydata,Ynames):
     # Intersect two gene lists
     Xinds = []
     Yinds = []
+    #yn = []
     for i,Xgene in enumerate(Xnames):
         for j,Ygene in enumerate(Ynames):
             if Xgene == Ygene:
                 Xinds.append(i)
                 Yinds.append(j)
+    #            yn.append(Ygene)
     Xdata_out = Xdata[Xinds,:]
     Ydata_out = Ydata[Yinds]
+    print 'Found %d genes that have binding data and are in the expression output'%(len(Yinds))
+    #yn.sort()
+    #print ','.join(yn[0:20])
     return Xdata_out,Ydata_out
 
 def perform_regression(X,Y,motif_ids,norm):

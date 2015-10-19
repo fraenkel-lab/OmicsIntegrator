@@ -3,6 +3,7 @@
 
 import os, sys
 
+# Create the path to forest relative to the test_score.py path
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 if not path in sys.path:
     sys.path.insert(1, path)
@@ -35,4 +36,3 @@ class TestScore:
 		
 	def test_musquaredTrue(self):
 		assert score(2, 2, 1) == -8
-  

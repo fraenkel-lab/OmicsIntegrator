@@ -4,7 +4,7 @@
 #2013-2014
 
 
-import sys, optparse, random, copy
+import sys, optparse, random, copy, os
 import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
@@ -162,7 +162,7 @@ class PCSFInput(object):
         below_0,above1=0,0
         #Add each edge in edgeFile to undirEdges or dirEdges dictionary, appropriately
         while line:
-            words = line.strip().split('\t')
+            words = line.strip().split()
             if len(words) != col:
                 print 'current line:', line
                 sys.exit('ERROR: All lines in the file containing the interactome edges should '\
@@ -1078,10 +1078,12 @@ def randomTerminals(PCSFInputObj, seed, excludeT):
             if seed != None:
                 random.seed(seed+k+i)
             offset = int(random.gauss(0.0,100.0))
-            newIndex = i + offset
+            newIndex = index + offset
+            #if offset causes the index to wraparound to the other side of the list, try again
+            if newIndex<0: continue
             try:
                 newNode = degrees[newIndex]
-            except KeyError:
+            except IndexError:
                 #if offset points outside list, try loop again
                 continue
             #To make truly random, need to choose randomly between all nodes with the same degree
@@ -1318,6 +1320,10 @@ def main():
         if options.cv == None:
             sys.exit('You cannot use the --cv-reps option without also specifying a k parameter '\
                      'for k-fold cross validation.')
+
+    #Check if outputpath exists
+    if not os.path.isdir(options.outputpath):
+        sys.exit('Outpath %s is not a directory'%options.outputpath)
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
