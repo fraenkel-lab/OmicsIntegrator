@@ -11,8 +11,8 @@ usage = '%prog [options] <knownGene file> <peaks file>'
 description = """
 Map the peaks in <peaks file> to genes in <knownGene file>.  <knownGene file> is\
 format is as specified in http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/knownGene.sql, though BED format is also accepted.\
-<peaks file> format is as produced by MACS or BED.  If *auto* is chosen (default) file extension \
-is examined for *.xls* for default MACS format or *.bed* for BED format.  
+<peaks file> format is as produced by GPS, MACS or BED.  If *auto* is chosen (default) file extension \
+is examined for *.xls* for default MACS format, *.txt* for GPS, or *.bed* for BED format.  
 """
 epilog = ''
 parser = OptionParser(usage=usage,description=description,epilog=epilog)#,formatter=MultiLineHelpFormatter())
@@ -64,7 +64,7 @@ if __name__ == '__main__' :
     sys.path.insert(0,opts.addpath)
     sys.path.insert(0,opts.addpath+'chipsequtil')
     
-    from chipsequtil import MACSFile, BEDFile, KnownGeneFile, parse_number
+    from chipsequtil import MACSFile, BEDFile, KnownGeneFile, parse_number, GPSFile
  #  from chipsequtil.util import MultiLineHelpFormatter
 
 
@@ -80,6 +80,8 @@ if __name__ == '__main__' :
             opts.peaks_fmt = 'MACS'
         elif ext.lower() == '.bed' :
             opts.peaks_fmt = 'BED'
+        elif ext.lower() == '.txt' :
+            opts.peaks_fmt = 'GPS'
         else :
             parser.error('Could not guess peaks file format by extension (%s), aborting'%ext)
 
@@ -89,13 +91,17 @@ if __name__ == '__main__' :
     elif opts.peaks_fmt == 'BED' :
         peaks_reader_cls = BEDFile
         chr_field, start_field, end_field = 'chrom', 'chromStart', 'chromEnd'
+    elif opts.peaks_fmt == 'GPS' :
+        peaks_reader_cls = GPSFile
+        chr_field, start_field, end_field = 'chr', 'start', 'end'
     else :
         # should never happen
         fieldnames = []
 
     #peaks_reader = DictReader(open(args[1]),fieldnames=fieldnames,delimiter='\t')
     peaks_reader = peaks_reader_cls(peaks_fn)
-
+    totalrows=len(list(peaks_reader))
+    peaks_reader = peaks_reader_cls(peaks_fn)#reopen to iterate
     # default output format:
     if opts.peak_output :
         try:
@@ -110,6 +116,7 @@ if __name__ == '__main__' :
     fieldnames = peaks_reader.FIELD_NAMES
     fieldnames += ["peak loc","dist from feature","gene pos","map type","map subtype"]
     output_fields = ['knownGeneID']+fieldnames
+
 
     # see if the user wants gene symbols too
     # TODO - actually make this an option, or make it required
@@ -134,24 +141,45 @@ if __name__ == '__main__' :
     peaks_writer.writerow(dict([(k,k) for k in output_fields]))
     unique_genes = set()
     map_stats = dd(int)
-    for peak in peaks_reader :
+    rowcount=0
 
+
+    interval=1000
+    if totalrows > 100000:
+        interval = 10000
+
+    print '\nParsing %d rows from peak file and will provide update every %d rows'%(totalrows,interval)
+    
+    for peak in peaks_reader :
+        rowcount+=1
+        if rowcount % interval ==0:
+            print 'Processing row %d out of %d...'%(rowcount,totalrows)
+                                                
         # if this is a comment or header line get skip it
-        if peak[fieldnames[0]].startswith('#') or \
+        #removed 'startswith' call so that this can work with tuples
+        if peak[fieldnames[0]][0]=='#' or \
            peak[fieldnames[0]] == fieldnames[0] or \
-           peak[fieldnames[0]].startswith('track') : continue
+           peak[fieldnames[0]][0]=='track' : continue
 
         # coerce values to numeric if possible
         for k,v in peak.items() : peak[k] = parse_number(v)
 
         # MACS output gives us summit
         if opts.peaks_fmt == 'MACS' :
-            peak_loc = peak[start_field]+peak['summit']
+            peak_loc = int(peak[start_field])+int(peak['summit'])
+        elif opts.peaks_fmt == 'GPS' :
+            #get position and also add in a real window
+            ch,mid,tot = peak['Position']##reader already parses this into tuple
+            peak['Position']=tot
+            peak_loc = int(mid)
+            peak[chr_field] = ch
+            peak[start_field] = peak_loc-125
+            peak[end_field] = peak_loc+125
         else : # peak assumed to be in the middle of the reported peak range
-            peak_loc = (peak[start_field]+peak[end_field])/2
+            peak_loc = (int(peak[start_field])+int(peak[end_field]))/2
 
         chrom_genes = gene_ref[peak[chr_field]]
-
+        
         if len(chrom_genes) == 0 :
             sys.stderr.write('WARNING: peak chromosome %s not found in gene reference, skipping: %s\n'%(peak[chr_field],peak))
             continue

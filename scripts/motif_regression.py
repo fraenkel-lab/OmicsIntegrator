@@ -67,13 +67,18 @@ def map_data(Xdata,Xnames,Ydata,Ynames):
     # Intersect two gene lists
     Xinds = []
     Yinds = []
+    #yn = []
     for i,Xgene in enumerate(Xnames):
         for j,Ygene in enumerate(Ynames):
             if Xgene == Ygene:
                 Xinds.append(i)
                 Yinds.append(j)
+    #            yn.append(Ygene)
     Xdata_out = Xdata[Xinds,:]
     Ydata_out = Ydata[Yinds]
+    print 'Found %d genes that have binding data and are in the expression output'%(len(Yinds))
+    #yn.sort()
+    #print ','.join(yn[0:20])
     return Xdata_out,Ydata_out
 
 def perform_regression(X,Y,motif_ids,norm):
@@ -277,7 +282,7 @@ def main():
             if lpv>cpv:
                 regdict[tf]=lpv
     print 'Found '+str(len(regdict))+'Tf scores for '+str(len(new_results))+' motif results'
-    of=open(re.sub('.xls','_FOREST_INPUT.xls',outdir),'w')
+    of=open(re.sub('.tsv','_FOREST_INPUT.tsv',outdir),'w')
     for tf in regdict.keys():
         val=regdict[tf]
         of.write(tf+'\t'+str(val)+'\n')

@@ -40,10 +40,10 @@ def writeMotNames(m,fname):
             elif 'Species' not in i and 'included' not in i and i.strip() not in gns:
                 gns.append(i.strip())
             #print gns
-        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g])
+        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g])
         genenames.append('.'.join(gns))
     open(fname,'w').writelines([g+'\n' for g in genenames])
-    print fname
+    #print fname
 
 def motif_bestscan_matrix(F,motif,outfile,genome):
     
@@ -186,16 +186,40 @@ def affinity(scores,SUM,FP,typ=6.):
     A=a/(b+a)#prob of being bound (a) / prob unbond (b) + prob bound (a)
     return A
 
-def reduce_fasta(fsa_dict,gene_file):
+def reduce_fasta(fsa_dict,gene_file,gene_list):
     '''
     Takes FASTA file and reduces events to those found in gene_file
     '''
-    ##first open gene file and get mids that map to a gene
+    ##first open gene file and get mids that map to a gene region
     mapped_mids=set()
+    #read in gene mapping
     closest_gene=DictReader(open(gene_file,'rU'),delimiter='\t')
+    include_genes=[]
+    
+    mid_to_gene={}
+    if os.path.exists(gene_list):
+        include_genes=[a.strip().split()[0] for a in open(gene_list,'rU').readlines()]
+        
+    if len(include_genes)>0:
+        print 'Found %d genes in differential expression data, reducing FASTA to only include regions nearby'%(len(include_genes))
+    
     count=0
     for g in closest_gene:
-        mapped_mids.add(g['chrom']+':'+str(int(g['chromStart'])+(int(g['chromEnd'])-int(g['chromStart']))/2))
+        if len(include_genes)>0 and g['geneSymbol'] not in include_genes:
+           # print g['geneSymbol']+' not included in list, skipping'
+            continue
+        try: #this will work for bed
+            midval = g['chrom']+':'+str(int(g['chromStart'])+(int(g['chromEnd'])-int(g['chromStart']))/2)
+        except:
+            try: #this will work for MACS
+                midval = g['chr']+':'+str(int(g['start'])+(int(g['end'])-int(g['start']))/2)
+            except:#this will work for GPS
+                midval = 'chr'+g['Position']
+        mapped_mids.add(midval)
+        if 'geneSymbol' in g.keys():
+            mid_to_gene[midval] = g['geneSymbol']
+        else:
+            mid_to_gene[midval] = g['knownGeneID']
         count=count+1
     ##then reduce fasta dict to only get those genes that map
     new_seq={}    
@@ -225,9 +249,10 @@ def reduce_fasta(fsa_dict,gene_file):
             seq_mid=chr+':'+mid
         #print seq_mid
         if seq_mid in mapped_mids:
-            new_seq[k]=fsa_dict[k]
+            # print seq_mid,mapped_mids[0]
+            new_seq[k+' '+mid_to_gene[seq_mid]]=fsa_dict[k] ###****UPDATED: added gene name here, so don't have to map later....***
     
-    print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(count)+' event-gene matches out of '+str(len(fsa_dict))+' events'
+    print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(count)+' event-gene matches  and '+str(len(include_genes))+' genes out of '+str(len(fsa_dict))+' events'
 
     ##now write new fasta file
     Fasta.write(new_seq,re.sub('.xls','.fsa',gene_file))
@@ -247,9 +272,10 @@ def main():
     parser.add_option('--scores',dest='pkl',default=os.path.join(progdir,'../data/matrix_files/motif_thresholds.pkl'),help='PKL file of matrix score thresholds')
     parser.add_option('--ids',dest='ids',default=os.path.join(progdir,'../data/matrix_files/vertebrates_clustered_motifs_mIDs.txt'),help='List of Exemplar motifs in motif cluster')
     
-    parser.add_option('--genefile',dest='gene_file',default='',help='File indicating which regions are mapped to genes, enabling the reduction of the FASTA file for gene-relevant regions')
+    parser.add_option('--genemappingfile',dest='gene_file',default='',help='File indicating which regions are mapped to genes, enabling the reduction of the FASTA file for gene-relevant regions')
     parser.add_option("--genome", dest="genome", default='mm9',help='The genome build that you are using, used to estimate binding site priors')
     parser.add_option('--utilpath',dest='addpath',default=srcdir,help='Destination of chipsequtil library, Default=%default')
+    parser.add_option('--genelist',dest='genelist',default='',help='List of genes (will select first column if multiple) to include in scan based on --genemappingfile')
     parser.add_option("--outfile", dest="outfile")
 
 #    parser.add_option('--logistic',dest='logistic',action='store_true',default=False,help='Set to true to scale multiple matches into a logistic curve')
@@ -272,7 +298,7 @@ def main():
     fsa_dict=Fasta.load(fsa,key_func=lambda x:x)
     if opts.gene_file!='':
         print 'Reducing FASTA file to only contain sequences from '+opts.gene_file
-        fsa_dict=reduce_fasta(fsa_dict,opts.gene_file)
+        fsa_dict=reduce_fasta(fsa_dict,opts.gene_file,opts.genelist)
 
 
     motif_matrix(fsa_dict,motiffile,opts.outfile,opts.genome,opts.ids,opts.pkl,int(opts.threads),typ=float(opts.typ))

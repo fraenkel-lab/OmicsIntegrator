@@ -3,10 +3,8 @@
 ##This script collects all the files needed to build a distribution of OmicsIntegrator:
 ##populate these data strucutres, then type 'setup.py sdist'
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+from setuptools.command.test import test as TestCommand
 
 
 with open('README.md') as readme_file:
@@ -16,15 +14,33 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = ["networkx","scipy","numpy","matplotlib"]
+test_requirements = ['pytest']
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
-
-import os
+import os, sys
 
 gifdir='data/matrix_files/gifs/'
 gif_files=[gifdir+g for g in os.listdir(gifdir)]
+
+# Following pytest good practices
+# https://pytest.org/latest/goodpractises.html
+class PyTest(TestCommand):
+    # Needed to set the --msgsteiner argument
+    user_options = [('pytest-args=', 'a', '"Arguments to pass to py.test')]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ['tests']
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # Import here, outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
 
 setup(
     name='OmicsIntegrator',
@@ -41,13 +57,13 @@ setup(
                  #'OmicsIntegrator'},
     include_package_data=True,
     install_requires=requirements,
-    license="BSD",
+    license="MIT",
     zip_safe=True,
     keywords='OmicsIntegrator',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Biologists with basic programming skills',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
@@ -62,5 +78,7 @@ setup(
                  ('example/dnaseClus',['example/dnaseClus/dnaseClus_garnet.cfg','example/dnaseClus/wgEncodeRegDnaseClusteredV2.bed','example/dnaseClus/wgEncodeRegDnaseClusteredV2.fasta.gz']),
                  ('example/mcf7',['example/mcf7/mcf7_garnet.cfg','example/mcf7/wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.bed','example/mcf7/wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.fasta.gz']),
                  ('example/murineFib',['example/murineFib/murineFib_garnet.cfg','example/murineFib/wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.fasta.gz','example/murineFib/wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.narrowPeak'])],
-    scripts=['scripts/garnet.py','scripts/motif_fsa_scores.py','scripts/get_window_binding_matrix.py','scripts/motif_regression.py','scripts/map_peaks_to_known_genes.py','scripts/zipTgms.py','scripts/forest.py']
-    )
+    scripts=['scripts/garnet.py','scripts/motif_fsa_scores.py','scripts/get_window_binding_matrix.py','scripts/motif_regression.py','scripts/map_peaks_to_known_genes.py','scripts/zipTgms.py','scripts/forest.py'],
+    tests_require=test_requirements,
+    cmdclass={'test':PyTest}
+)

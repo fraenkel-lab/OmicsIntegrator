@@ -97,7 +97,9 @@ qvalThresh =
 #### Chromatin Data
 
 Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are
-included in the examples/ directory. To use your own epigenetic data, upload the
+included in the examples/ directory. `bedfile` can also be output from MACS 
+(with a `.xls` extension) or GPS/GEM (with a `.txt` extension). 
+To use your own epigenetic data, convert to BED and upload the
 BED-file to http://usegalaxy.org and select `Fetch Genomic DNA` from the left
 menu to click on `Extract Genomic DNA`. This will produce a FASTA-formatted file
 that will work with garnet.  We have provided gene (`genefile`) and xref
@@ -155,14 +157,14 @@ garnet script.
 
 - **events_to_genes_with_motifs.pkl**: A Pickle-compressed Python File 
   containing a dictionary data structure that contains files 4-6 (under the keys
-  ‘tgm’,’tfs’, and ‘genes’) respectively as well as a ‘delim’ key that describes
+  `tgm`,`tfs`, and `genes`) respectively as well as a `delim` key that describes
   what delimiter was used to separate out TFs in the case where there are
   multiple TFs in the same family.
 
-- **events_to_genes_with_motifsregression_results.xls**: Results from linear
+- **events_to_genes_with_motifsregression_results.tsv**: Results from linear
   regression.
 
-- **events_to_genes_with_motifsregression_results_FOREST_INPUT.xls**: Only those 
+- **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those 
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to Forest. 
 
@@ -211,12 +213,12 @@ Options:
                         GARNET module regression. Should be a tab delimited
                         file with 2 columns: "TranscriptionFactorName
                         Score". Default = "None"
-  --garnetBeta=GB       Parameter for scaling the GARNET module scores. Use to
-                        make the GARNET scores on the same scale as the
-                        provided scores. Default = 0.01.
   --musquared           Flag to add negative prizes to hub nodes proportional
                         to their degree^2, rather than degree. Must specify a
                         positive mu in conf file.
+  --excludeTerms        Flag to exclude terminals when calculating negative
+                        prizes. Use if you want terminals to keep exact
+                        assigned prize regardless of degree.
   --msgpath=MSGPATH     Full path to the message passing code. Default =
                         "<current directory>/msgsteiner9"
   --outpath=OUTPUTPATH  Path to the directory which will hold the output
@@ -260,7 +262,7 @@ Options:
   -s SEED, --seed=SEED  An integer seed for the pseudo-random number
                         generators. If you want to reproduce exact results,
                         supply the same seed. Default = None.
- 
+
 ```
                         
 ### forest input files and parameters
@@ -272,13 +274,14 @@ terminal nodes and prize values in a text file. The file
 `example/a549/Tgfb_phos.txt` is an example of what this file should look like.
 You should record your interactome and edge weights in a text file with 3 or 4
 columns. The file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is a
-human interactome example. 
+human interactome example (this interactome comes from iRefIndex v13,scored and
+ formatted for our code). 
 
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
 the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu` and  `g` may also be
+must be set in this file. Optional parameters `mu`, `n`, and  `g` may also be
 included. For explanations of the parameters, see publication. 
 
 
