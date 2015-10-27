@@ -30,6 +30,7 @@ expression
 ### Protein-protein interaction network
 We included a recent version of the human protein-protein interaction network to facilitate
 running forest.  
-  - `iref_mitab_miscore_2013_08_12_interactome.txt`: We collected the IRefWeb interactome using
-the MIScore function.
-
+  - `iref_mitab_miscore_2013_08_12_interactome.txt`: We collected the
+[iRefIndex](http://irefindex.org/wiki/index.php?title=iRefIndex) protein-protein interaction
+network (version 13.0) and scored interactions based on their experimental evidence using
+the MIScore function. All node identifiers are gene symbols.
