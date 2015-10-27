@@ -201,7 +201,7 @@ Options:
                         Should be several lines that looks like:
                         "ParameterName = ParameterValue". Must contain values
                         for w, b, D.  May contain values for optional
-                        parameters mu, n, r, g. Default = "./conf.txt"
+                        parameters mu, garnetBeta, r, g. Default = "./conf.txt"
   -d DUMMYMODE, --dummyMode=DUMMYMODE
                         Tells the program which nodes in the interactome to
                         connect the dummy node to. "terminals"= connect to all
@@ -283,9 +283,23 @@ A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
 the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu`, `n`, and  `g` may also be
-included. For explanations of the parameters, see publication. 
+must be set in this file. Optional parameters `mu`, `garnetBeta`, and  `g` may 
+also be included.
 
+```
+w  = int, controls the number of trees
+b = int, controls the trade-off between including more 
+    terminals and using less reliable edges
+D = int, controls the maximum path-length from v0 to terminal nodes
+mu = float, controls the degree-based negative prizes (defualt 0.0)
+garnetBeta = float, scales the garnet output prizes relative to the 
+             provided protein prizes (default 0.01)
+g = float, affects the convergence of the solution & runtime (default 0.001)
+threads = int, causes msgsteiner to use multithreading (default 1)
+
+```
+
+For more details about the parameters, see our publication.
 
 
 #### Optional inputs

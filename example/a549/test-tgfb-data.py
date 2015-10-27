@@ -25,7 +25,7 @@ if __name__=='__main__':
     gcmd='python ../../scripts/garnet.py --outdir=%s %s'%(forest_out,garnet_conf) #command
     
     #forest requires more inputs
-    forest_conf='tgfb_forest.cfg' #provided config file
+    forest_conf='tgfb_forest.cfg' #provided config file should include garnetBeta parameter
     edge_file='../../data/iref_mitab_miscore_2013_08_12_interactome.txt' #interactome
 
     msgsteinerpath=opts.msgsteiner ##WE NEED MSGSTEINER9 INSTALLED!!!
@@ -40,7 +40,6 @@ if __name__=='__main__':
             sys.exit('Error executing garnet, will not execute forest')
         garnet_output=forest_out+'/events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv'
         #garnet_beta='0.1'
-        #when did the garnet_beta get removed? 
         fcmd='python ../../scripts/forest.py --prize=%s --edge=%s --conf=%s --garnet=%s --outpath=%s --msgpath=%s'%(phos_weights,edge_file,forest_conf,garnet_output,forest_out,msgsteinerpath)
         if opts.rand:
             fcmd=fcmd+' --noisyEdges=20'

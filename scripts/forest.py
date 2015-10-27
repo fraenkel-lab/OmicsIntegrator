@@ -84,7 +84,7 @@ class PCSFInput(object):
                 D = line.strip().split()[-1]
             if line.startswith('mu ='):
                 mu = line.strip().split()[-1]
-            if line.startswith('n ='):
+            if line.startswith('garnetBeta ='):
                 n = line.strip().split()[-1]
             if line.startswith('r ='):
                 r = line.strip().split()[-1]
