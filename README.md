@@ -14,14 +14,16 @@ Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
 
 System Requirements: 
 --------------------
-1. Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org and
-the following dependencies (provided with install): 
+1. Python 2.6 or 2.7 (3.x version currently untested) and the dependencies
+below. We recommend that users without an existing Python environment
+install Anaconda (https://www.continuum.io/downloads) to obtain Python
+2.7 and the following required packages:
   - numpy: http://www.numpy.org/
   - scipy: http://www.scipy.org/
   - matplotlib: http://matplotlib.org/
   - Networkx: http://networkx.github.io
 
-2. msgsteiner package: http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
+2. msgsteiner package (version msgsteiner-1.1.tgz): http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 
 3. Boost C++ library: http://www.boost.org
 
@@ -113,7 +115,7 @@ consider an epigenetic event associated. 2kb is a very conservative metric.
 We provide motif data in the proper TAMO format, the user just needs to enter
 the genome used.  The default `numthreads` is 4, but the user can alter this
 depending on the processing power of their machine. `doNetwork` will create a
-networkX object mapping transcription factors to genes, required input for the
+NetworkX object mapping transcription factors to genes, required input for the
 [SAMNet algorithm](http://github.com/sgosline/SAMNet).  `tfDelimiter` is an
 internal parameter to tell garnet how to handle cases when many transcription
 factors map to the sam binding motif.
@@ -166,7 +168,7 @@ garnet script.
 
 - **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those 
   results from the regression that fall under a provided significance threshold,
-  e.g. p=0.05.  This file can be used as input to Forest. 
+  e.g. p=0.05.  This file can be used as input to forest.
 
 
 
@@ -174,7 +176,7 @@ garnet script.
 Running forest.py 
 ----------------- 
 
-Forest **requires** the msgsteiner package as well as the boost library.
+Forest **requires** the compiled msgsteiner package as well as the boost library.
 
 ```
 Usage: PCSF.py [options]
@@ -265,7 +267,7 @@ Options:
 
 ```
                         
-### forest input files and parameters
+### Forest input files and parameters
 
 #### Required inputs
 
@@ -274,8 +276,8 @@ terminal nodes and prize values in a text file. The file
 `example/a549/Tgfb_phos.txt` is an example of what this file should look like.
 You should record your interactome and edge weights in a text file with 3 or 4
 columns. The file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is a
-human interactome example (this interactome comes from iRefIndex v13,scored and
- formatted for our code). 
+human interactome example (this interactome comes from iRefIndex v13, scored and
+formatted for our code).
 
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
@@ -290,9 +292,9 @@ included. For explanations of the parameters, see publication.
 
 The rest of the command line options are optional. 
 
-If you have run the GARNET module to create scores for transcription factors,
-you can include that output file with the `--garnet` option and `--garnetBeta`
-options. 
+If you have run the garnet module to create scores for transcription factors,
+you can include that output file with the `--garnet` option and use `n` in the
+configuration file to scale the garnet scores.
 
 The `--dummyMode` option will change which nodes in the terminal are connected
 to the dummy node in the interactome. We provide an example of this using
@@ -353,7 +355,7 @@ msgsteiner itself. If you want to reproduce exact results, you should supply the
 same seed every time. If you do not supply your own seed, system time is used a
 seed.
 
-###running forest
+###Running forest
 
 Once you submit your command to the command line the program will run. It will
 display messages as it completes, letting you know where in the process you are.
@@ -363,7 +365,7 @@ be imported into Cytoscape v.3.0 to view the results of the run.  These files
 will be named first with the outputlabel that you provided (or `result` by
 default), and then with a phrase identifying which file type it is.
 
-### forest output
+### Forest output
 
 - **info.txt** contains information about the algorithm run, including any error
   messages if there were any during the run.
