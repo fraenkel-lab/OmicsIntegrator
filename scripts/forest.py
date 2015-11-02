@@ -93,6 +93,8 @@ class PCSFInput(object):
                 g = line.strip().split()[-1]
             if line.startswith('threads = '):
                 threads = line.strip().split()[1]
+            if line.startswith('processes ='):
+                processes = line.strip().split()[-1]
         c.close()
         try:
             mu = float(mu)
@@ -121,6 +123,10 @@ class PCSFInput(object):
         except:
             threads = 1
         try:
+            processes = int(processes)
+        except:
+            processes = None
+        try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
                   %(float(w), float(b), int(D), mu, g, n)
         except:
@@ -135,6 +141,7 @@ class PCSFInput(object):
         self.r = r
         self.g = g
         self.threads = threads
+        self.processes = processes
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -1118,7 +1125,10 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
     print 'Preparing to change values %i times and get merged results of running the '\
           'algorithm on new values.\n' %numRuns
     #Create multiprocessing Pool
-    pool = mp.Pool()
+    if inputObj.processes == None:
+        pool = mp.Pool()
+    else:
+        pool = mp.Pool(inputObj.processes)
     if seed != None:
         #For each run, create process, change prize/edge values and run msgsteiner
         #Note that each run will create a info file

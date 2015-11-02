@@ -295,6 +295,8 @@ mu = float, controls the degree-based negative prizes (defualt 0.0)
 garnetBeta = float, scales the garnet output prizes relative to the 
              provided protein prizes (default 0.01)
 g = float, affects the convergence of the solution & runtime (default 0.001)
+processes = int, number of processes to spawn when doing randomization runs
+            (default to number of processors on your computer)
 
 ```
 
