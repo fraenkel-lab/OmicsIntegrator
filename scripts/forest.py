@@ -92,7 +92,7 @@ class PCSFInput(object):
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
             if line.startswith('threads = '):
-                threads = line.strip().split()[1]
+                threads = line.strip().split()[-1]
             if line.startswith('processes ='):
                 processes = line.strip().split()[-1]
         c.close()
