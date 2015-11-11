@@ -8,6 +8,7 @@ import sys, optparse, random, copy, os
 import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
+import multiprocessing as mp
 
 
 
@@ -84,14 +85,16 @@ class PCSFInput(object):
                 D = line.strip().split()[-1]
             if line.startswith('mu ='):
                 mu = line.strip().split()[-1]
-            if line.startswith('n ='):
+            if line.startswith('garnetBeta ='):
                 n = line.strip().split()[-1]
             if line.startswith('r ='):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
             if line.startswith('threads = '):
-                threads = line.strip().split()[1]
+                threads = line.strip().split()[-1]
+            if line.startswith('processes ='):
+                processes = line.strip().split()[-1]
         c.close()
         try:
             mu = float(mu)
@@ -120,6 +123,10 @@ class PCSFInput(object):
         except:
             threads = 1
         try:
+            processes = int(processes)
+        except:
+            processes = None
+        try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
                   %(float(w), float(b), int(D), mu, g, n)
         except:
@@ -134,6 +141,7 @@ class PCSFInput(object):
         self.r = r
         self.g = g
         self.threads = threads
+        self.processes = processes
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -1110,6 +1118,11 @@ def randomTerminals(PCSFInputObj, seed, excludeT):
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
 
+#wrapper function for runPCSF() multiprocessing
+def PCSF(inputObj,msgpath,seed):
+    (Edge, Info) = inputObj.runPCSF(msgpath,seed)
+    return (Edge, Info)
+
 def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel,
                                 excludeT):
     """
@@ -1132,16 +1145,24 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
     """ 
     print 'Preparing to change values %i times and get merged results of running the '\
           'algorithm on new values.\n' %numRuns
+    #Create multiprocessing Pool
+    if inputObj.processes == None:
+        pool = mp.Pool()
+    else:
+        pool = mp.Pool(inputObj.processes)
+    if seed != None:
+        #For each run, create process, change prize/edge values and run msgsteiner
+        #Note that each run will create a info file
+        results = [pool.apply_async(PCSF, args=(func(inputObj, seed+i, excludeT),
+                  msgpath, seed+i,)) for i in xrange(numRuns)]
+    else:
+        results = [pool.apply_async(PCSF, args=(func(inputObj, seed, excludeT),
+                  msgpath,seed,)) for i in xrange(numRuns)]
+    output = [p.get() for p in results]
     i = 0
+    #Merge output of new msgsteiner runs together
     while i <= numRuns-1:
-        #Change prize/edge values and run msgsteiner with new values
-        #NOTE: there will be an info file written for every run
-        if seed != None:
-            changedInputObj = func(inputObj, seed+i, excludeT)
-            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed+i)
-        else:
-            changedInputObj = func(inputObj, seed, excludeT)
-            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed)
+        (newEdgeList, newInfo) = output[i]
         #By creating the output object with inputObj instead of changedInputObj, 
         #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes, 
         #not the changed prizes.

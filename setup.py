@@ -73,7 +73,6 @@ setup(
                  'data/ucsc_hg19_knownGenes.txt','data/ucsc_mm9_knownGenes.txt','data/iref_mitab_miscore_2013_08_12_interactome.txt','data/README.md']),
                  ('data/matrix_files',['data/matrix_files/vertebrates_clustered_motifs.txt','data/matrix_files/vertebrates_clustered_motifs_mIDs.txt','data/matrix_files/vertebrates_clustered_motifs_tfids.txt','data/matrix_files/vertebrates_clustered_motifs_up_tfids.txt','data/matrix_files/motif_thresholds.pkl','data/matrix_files/vertebrates_clustered_motifs.tamo']),
                  ('data/matrix_files/gifs',gif_files),
-                 ('example',['example/README.md']),
                  ('example/a549',['example/a549/test-tgfb-data.py','example/a549/tgfb_forest.cfg',
 'example/a549/Tgfb_exp.txt','example/a549/Tgfb_phos.txt','example/a549/tgfb_garnet.cfg','example/a549/wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.bed','example/a549/wgEncodeUWDukeDnaseA549.fdr01peaks.hg19.fasta.gz']),
                  ('example/dnaseClus',['example/dnaseClus/dnaseClus_garnet.cfg','example/dnaseClus/wgEncodeRegDnaseClusteredV2.bed','example/dnaseClus/wgEncodeRegDnaseClusteredV2.fasta.gz']),
