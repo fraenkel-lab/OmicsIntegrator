@@ -53,7 +53,7 @@ and you may skip to step 5 if you will only be running Garnet.
 2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
 4. Enter the `msgsteiner-1.1` subdirectory and run make
-  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the msgsteiner executable that was created, which must be passed as an argument to Forest.
+  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
 5. Download the Omics Integrator package: [OmicsIntegrator-0.1.0.tar.gz](./dist/OmicsIntegrator-0.1.0.tar.gz)
 6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.1.0.tar.gz`
 7. Make sure you have all the requirements using the pip tool by entering the directory and typing: `pip install -r requirements.txt`
@@ -197,7 +197,7 @@ Running forest.py
 Forest **requires** the compiled msgsteiner package as well as the boost library.
 
 ```
-Usage: PCSF.py [options]
+Usage: forest.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
@@ -339,8 +339,9 @@ squared degree, as opposed to linear degree. This is helpful if the default
 mu behavior is not strict enough to eliminate irrelevant hub nodes from your
 network.
 
-If the user is not keeping the file `msgsteiner9` in the same directory as
-forest.py, the path needs to be specified using the `--msgpath` option.
+If the user is not keeping the file `msgsteiner` in the same directory as
+forest.py, the path needs to be specified using the `--msgpath` option, i.e
+'--msgpath /home/msgsteiner-1.1/msgsteiner'.
 
 If you would like the output files to be stored in a directory other than the
 one you are running the code from, you can specify this directory with the
