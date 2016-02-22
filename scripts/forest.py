@@ -514,9 +514,9 @@ class PCSFInput(object):
     
     def runPCSF(self, msgpath, seed):
         """
-        Passes the information in this input object to msgsteiner9, and returns the results.
+        Passes the information in this input object to msgsteiner, and returns the results.
         
-        INPUT: msgpath - points to the directory where msgsteiner9 is held.
+        INPUT: msgpath - points to the directory where msgsteiner is held.
                
         RETURNS: edgeList - the contents of stdout from msgsteiner: a list of edges in the 
                             optimal Forest
@@ -549,15 +549,15 @@ class PCSFInput(object):
             input.write('W %s %f\n' %(node, float(self.totalPrizes[node])))
         input.write('W DUMMY 100.0\n')
         input.write('R DUMMY\n\n')
-        print 'Input is processed. Piping to msgsteiner9 code...\n'
+        print 'Input is processed. Piping to msgsteiner code...\n'
         
         #Run the msgsteiner code using Python's subprocess module
         try:
             with open(msgpath): pass
         except IOError:
-            sys.exit('ERROR: The msgsteiner9 code was not found in the correct directory. '\
-                     'Please use --msgpath to tell us the path to the msgsteiner9 code.' )
-        #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
+            sys.exit('ERROR: The msgsteiner code was not found in the correct directory. '\
+                     'Please use --msgpath to tell us the path to the msgsteiner code.' )
+        #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
                        str(self.r), '-g', str(self.g), '-j', str(self.threads)]
@@ -1113,7 +1113,7 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
                   (i.e. shuffles or adds noise)
            inputObj - a PCSFInput object with original values, to be changed.
            numRums - the number of times to change the values and re-run msgsteiner
-           msgpath - path to the directory where msgsteiner9 is kept
+           msgpath - path to the directory where msgsteiner is kept
            outputpath - path to the directory where output files should be stored
            outputlabel - a label with which to name all of the output files for this run
            
@@ -1277,7 +1277,7 @@ def main():
         'exclude terminals when calculating negative prizes. Use if you want terminals to keep '\
         'exact assigned prize regardless of degree.', default=False)
     parser.add_argument("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
-        'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
+        'Default = "<current directory>/msgsteiner"', default='./msgsteiner')
     parser.add_argument("--outpath", dest = 'outputpath', help='Path to the directory which will '\
         'hold the output files. Default = this directory', default='.')
     parser.add_argument("--outlabel", dest = 'outputlabel', help='A string to put at the beginning '\
