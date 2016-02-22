@@ -153,6 +153,11 @@ class PCSFInput(object):
             sys.exit('ERROR: No such file %s, aborting program.\n' %edgeFile)
         line = e.readline()
         words = line.strip().split()
+        try:
+            words[2]=float(words[2])
+        except ValueError:
+            #Skipping header line
+            line=e.readline()
         #See if edgeFile contains directionality infomation in 4th column
         if len(words) == 3:
             col = 3
@@ -305,6 +310,12 @@ class PCSFInput(object):
         count = 0
         #Add each node in prizeFile to origPrizes dictionary
         line = p.readline()
+        try:
+            words = line.strip().split()
+            words[1] = float(words[1])
+        except ValueError:
+            #Skipping header line
+            line=p.readline()
         while line:
             words = line.strip().split()
             if len(words) != 2:
