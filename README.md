@@ -49,7 +49,11 @@ Omics Integrator is a collection of Python scripts and data files so can be
 easily installed on any system. Steps 1 through 4 are only required for Forest,
 and you may skip to step 5 if you will only be running Garnet.
 
-1. Boost is pre-installed on many Linux distributions. If your operating system does not include Boost, follow the [Boost getting started guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for instructions on how to download the library and extract files from the archive.
+1. Boost is pre-installed on many Linux distributions. If your operating system
+does not include Boost, follow the [Boost getting started
+guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for
+instructions on how to download the library and extract files from the archive.
+To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew install boost` to install the library.
 2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
 4. Enter the `msgsteiner-1.1` subdirectory and run make
