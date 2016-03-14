@@ -60,11 +60,26 @@ To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew
   * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
 5. Download the Omics Integrator package: [OmicsIntegrator-0.1.0.tar.gz](./dist/OmicsIntegrator-0.1.0.tar.gz)
 6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.1.0.tar.gz`
-7. Make sure you have all the requirements using the pip tool by entering the directory and typing: `pip install -r requirements.txt`
+7. Make sure you have all the requirements using the pip tool by entering the
+directory and typing: `pip install -r requirements.txt`
+
+
   * Some users have reported errors when using this command to install matplotlib. To fix, install matplotlib independently (http://matplotlib.org) or use Anaconda as indicated above.
 
 Now Omics Integrator is installed on your computer and can be used to analyze
 your data.
+
+Examples
+-----------------
+We provide many scripts and files to showcase the various capabilities of Omics
+Integrator.  To run this:
+
+1. Download the [example files](./dist/OmicsIntegratorExamples.tar.gz)
+2. Unpack by typing `tar -xvzf OmicsIntegratorExamples.targ.gz` in the `dist`
+directory.
+
+For specific details about the examples, check out the [README
+file](./example/README.md) in the example directory.
 
 Running garnet.py
 -----------------

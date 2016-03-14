@@ -1,15 +1,15 @@
 ===============================
-garnet+forest examples
+Omics Integrator Examples
 ===============================
 
 This directory includes sample datasets **and test scripts** that can be used to run your own data
 analysis or test out the scripts with existing data. We divided the examples based on tissue
-of origin. 
+of origin.
 
-Files in the `a549` directory will enable you to run garnet + forest on your system.  `test-tgfb-data.py` is a script that will run both garnet + forest, or show you how to just run forest on a single dataset. 
+Files in the `a549` directory will enable you to run garnet + forest on your system.  `test-tgfb-data.py` is a script that will run both garnet + forest, or show you how to just run forest on a single dataset.
 
-If you want to test out garnet + forest without providing epigenetic data, then you can run `build-dnase-matrix.py` in the `dnaseClust` directory (for human) or `build-murine-fib-matrix.py` in the `murineFib` directory (for mouse). 
-           
+If you want to test out Omics Integrator without providing epigenetic data, then you can run `build-dnase-matrix.py` in the `dnaseClust` directory (for human) or `build-murine-fib-matrix.py` in the `murineFib` directory (for mouse).
+
 
 a549/
 ----
@@ -35,7 +35,7 @@ Here we have data from a breast cancer-derived cell line that we can use to cons
 
 dnaseClus/
 ---------
-Here we have clustered DNase-I hypersensitive regions across the human genome. This data can be used in cases where the user has no specific epigenetic data. 
+Here we have clustered DNase-I hypersensitive regions across the human genome. This data can be used in cases where the user has no specific epigenetic data.
 
 - build-dnase-matrix.py: This script shows how to use garnet to predict transcription factor binding from epigenetic data (without regression to select best transcription factors).
 - dnaseClus_garnet.cfg: Configuration file used.
@@ -52,3 +52,10 @@ for mouse expression data.
 - wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.narrowPeak: DNase-I hypersensitive regions from murine fibroblasts.
 - wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.fasta.gz: FASTA sequences derived from the above BED file.
 
+CPDB/
+---------
+Here we showcase the ability of the forest functionality to recapitulate known
+pathways from the Consensus Pathway Database better than the tree formulation of
+Forest.
+- CPDB_case_study.py: Script to run the example
+- pyr_rho_mrna_noUBC.terminal: Terminal file to use
