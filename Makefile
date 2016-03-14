@@ -54,6 +54,8 @@ release: clean
 
 dist: clean
 	python setup.py sdist
+	tar cvzf OmicsIntegratorExamples.tar.gz example/*
+	mv OmicsIntegratorExamples.tar.gz dist/
 	ls -l dist
 
 install: clean
