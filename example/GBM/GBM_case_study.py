@@ -1,16 +1,14 @@
 import os
-
-def frange(start,end,step):
-    return map(lambda x: x*step, range(int(start*1./step),int(end*1./step)))
+import numpy as np
 
 def conf_prep(mu,beta,D,w):
     file = open("conf.txt","w")
     file.writelines("w = %d\nb = %d\nD = %d\nmu = %f" % (w,beta,D,mu))
     file.close()
 
-mu_range = frange(0.002,0.004,0.002)
-beta_range = frange(150,160,10)
-w_range = frange(2,3,1)
+mu_range = np.arange(0.002,0.004,0.002)
+beta_range = np.arange(150,160,10)
+w_range = np.arange(2,3,1)
 prize_file = "gbm_prize.txt"
 edge_file = "../../data/iref_mitab_miscore_2013_08_12_interactome.txt"
 conf_file = "conf.txt"
