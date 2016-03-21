@@ -562,12 +562,6 @@ class PCSFInput(object):
         input.write('R DUMMY\n\n')
         print 'Input is processed. Piping to msgsteiner code...\n'
         
-        #Run the msgsteiner code using Python's subprocess module
-        try:
-            with open(msgpath): pass
-        except IOError:
-            sys.exit('ERROR: The msgsteiner code was not found in the correct directory. '\
-                     'Please use --msgpath to tell us the path to the msgsteiner code.' )
         #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
@@ -1335,6 +1329,13 @@ def main():
     #Check if outputpath exists
     if not os.path.isdir(options.outputpath):
         sys.exit('Outpath %s is not a directory'%options.outputpath)
+
+    # Ensure msgsteiner can be located before spending time parsing the input files
+    try:
+        with open(msgpath): pass
+    except IOError:
+        sys.exit('ERROR: The msgsteiner code was not found in the correct directory. '\
+                 'Please use --msgpath to specify the path to the msgsteiner code.')
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
