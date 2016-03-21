@@ -9,9 +9,11 @@ def conf_prep(mu,beta,D,w):
 # Update this with the path to msgsteiner
 msgpath = "./msgsteiner"
 
+# The interval stop value is not included in the range
 mu_range = np.arange(0.002,0.004,0.002)
 beta_range = np.arange(150,160,10)
-w_range = np.arange(2,3,1)
+# Increase the stop value to test two values of w
+w_range = np.arange(2,3.1,1)
 prize_file = "gbm_prize.txt"
 edge_file = "../../data/iref_mitab_miscore_2013_08_12_interactome.txt"
 conf_file = "conf.txt"
