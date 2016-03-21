@@ -14,6 +14,10 @@ conf_file = "conf.txt"
 output_path = "../../results"
 D = 5
 
+# Create output directory if needed
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+
 for mu in mu_range:
     for beta in beta_range:
         for w in w_range:
