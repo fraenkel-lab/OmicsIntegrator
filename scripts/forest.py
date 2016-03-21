@@ -1332,7 +1332,7 @@ def main():
 
     # Ensure msgsteiner can be located before spending time parsing the input files
     try:
-        with open(msgpath): pass
+        with open(options.msgpath): pass
     except IOError:
         sys.exit('ERROR: The msgsteiner code was not found in the correct directory. '\
                  'Please use --msgpath to specify the path to the msgsteiner code.')
