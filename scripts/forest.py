@@ -539,10 +539,25 @@ class PCSFInput(object):
             input.write('D %s DUMMY %.4f\n' %(node, self.w))
         for node in self.totalPrizes:
             input.write('W %s %f\n' %(node, float(self.totalPrizes[node])))
+
+
+        '''
+        sort input for msgsteiner:
+        read from input,
+        sort list,
+        write back to input file
+        '''
+        input.seek(0)
+        lines = input.readlines()
+        lines = sorted(lines)
+        input.close()
+        input = tempfile.TemporaryFile()
+        for item in lines:
+            input.write(item)
         input.write('W DUMMY 100.0\n')
         input.write('R DUMMY\n\n')
-
-        input.seek(0)
+        
+        input.seek(0)        
         tempFileOut = open('tempFileData', 'w+')
         for line in input:
             tempFileOut.write(line)
@@ -556,7 +571,6 @@ class PCSFInput(object):
             sys.exit('ERROR: The msgsteiner9 code was not found in the correct directory. '\
                      'Please use --msgpath to tell us the path to the msgsteiner9 code.' )
         
-
         #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
@@ -571,6 +585,7 @@ class PCSFInput(object):
             subprocArgs.append(str(seed))
         out = tempfile.TemporaryFile()
         input.seek(0) #return to first line of temporary file for reading
+
         subproc = subprocess.Popen(subprocArgs, bufsize=1, stdin=input, stdout=out, 
                                    stderr=subprocess.PIPE)
         errcode = subproc.wait()
@@ -951,7 +966,7 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
     #Create augForest based on new optForest
     #Need to first copy optForest in case an edge previously included in augForest 
     #has a new fracOptContaining
-    mergedObj.augForest = copy.deepcopy(mergedObj.optForest)
+    mergedObj.augpForest = copy.deepcopy(mergedObj.optForest)
     for node in mergedObj.augForest.nodes():
         edges = {}
         try:
