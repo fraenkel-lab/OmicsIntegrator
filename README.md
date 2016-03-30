@@ -49,18 +49,37 @@ Omics Integrator is a collection of Python scripts and data files so can be
 easily installed on any system. Steps 1 through 4 are only required for Forest,
 and you may skip to step 5 if you will only be running Garnet.
 
-1. Boost is pre-installed on many Linux distributions. If your operating system does not include Boost, follow the [Boost getting started guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for instructions on how to download the library and extract files from the archive.
+1. Boost is pre-installed on many Linux distributions. If your operating system
+does not include Boost, follow the [Boost getting started
+guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for
+instructions on how to download the library and extract files from the archive.
+To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew install boost` to install the library.
 2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
 4. Enter the `msgsteiner-1.1` subdirectory and run make
-  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the msgsteiner executable that was created, which must be passed as an argument to Forest.
+  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
 5. Download the Omics Integrator package: [OmicsIntegrator-0.1.0.tar.gz](./dist/OmicsIntegrator-0.1.0.tar.gz)
 6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.1.0.tar.gz`
-7. Make sure you have all the requirements using the pip tool by entering the directory and typing: `pip install -r requirements.txt`
+7. Make sure you have all the requirements using the pip tool by entering the
+directory and typing: `pip install -r requirements.txt`
+
+
   * Some users have reported errors when using this command to install matplotlib. To fix, install matplotlib independently (http://matplotlib.org) or use Anaconda as indicated above.
 
 Now Omics Integrator is installed on your computer and can be used to analyze
 your data.
+
+Examples
+-----------------
+We provide many scripts and files to showcase the various capabilities of Omics
+Integrator.  To run this:
+
+1. Download the [example files](./dist/OmicsIntegratorExamples.tar.gz)
+2. Unpack by typing `tar -xvzf OmicsIntegratorExamples.targ.gz` in the `dist`
+directory.
+
+For specific details about the examples, check out the [README
+file](./example/README.md) in the example directory.
 
 Running garnet.py
 -----------------
@@ -197,7 +216,7 @@ Running forest.py
 Forest **requires** the compiled msgsteiner package as well as the boost library.
 
 ```
-Usage: PCSF.py [options]
+Usage: forest.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
@@ -339,8 +358,9 @@ squared degree, as opposed to linear degree. This is helpful if the default
 mu behavior is not strict enough to eliminate irrelevant hub nodes from your
 network.
 
-If the user is not keeping the file `msgsteiner9` in the same directory as
-forest.py, the path needs to be specified using the `--msgpath` option.
+If the user is not keeping the file `msgsteiner` in the same directory as
+forest.py, the path needs to be specified using the `--msgpath` option, i.e
+'--msgpath /home/msgsteiner-1.1/msgsteiner'.
 
 If you would like the output files to be stored in a directory other than the
 one you are running the code from, you can specify this directory with the

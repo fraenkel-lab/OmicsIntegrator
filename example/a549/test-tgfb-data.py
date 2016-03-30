@@ -12,7 +12,7 @@ from optparse import OptionParser
 if __name__=='__main__':
     parser=OptionParser()
     parser.add_option('--forest-only',dest='forest_only',action='store_true',default=False,help='Set this flag to run forest on phospho-proteomic data only.  DEFAULT:%default')
-    parser.add_option('--msgsteiner',dest='msgsteiner',type='string',help='Path to msgsteiner9 code, be sure to include!')
+    parser.add_option('--msgpath',dest='msgsteiner',type='string',help='Path to msgsteiner code, be sure to include!')
     parser.add_option('--doRandom',dest='rand',action='store_true',help='THIS WILL TAKE A LONG TIME: set this flag to do 50 permutations of forest using the --noisyEdges flag',default=False)
     
     opts,args=parser.parse_args()

@@ -35,7 +35,7 @@ __email__='sgosline@mit.edu'
 
 ##update this to include direct location of chipsequtil pacakge
 import sys,os,re
-from optparse import OptionParser
+import argparse
 from ConfigParser import ConfigParser
 
 progdir=os.path.dirname(sys.argv[0])
@@ -163,26 +163,22 @@ def main():
     
     srcdir=os.path.join(progdir,'../src')
     
-    usage='Usage: %prog [configfilename]'
-    parser=OptionParser(usage=usage)
+    parser=argparse.ArgumentParser()
     #uniprot option will be deprecated, SAMNet should be able to map to human gene names
     #    parser.add_option('--useUniprot',dest='useUniprot',action='store_true',help='Set this flag to use Uniprot identifies',default=False)
-    parser.add_option('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT:%default',default=None)
-    parser.add_option('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT:%default',default=srcdir)
-    parser.add_option('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show know evidence of encoding proteins.',action='store_true',default=False)
+    parser.add_argument('configfilename', help='Path to configuration file.')
+    parser.add_argument('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT: none',default=None)
+    parser.add_argument('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT: ../src',default=srcdir)
+    parser.add_argument('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show no evidence of encoding proteins.',action='store_true',default=False)
 
 
-    opts,args=parser.parse_args()
+    opts=parser.parse_args()
     
     sys.path.insert(0,opts.addpath)
     sys.path.insert(0,opts.addpath+'chipsequtil')
-    
-    if len(args)!=1:
-        print 'Need a configuration file to provide experiment-level details'
-        sys.exit()
 
     config=ConfigParser()
-    config.read(args[0])
+    config.read(opts.configfilename)
 
     ##now check for elements of config file. if they are missing, move onto next step
     ##first step 1 check
