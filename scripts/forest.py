@@ -558,8 +558,23 @@ class PCSFInput(object):
             input.write('D %s DUMMY %.4f\n' %(node, self.w))
         for node in self.totalPrizes:
             input.write('W %s %f\n' %(node, float(self.totalPrizes[node])))
+
+        '''
+        sort input for msgsteiner:
+        read from input,
+        sort list,
+        write back to input file
+        '''
+        input.seek(0)
+        lines = input.readlines()
+        lines = sorted(lines)
+        input.close()
+        input = tempfile.TemporaryFile()
+        for item in lines:
+            input.write(item)
         input.write('W DUMMY 100.0\n')
         input.write('R DUMMY\n\n')
+
         print 'Input is processed. Piping to msgsteiner code...\n'
         
         #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
