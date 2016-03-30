@@ -57,5 +57,3 @@ def test_integration(msgsteiner):
         assert 0
     else:
         assert 1
-
-
