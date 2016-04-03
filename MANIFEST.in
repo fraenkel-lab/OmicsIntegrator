@@ -14,12 +14,7 @@ recursive-include data *
 recursive-include src *
 
 include example *
-recursive-include example *.cfg
-recursive-include example *.py
-recursive-include example *.bed
-recursive-include example *.gz
-recursive-include example *.narrowPeak
-recursive-include example Tgfb*.txt
+include example/README.md
 
 exclude msgsteiner9
 exclude .* *.ini
