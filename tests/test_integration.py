@@ -3,7 +3,7 @@
 Large integration test script.
 '''
 
-import os, subprocess, filecmp, shutil, shlex
+import os, subprocess, filecmp, shutil, shlex, tempfile
 from optparse import OptionParser
 
 def test_integration(msgsteiner):
@@ -27,33 +27,35 @@ def test_integration(msgsteiner):
     if msgsteinerpath == None:
         print 'Please provide path to msgsteiner using --msgpath option'
         assert 0
-	
-    forest_out = 'temp'
+
+    # Create a tmp directory for output	
+    forest_out = tempfile.mkdtemp()
 
     #Arbitrary value
     seed = 2
+    
+    try:
+        
+        script_dir = os.path.dirname(__file__)
+        forest_path = os.path.join(script_dir, '..', 'scripts', 'forest.py')
+    
+        fcmd='python %s --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s'%(
+            forest_path, phos_weights, edge_file, forest_conf, forest_out, msgsteinerpath, seed)
+        subprocess.call(shlex.split(fcmd), shell=False)	
 
-    # Create a tmp directory for output
-    script_dir = os.path.dirname(__file__)
-    abs_file_path = os.path.join(script_dir, forest_out)
-    os.makedirs(abs_file_path)
+        curr_dir = os.path.dirname(__file__)
+        match, mismatch, errors = filecmp.cmpfiles(forest_out, os.path.join(curr_dir, 'integration_test_standard'), 
+                                   ['result_augmentedForest.sif', 'result_dummyForest.sif', 'result_edgeattributes.tsv',
+                                    'result_info.txt', 'result_nodeattributes.tsv', 'result_optimalForest.sif'], 
+                                   shallow=False)
 
-    forest_path = os.path.join(script_dir, '..', 'scripts', 'forest.py')
-
-    fcmd='python %s --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s'%(
-        forest_path, phos_weights, edge_file, forest_conf, abs_file_path, msgsteinerpath, seed)
-    subprocess.call(shlex.split(fcmd), shell=False)	
-
-    curr_dir = os.path.dirname(__file__)
-    results = filecmp.cmpfiles(abs_file_path, os.path.join(curr_dir, 'integration_test_standard'), 
-		['result_augmentedForest.sif', 'result_dummyForest.sif', 'result_edgeattributes.tsv',
-		'result_info.txt', 'result_nodeattributes.tsv', 'result_optimalForest.sif'], 
-		shallow=False)
-
-	
-    shutil.rmtree(os.path.join(curr_dir, 'temp'))
-
-    if len(results[0]) != 6:
-        assert 0
-    else:
-        assert 1
+        if len(match) != 6:
+            print 'Mismatching files: ', mismatch
+            print 'Errors: ', errors
+            assert 0, 'Not all Forest output files match'
+        else:
+            assert 1
+    except IOError as e:
+        print 'IO error'
+    finally:
+        shutil.rmtree(forest_out)
