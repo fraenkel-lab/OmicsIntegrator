@@ -455,3 +455,7 @@ first row of the file should be interpreted as column labels. Click OK.
 
 When the network and the attributes are imported into Cytoscape, you can alter
 the appearance of the network as you usually would using VizMapper.
+
+Testing
+-----------------
+See the `tests` directory for instructions on testing Omics Integrator.
