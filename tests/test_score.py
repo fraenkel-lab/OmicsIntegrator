@@ -1,7 +1,7 @@
 # Test functions for forest.score()
 # score(value, mu, musquared)
 
-import os,sys
+import os, sys
 
 # Create the path to forest relative to the test_score.py path
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
@@ -36,4 +36,3 @@ class TestScore:
 		
 	def test_musquaredTrue(self):
 		assert score(2, 2, 1) == -8
-  

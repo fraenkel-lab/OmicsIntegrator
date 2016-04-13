@@ -558,8 +558,23 @@ class PCSFInput(object):
             input.write('D %s DUMMY %.4f\n' %(node, self.w))
         for node in self.totalPrizes:
             input.write('W %s %f\n' %(node, float(self.totalPrizes[node])))
+
+        '''
+        sort input for msgsteiner:
+        read from input,
+        sort list,
+        write back to input file
+        '''
+        input.seek(0)
+        lines = input.readlines()
+        lines = sorted(lines)
+        input.close()
+        input = tempfile.TemporaryFile()
+        for item in lines:
+            input.write(item)
         input.write('W DUMMY 100.0\n')
         input.write('R DUMMY\n\n')
+
         print 'Input is processed. Piping to msgsteiner code...\n'
         
         #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
@@ -751,9 +766,12 @@ class PCSFOutput(object):
             eda.write('Edge\tWeight\tFractionOfOptimalForestsContaining\n')
         
             undirEdgesAdded = {}
-        
+            
+            edgesSorted = self.augForest.edges(data=True)            
+            edgesSorted.sort(key = itemgetter(0, 1))
+
             #iterate through edges to record edge types and edge attributes
-            for (node1,node2,data) in self.augForest.edges(data=True):
+            for (node1,node2,data) in edgesSorted:
                 #Check if interaction between node1 and node2 is directed
                 try:
                     w = self.inputObj.dirEdges[node1][node2]
@@ -780,14 +798,18 @@ class PCSFOutput(object):
                             undirEdgesAdded[node1][node2] = 1
                         else:
                             undirEdgesAdded[node1] = {node2:1}
-                        
+
+            nodesSorted = self.augForest.nodes(data=True)
+            nodesSorted.sort(key = itemgetter(0, 1))
             #iterate through nodes to record node attributes
-            for (node,data) in self.augForest.nodes(data=True):
+            for (node,data) in nodesSorted:
                 noa.write(node+'\t'+str(data['prize'])+'\t'+str(data['betweenness'])+'\t'+
                           str(data['fracOptContaining'])+'\t'+data['TerminalType']+'\n')
-        
+
+            dumSorted = self.dumForest.edges()
+            dumSorted.sort(key = itemgetter(0, 1))        
             #Record dummy edges
-            for (node1,node2) in self.dumForest.edges():
+            for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
                     dumSif.write(node1+'\tpd\t'+node2+'\n')
         
@@ -823,9 +845,10 @@ class PCSFOutput(object):
             fracEda.write('FractionOptimalForestsContaining (class=Double)\n')
         
             undirEdgesAdded = {}
-        
+            edgesSorted = self.augForest.edges(data=True)            
+            edgesSorted.sort(key = itemgetter(0, 1))            
             #iterate through edges to record edge types and edge attributes
-            for (node1,node2,data) in self.augForest.edges(data=True):
+            for (node1,node2,data) in edgesSorted:
                 try:
                     #Check if interaction between node1 and node2 is directed
                     w = self.inputObj.dirEdges[node1][node2]
@@ -854,13 +877,18 @@ class PCSFOutput(object):
                             undirEdgesAdded[node1] = {node2:1}
                     
             #iterate through nodes to record node attributes
-            for (node,data) in self.augForest.nodes(data=True):
+            nodesSorted = self.augForest.nodes(data=True)
+            nodesSorted.sort(key = itemgetter(0, 1))            
+            for (node,data) in nodesSorted:
                 bcNoa.write(node+' = '+str(data['betweenness'])+'\n')
                 prizeNoa.write(node+' = '+str(data['prize'])+'\n')
                 fracNoa.write(node+ ' = '+str(data['fracOptContaining'])+'\n')
                 ttypeNoa.write(node+ ' = '+str(data['TerminalType'])+'\n')
+
+            dumSorted = self.dumForest.edges()
+            dumSorted.sort(key = itemgetter(0, 1))        
             #Record dummy edges
-            for (node1,node2) in self.dumForest.edges():
+            for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
                     dumSif.write(node1+'\tpd\t'+node2+'\n')
         
