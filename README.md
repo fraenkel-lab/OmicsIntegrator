@@ -9,7 +9,7 @@ types of data.
 
 Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 
-Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
+Copyright (c) 2015-2016 Sara JC Gosline, Mandy Kedaigle
 
 
 System Requirements:
