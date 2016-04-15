@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##This script collects all the files needed to build a distribution of OmicsIntegrator:
-##populate these data strucutres, then type 'setup.py sdist'
+##populate these data structures, then type 'setup.py sdist'
 
 import sys, os
 
@@ -50,19 +50,19 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Sara Gosline",
     author_email='sgosline@mit.edu',
-    url='https://github.com/sgosline/OmicsIntegrator',
+    url='https://github.com/fraenkel-lab/OmicsIntegrator',
     packages=[],
 #    package_dir={'./','./examples'},#'OmicsIntegrator':
                  #'OmicsIntegrator'},
     include_package_data=True,
     install_requires=requirements,
-    license="MIT",
+    license="Creative Commons Attribution-NonCommercial 4.0 International Public License",
     zip_safe=True,
     keywords='OmicsIntegrator',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Biologists with basic programming skills',
-        'License :: OSI Approved :: MIT License',
+        'License :: CC-BY-NC',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
