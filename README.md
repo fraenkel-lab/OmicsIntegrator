@@ -1,5 +1,5 @@
-=============================== 
-Omics Integrator 
+===============================
+Omics Integrator
 ===============================
 
 Omics Integrator is a package designed to integrate gene expression data and/or
@@ -9,19 +9,21 @@ types of data.
 
 Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 
-Copyright (c) 2015 Sara JC Gosline, Mandy Kedaigle
-     
+Copyright (c) 2015-2016 Sara JC Gosline, Mandy Kedaigle
 
-System Requirements: 
+
+System Requirements:
 --------------------
-1. Python 2.6 or 2.7 (3.x version currently untested): http://www.python.org and
-the following dependencies (provided with install): 
+1. Python 2.6 or 2.7 (3.x version currently untested) and the dependencies
+below. We recommend that users without an existing Python environment
+install Anaconda (https://www.continuum.io/downloads) to obtain Python
+2.7 and the following required packages:
   - numpy: http://www.numpy.org/
   - scipy: http://www.scipy.org/
   - matplotlib: http://matplotlib.org/
   - Networkx: http://networkx.github.io
 
-2. msgsteiner package: http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
+2. msgsteiner package (version msgsteiner-1.1.tgz): http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 
 3. Boost C++ library: http://www.boost.org
 
@@ -29,7 +31,7 @@ the following dependencies (provided with install):
 http://www.cytoscape.org
 
 
-Features 
+Features
 --------
 
 * Maps gene expression data to transcription factors using chromatin
@@ -41,14 +43,51 @@ Features
 * Integrates numerous high throughput data types to determine testable
   biological hypotheses
 
+Installation:
+--------------------
+Omics Integrator is a collection of Python scripts and data files so can be
+easily installed on any system. Steps 1 through 4 are only required for Forest,
+and you may skip to step 5 if you will only be running Garnet.
 
-Running garnet.py 
------------------ 
+1. Boost is pre-installed on many Linux distributions. If your operating system
+does not include Boost, follow the [Boost getting started
+guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for
+instructions on how to download the library and extract files from the archive.
+To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew install boost` to install the library.
+2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
+3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
+4. Enter the `msgsteiner-1.1` subdirectory and run make
+  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
+5. Download the Omics Integrator package: [OmicsIntegrator-0.2.0.tar.gz](./dist/OmicsIntegrator-0.2.0.tar.gz)
+6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.2.0.tar.gz`
+7. Make sure you have all the requirements using the pip tool by entering the
+directory and typing: `pip install -r requirements.txt`
+
+
+  * Some users have reported errors when using this command to install matplotlib. To fix, install matplotlib independently (http://matplotlib.org) or use Anaconda as indicated above.
+
+Now Omics Integrator is installed on your computer and can be used to analyze
+your data.
+
+Examples
+-----------------
+We provide many scripts and files to showcase the various capabilities of Omics
+Integrator.  To run this:
+
+1. Download the [example files](./dist/OmicsIntegratorExamples.tar.gz)
+2. Unpack by typing `tar -xvzf OmicsIntegratorExamples.targ.gz` in the `dist`
+directory.
+
+For specific details about the examples, check out the [README
+file](./example/README.md) in the example directory.
+
+Running garnet.py
+-----------------
 
 Garnet is a script that runs a series of
 smaller scripts to map epigenetic data to genes and then scan the genome to
 determine the likelihood of a transcription factor binding the genome near that
-gene. 
+gene.
 
 ```
 Usage: garnet.py [configfilename]
@@ -59,9 +98,9 @@ Usage: garnet.py [configfilename]
 
 
 Options:
-  -h, --help            show this help message and exit 
-  --outdir=OUTDIR       Name of directory to place garnet output. DEFAULT:none 
-  --utilpath=ADDPATH    Destination of chipsequtil library, Default=../src 
+  -h, --help            show this help message and exit
+  --outdir=OUTDIR       Name of directory to place garnet output. DEFAULT:none
+  --utilpath=ADDPATH    Destination of chipsequtil library, Default=../src
 ```
 
 The configuration file should take the following format:
@@ -69,36 +108,36 @@ The configuration file should take the following format:
 ### garnet input
 
 ```
-[chromatinData] 
+[chromatinData]
 #these files contain epigenetically interesting regions
-bedfile = bedfilecontainingregions.bed   
-fastafile = fastafilemappedusinggalaxytools.fasta       
-#these two files are provided in the package 
-genefile = ../../data/ucsc_hg19_knownGenes.txt  
-xreffile = ../../data/ucsc_hg19_kgXref.txt  
+bedfile = bedfilecontainingregions.bed
+fastafile = fastafilemappedusinggalaxytools.fasta
+#these two files are provided in the package
+genefile = ../../data/ucsc_hg19_knownGenes.txt
+xreffile = ../../data/ucsc_hg19_kgXref.txt
 #distance to look from transcription start site
-windowsize = 2000  
+windowsize = 2000
 
-[motifData] 
-#motif matrices to be used, data provided with the package 
-tamo_file = ../../data/matrix_files/vertebrates_clustered_motifs.tamo 
-#settings for scanning 
+[motifData]
+#motif matrices to be used, data provided with the package
+tamo_file = ../../data/matrix_files/vertebrates_clustered_motifs.tamo
+#settings for scanning
 genome = hg19
-numthreads = 4 
-doNetwork = False 
+numthreads = 4
+doNetwork = False
 tfDelimiter = .
 
-[expressionData] 
-expressionFile = tabDelimitedExpressionData.txt 
-pvalThresh = 0.01 
-qvalThresh = 
+[expressionData]
+expressionFile = tabDelimitedExpressionData.txt
+pvalThresh = 0.01
+qvalThresh =
 ```
 
 #### Chromatin Data
 
 Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are
-included in the examples/ directory. `bedfile` can also be output from MACS 
-(with a `.xls` extension) or GPS/GEM (with a `.txt` extension). 
+included in the examples/ directory. `bedfile` can also be output from MACS
+(with a `.xls` extension) or GPS/GEM (with a `.txt` extension).
 To use your own epigenetic data, convert to BED and upload the
 BED-file to http://usegalaxy.org and select `Fetch Genomic DNA` from the left
 menu to click on `Extract Genomic DNA`. This will produce a FASTA-formatted file
@@ -113,7 +152,7 @@ consider an epigenetic event associated. 2kb is a very conservative metric.
 We provide motif data in the proper TAMO format, the user just needs to enter
 the genome used.  The default `numthreads` is 4, but the user can alter this
 depending on the processing power of their machine. `doNetwork` will create a
-networkX object mapping transcription factors to genes, required input for the
+NetworkX object mapping transcription factors to genes, required input for the
 [SAMNet algorithm](http://github.com/sgosline/SAMNet).  `tfDelimiter` is an
 internal parameter to tell garnet how to handle cases when many transcription
 factors map to the sam binding motif.
@@ -128,25 +167,25 @@ statistically significant. P-value (`pvalThresh`) or Q-value (`qvalThresh`)
 thresholds will be used to select only those transcription factors whose
 correlation with expression falls below the provided threshold.
 
-### garnet output 
+### garnet output
 
 garnet produces a number of intermediate files that enable you
 to better interpret your data or re-run a sub-script that may have failed. All
 files are placed in the directory provided by the `--outdir` option of the
 garnet script.
 
-- **events_to_genes.fsa**: This file contains the regions of the fastafile 
+- **events_to_genes.fsa**: This file contains the regions of the fastafile
   provided in the configuration file that are within the specified distance to a
   transcription start site.
 
 - **events_to_genes.xls**: This file contains each region, the epigenetic
-  activity in that region, and the relationship of that region to the closest 
-  gene. 
+  activity in that region, and the relationship of that region to the closest
+  gene.
 
-- **events_to_genes_with_motifs.txt**: This contains the raw transcription 
+- **events_to_genes_with_motifs.txt**: This contains the raw transcription
   factor scoring data for each region in the fasta file.
 
-- **events_to_genes_with_motifs.tgm**: This contains the transcription factor 
+- **events_to_genes_with_motifs.tgm**: This contains the transcription factor
   binding matrix scoring data mapped to the closest gene.
 
 - **events_To_genes_with_motifs_tfids.txt**: Names of transcription factors (or
@@ -155,7 +194,7 @@ garnet script.
 - **events_to_genes_with_motifs_geneids.txt**: Names of genes (or rows) of the
   matrix.
 
-- **events_to_genes_with_motifs.pkl**: A Pickle-compressed Python File 
+- **events_to_genes_with_motifs.pkl**: A Pickle-compressed Python File
   containing a dictionary data structure that contains files 4-6 (under the keys
   `tgm`,`tfs`, and `genes`) respectively as well as a `delim` key that describes
   what delimiter was used to separate out TFs in the case where there are
@@ -164,20 +203,20 @@ garnet script.
 - **events_to_genes_with_motifsregression_results.tsv**: Results from linear
   regression.
 
-- **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those 
+- **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those
   results from the regression that fall under a provided significance threshold,
-  e.g. p=0.05.  This file can be used as input to Forest. 
+  e.g. p=0.05.  This file can be used as input to forest.
 
 
 
 
-Running forest.py 
------------------ 
+Running forest.py
+-----------------
 
-Forest **requires** the msgsteiner package as well as the boost library.
+Forest **requires** the compiled msgsteiner package as well as the boost library.
 
 ```
-Usage: PCSF.py [options]
+Usage: forest.py [options]
 
 Find multiple pathways within an interactome that are altered in a particular
 condition using the Prize Collecting Steiner Forest problem
@@ -199,7 +238,7 @@ Options:
                         Should be several lines that looks like:
                         "ParameterName = ParameterValue". Must contain values
                         for w, b, D.  May contain values for optional
-                        parameters mu, n, r, g. Default = "./conf.txt"
+                        parameters mu, garnetBeta, r, g. Default = "./conf.txt"
   -d DUMMYMODE, --dummyMode=DUMMYMODE
                         Tells the program which nodes in the interactome to
                         connect the dummy node to. "terminals"= connect to all
@@ -264,8 +303,8 @@ Options:
                         supply the same seed. Default = None.
 
 ```
-                        
-### forest input files and parameters
+
+### Forest input files and parameters
 
 #### Required inputs
 
@@ -274,25 +313,40 @@ terminal nodes and prize values in a text file. The file
 `example/a549/Tgfb_phos.txt` is an example of what this file should look like.
 You should record your interactome and edge weights in a text file with 3 or 4
 columns. The file `data/iref_mitab_miscore_2013_08_12_interactome.txt` is a
-human interactome example (this interactome comes from iRefIndex v13,scored and
- formatted for our code). 
+human interactome example (this interactome comes from iRefIndex v13, scored and
+formatted for our code).
 
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
 the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu`, `n`, and  `g` may also be
-included. For explanations of the parameters, see publication. 
+must be set in this file. Optional parameters `mu`, `garnetBeta`, and  `g` may
+also be included.
 
+```
+w  = int, controls the number of trees
+b = int, controls the trade-off between including more
+    terminals and using less reliable edges
+D = int, controls the maximum path-length from v0 to terminal nodes
+mu = float, controls the degree-based negative prizes (defualt 0.0)
+garnetBeta = float, scales the garnet output prizes relative to the
+             provided protein prizes (default 0.01)
+g = float, affects the convergence of the solution & runtime (default 0.001)
+processes = int, number of processes to spawn when doing randomization runs
+            (default to number of processors on your computer)
+
+```
+
+For more details about the parameters, see our publication.
 
 
 #### Optional inputs
 
-The rest of the command line options are optional. 
+The rest of the command line options are optional.
 
-If you have run the GARNET module to create scores for transcription factors,
-you can include that output file with the `--garnet` option and `--garnetBeta`
-options. 
+If you have run the garnet module to create scores for transcription factors,
+you can include that output file with the `--garnet` option and use `n` in the
+configuration file to scale the garnet scores.
 
 The `--dummyMode` option will change which nodes in the terminal are connected
 to the dummy node in the interactome. We provide an example of this using
@@ -304,8 +358,9 @@ squared degree, as opposed to linear degree. This is helpful if the default
 mu behavior is not strict enough to eliminate irrelevant hub nodes from your
 network.
 
-If the user is not keeping the file `msgsteiner9` in the same directory as
-forest.py, the path needs to be specified using the `--msgpath` option. 
+If the user is not keeping the file `msgsteiner` in the same directory as
+forest.py, the path needs to be specified using the `--msgpath` option, i.e
+'--msgpath /home/msgsteiner-1.1/msgsteiner'.
 
 If you would like the output files to be stored in a directory other than the
 one you are running the code from, you can specify this directory with the
@@ -313,7 +368,7 @@ one you are running the code from, you can specify this directory with the
 `result` unless you specify another word or phrase, such as an identifying label
 for this experiment or run, with the `--outlabel option`. The `--cyto30` and
 `--cyto28` tags can be used to specify which version of Cytoscape you would like
-the output files to be compatiable with. 
+the output files to be compatiable with.
 
 We include three options, `--noisyEdges`, `--shuffledPrizes`, and
 `--randomTerminals` to determine how robust your results are by comparing them
@@ -345,7 +400,7 @@ validation will be run once. Each time it is run, a file called
 `<outputlabel>_cvResults_<rep>.txt` will be created. For each of the k
 iterations, it will display the number of terminals held out of the prizes
 dictionary, the number of those that were recovered in the optimal network as
-Steiner nodes, and the total number of Steiner nodes in the optimal network. 
+Steiner nodes, and the total number of Steiner nodes in the optimal network.
 
 The `-s` option will supply a seed option to the pseudo-random number generators
 used in noisyPrizes, shuffledPrizes, randomTerminals, and the optimization in
@@ -353,7 +408,7 @@ msgsteiner itself. If you want to reproduce exact results, you should supply the
 same seed every time. If you do not supply your own seed, system time is used a
 seed.
 
-###running forest
+###Running forest
 
 Once you submit your command to the command line the program will run. It will
 display messages as it completes, letting you know where in the process you are.
@@ -363,7 +418,7 @@ be imported into Cytoscape v.3.0 to view the results of the run.  These files
 will be named first with the outputlabel that you provided (or `result` by
 default), and then with a phrase identifying which file type it is.
 
-### forest output
+### Forest output
 
 - **info.txt** contains information about the algorithm run, including any error
   messages if there were any during the run.
@@ -400,3 +455,7 @@ first row of the file should be interpreted as column labels. Click OK.
 
 When the network and the attributes are imported into Cytoscape, you can alter
 the appearance of the network as you usually would using VizMapper.
+
+Testing
+-----------------
+See the `tests` directory for instructions on testing Omics Integrator.

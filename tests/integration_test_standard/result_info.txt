@@ -1,11 +1,10 @@
 num threads: 1
-181515 edges, 17458 vertices
-126 -14103.1 35.8484 -14139 0 5
-140 -14107.7 35.6819 -14143.4 0 5
-141 -14108.7 35.0453 -14143.8 0 5
+175869 edges, 15405 vertices
+146 -13725.3 32.9672 -13758.3 0 5
+152 -13733.8 29.6495 -13763.5 0 6
 
 There were 49 terminals in the interactome.
-There are 43 terminals in the optimal forest.
-The optimal forest has 55 nodes total.
-The roots in the optimal forest are ['PXN']
+There are 37 terminals in the optimal forest.
+The optimal forest has 48 nodes total.
+The roots in the optimal forest are ['CDH1']
 Of these, [] are singletons and will not show up in optimalForest.sif since they have no leaves.

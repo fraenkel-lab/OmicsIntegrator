@@ -35,7 +35,7 @@ __email__='sgosline@mit.edu'
 
 ##update this to include direct location of chipsequtil pacakge
 import sys,os,re
-from optparse import OptionParser
+import argparse
 from ConfigParser import ConfigParser
 
 progdir=os.path.dirname(sys.argv[0])
@@ -71,10 +71,17 @@ def mapGenesToRegions(genefile,xreffile,bedfile,window='2000',outdir=None):
     return res,outfile
 
 
-def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
+def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file='',gene_list=''):
     '''
     Second step of GARNET scans chromatin regions provided in galaxy-produced FASTA for motif matrix 
     affinity scores
+    Arguments:
+    tamo_file: TAMO-formatted list of motifs to scan
+    fastafile: FASTA-formatted file to scan
+    numthreads: number of threads to run, this process can take a while
+    genome: which genome build to use
+    closest_gene_file: output of map_peaks_to_known_genes.py so that only those fasta sequences that map to genes will be scanned.
+    gene_list: list of genes to focus on (i.e. diff ex genes), based on closest_gene_file mappings.
     '''
     if closest_gene_file=='':
         motif_binding_out=re.sub('.fasta','_with_motifs.txt',fastafile)
@@ -87,7 +94,7 @@ def motifScanning(tamo_file,fastafile,numthreads,genome,closest_gene_file=''):
         return 0,motif_binding_out
 
 
-    scan_cmd='python '+os.path.join(progdir,'motif_fsa_scores.py')+' --motif='+tamo_file+' --genome='+genome+' --outfile='+motif_binding_out+' --genefile='+closest_gene_file+' --scale=10 --threads='+numthreads+' '+fastafile
+    scan_cmd='python '+os.path.join(progdir,'motif_fsa_scores.py')+' --motif='+tamo_file+' --genome='+genome+' --outfile='+motif_binding_out+' --genemappingfile='+closest_gene_file+' --scale=10 --threads='+numthreads+' '+fastafile+' --genelist='+gene_list
     print '\n-----------------------------Motif Scanning Output------------------------------------------\n'
     print 'Running command:\n'+scan_cmd+'\n'
     print 'Scanning regions from '+fastafile+' using matrices from '+tamo_file+' and putting results in '+motif_binding_out
@@ -156,26 +163,22 @@ def main():
     
     srcdir=os.path.join(progdir,'../src')
     
-    usage='Usage: %prog [configfilename]'
-    parser=OptionParser(usage=usage)
+    parser=argparse.ArgumentParser()
     #uniprot option will be deprecated, SAMNet should be able to map to human gene names
     #    parser.add_option('--useUniprot',dest='useUniprot',action='store_true',help='Set this flag to use Uniprot identifies',default=False)
-    parser.add_option('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT:%default',default=None)
-    parser.add_option('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT:%default',default=srcdir)
-    parser.add_option('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show know evidence of encoding proteins.',action='store_true',default=False)
+    parser.add_argument('configfilename', help='Path to configuration file.')
+    parser.add_argument('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT: none',default=None)
+    parser.add_argument('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT: ../src',default=srcdir)
+    parser.add_argument('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show no evidence of encoding proteins.',action='store_true',default=False)
 
 
-    opts,args=parser.parse_args()
+    opts=parser.parse_args()
     
     sys.path.insert(0,opts.addpath)
     sys.path.insert(0,opts.addpath+'chipsequtil')
-    
-    if len(args)!=1:
-        print 'Need a configuration file to provide experiment-level details'
-        sys.exit()
 
     config=ConfigParser()
-    config.read(args[0])
+    config.read(opts.configfilename)
 
     ##now check for elements of config file. if they are missing, move onto next step
     ##first step 1 check
@@ -208,10 +211,13 @@ def main():
 
     fastafile=config.get('chromatinData','fastafile')
 
+    expr=config.get('expressionData','expressionFile')
+
+    
     ##step 2
     if tamofile is not None and tamofile!='' and genome is not None and fastafile is not None and fastafile!='':
         if os.path.exists(tamofile) and os.path.exists(fastafile):
-            keeprunning,binding_out=motifScanning(tamofile,fastafile,numthreads,genome,outfile)
+            keeprunning,binding_out=motifScanning(tamofile,fastafile,numthreads,genome,outfile,expr)
         else:
             binding_out=''
             print 'Missing FASTA file or TAMO file - check your config file and try again.'
@@ -244,10 +250,10 @@ def main():
             cmd=cmd+' --allGenes'
         print cmd
         os.system(cmd)
-
-    expr=config.get('expressionData','expressionFile')
+        
     pvt=config.get('expressionData','pvalThresh')
     qvt=config.get('expressionData','qvalThresh')
+
     ##step 4: regression
     if expr is not None and expr!='':
         #print binding_matrix,expr

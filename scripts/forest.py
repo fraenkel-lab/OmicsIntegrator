@@ -4,10 +4,11 @@
 #2013-2014
 
 
-import sys, optparse, random, copy
+import sys, argparse, random, copy, os
 import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
+import multiprocessing as mp
 
 
 
@@ -84,14 +85,16 @@ class PCSFInput(object):
                 D = line.strip().split()[-1]
             if line.startswith('mu ='):
                 mu = line.strip().split()[-1]
-            if line.startswith('n ='):
+            if line.startswith('garnetBeta ='):
                 n = line.strip().split()[-1]
             if line.startswith('r ='):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
                 g = line.strip().split()[-1]
             if line.startswith('threads = '):
-                threads = line.strip().split()[1]
+                threads = line.strip().split()[-1]
+            if line.startswith('processes ='):
+                processes = line.strip().split()[-1]
         c.close()
         try:
             mu = float(mu)
@@ -120,6 +123,10 @@ class PCSFInput(object):
         except:
             threads = 1
         try:
+            processes = int(processes)
+        except:
+            processes = None
+        try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
                   %(float(w), float(b), int(D), mu, g, n)
         except:
@@ -134,6 +141,7 @@ class PCSFInput(object):
         self.r = r
         self.g = g
         self.threads = threads
+        self.processes = processes
         
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
@@ -145,6 +153,11 @@ class PCSFInput(object):
             sys.exit('ERROR: No such file %s, aborting program.\n' %edgeFile)
         line = e.readline()
         words = line.strip().split()
+        try:
+            words[2]=float(words[2])
+        except ValueError:
+            #Skipping header line
+            line=e.readline()
         #See if edgeFile contains directionality infomation in 4th column
         if len(words) == 3:
             col = 3
@@ -162,7 +175,7 @@ class PCSFInput(object):
         below_0,above1=0,0
         #Add each edge in edgeFile to undirEdges or dirEdges dictionary, appropriately
         while line:
-            words = line.strip().split('\t')
+            words = line.strip().split()
             if len(words) != col:
                 print 'current line:', line
                 sys.exit('ERROR: All lines in the file containing the interactome edges should '\
@@ -297,6 +310,12 @@ class PCSFInput(object):
         count = 0
         #Add each node in prizeFile to origPrizes dictionary
         line = p.readline()
+        try:
+            words = line.strip().split()
+            words[1] = float(words[1])
+        except ValueError:
+            #Skipping header line
+            line=p.readline()
         while line:
             words = line.strip().split()
             if len(words) != 2:
@@ -506,9 +525,9 @@ class PCSFInput(object):
     
     def runPCSF(self, msgpath, seed):
         """
-        Passes the information in this input object to msgsteiner9, and returns the results.
+        Passes the information in this input object to msgsteiner, and returns the results.
         
-        INPUT: msgpath - points to the directory where msgsteiner9 is held.
+        INPUT: msgpath - points to the directory where msgsteiner is held.
                
         RETURNS: edgeList - the contents of stdout from msgsteiner: a list of edges in the 
                             optimal Forest
@@ -539,25 +558,26 @@ class PCSFInput(object):
             input.write('D %s DUMMY %.4f\n' %(node, self.w))
         for node in self.totalPrizes:
             input.write('W %s %f\n' %(node, float(self.totalPrizes[node])))
+
+        '''
+        sort input for msgsteiner:
+        read from input,
+        sort list,
+        write back to input file
+        '''
+        input.seek(0)
+        lines = input.readlines()
+        lines = sorted(lines)
+        input.close()
+        input = tempfile.TemporaryFile()
+        for item in lines:
+            input.write(item)
         input.write('W DUMMY 100.0\n')
         input.write('R DUMMY\n\n')
 
-        input.seek(0)
-        tempFileOut = open('tempFileData', 'w+')
-        for line in input:
-            tempFileOut.write(line)
-        tempFileOut.close()
-        print 'Input is processed. Piping to msgsteiner9 code...\n'
-    
-        #Run the msgsteiner code using Python's subprocess module
-        try:
-            with open(msgpath): pass
-        except IOError:
-            sys.exit('ERROR: The msgsteiner9 code was not found in the correct directory. '\
-                     'Please use --msgpath to tell us the path to the msgsteiner9 code.' )
+        print 'Input is processed. Piping to msgsteiner code...\n'
         
-
-        #Run msgsteiner9 as subprocess. Using temporary files for stdin and stdout 
+        #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
         #to avoid broken pipes when data is too big
         subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
                        str(self.r), '-g', str(self.g), '-j', str(self.threads)]
@@ -586,7 +606,7 @@ class PCSFInput(object):
         subproc.stderr.close()
         out.seek(0)
         edgeList = out.read()
-        out.close()        
+        out.close()
         return (edgeList, info)
         
 class PCSFOutput(object):
@@ -748,7 +768,7 @@ class PCSFOutput(object):
             undirEdgesAdded = {}
             
             edgesSorted = self.augForest.edges(data=True)            
-            edgesSorted.sort(key = itemgetter(0))
+            edgesSorted.sort(key = itemgetter(0, 1))
 
             #iterate through edges to record edge types and edge attributes
             for (node1,node2,data) in edgesSorted:
@@ -780,14 +800,14 @@ class PCSFOutput(object):
                             undirEdgesAdded[node1] = {node2:1}
 
             nodesSorted = self.augForest.nodes(data=True)
-            nodesSorted.sort(key = itemgetter(0))
+            nodesSorted.sort(key = itemgetter(0, 1))
             #iterate through nodes to record node attributes
             for (node,data) in nodesSorted:
                 noa.write(node+'\t'+str(data['prize'])+'\t'+str(data['betweenness'])+'\t'+
                           str(data['fracOptContaining'])+'\t'+data['TerminalType']+'\n')
 
             dumSorted = self.dumForest.edges()
-            dumSorted.sort(key = itemgetter(0))        
+            dumSorted.sort(key = itemgetter(0, 1))        
             #Record dummy edges
             for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
@@ -826,7 +846,7 @@ class PCSFOutput(object):
         
             undirEdgesAdded = {}
             edgesSorted = self.augForest.edges(data=True)            
-            edgesSorted.sort(key = itemgetter(0))            
+            edgesSorted.sort(key = itemgetter(0, 1))            
             #iterate through edges to record edge types and edge attributes
             for (node1,node2,data) in edgesSorted:
                 try:
@@ -858,7 +878,7 @@ class PCSFOutput(object):
                     
             #iterate through nodes to record node attributes
             nodesSorted = self.augForest.nodes(data=True)
-            nodesSorted.sort(key = itemgetter(0))            
+            nodesSorted.sort(key = itemgetter(0, 1))            
             for (node,data) in nodesSorted:
                 bcNoa.write(node+' = '+str(data['betweenness'])+'\n')
                 prizeNoa.write(node+' = '+str(data['prize'])+'\n')
@@ -866,7 +886,7 @@ class PCSFOutput(object):
                 ttypeNoa.write(node+ ' = '+str(data['TerminalType'])+'\n')
 
             dumSorted = self.dumForest.edges()
-            dumSorted.sort(key = itemgetter(0))        
+            dumSorted.sort(key = itemgetter(0, 1))        
             #Record dummy edges
             for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
@@ -1078,10 +1098,12 @@ def randomTerminals(PCSFInputObj, seed, excludeT):
             if seed != None:
                 random.seed(seed+k+i)
             offset = int(random.gauss(0.0,100.0))
-            newIndex = i + offset
+            newIndex = index + offset
+            #if offset causes the index to wraparound to the other side of the list, try again
+            if newIndex<0: continue
             try:
                 newNode = degrees[newIndex]
-            except KeyError:
+            except IndexError:
                 #if offset points outside list, try loop again
                 continue
             #To make truly random, need to choose randomly between all nodes with the same degree
@@ -1108,6 +1130,11 @@ def randomTerminals(PCSFInputObj, seed, excludeT):
     print 'New degree-matched terminals have been chosen.\n'
     return newPCSFInputObj
 
+#wrapper function for runPCSF() multiprocessing
+def PCSF(inputObj,msgpath,seed):
+    (Edge, Info) = inputObj.runPCSF(msgpath,seed)
+    return (Edge, Info)
+
 def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel,
                                 excludeT):
     """
@@ -1119,7 +1146,7 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
                   (i.e. shuffles or adds noise)
            inputObj - a PCSFInput object with original values, to be changed.
            numRums - the number of times to change the values and re-run msgsteiner
-           msgpath - path to the directory where msgsteiner9 is kept
+           msgpath - path to the directory where msgsteiner is kept
            outputpath - path to the directory where output files should be stored
            outputlabel - a label with which to name all of the output files for this run
            
@@ -1130,16 +1157,24 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
     """ 
     print 'Preparing to change values %i times and get merged results of running the '\
           'algorithm on new values.\n' %numRuns
+    #Create multiprocessing Pool
+    if inputObj.processes == None:
+        pool = mp.Pool()
+    else:
+        pool = mp.Pool(inputObj.processes)
+    if seed != None:
+        #For each run, create process, change prize/edge values and run msgsteiner
+        #Note that each run will create a info file
+        results = [pool.apply_async(PCSF, args=(func(inputObj, seed+i, excludeT),
+                  msgpath, seed+i,)) for i in xrange(numRuns)]
+    else:
+        results = [pool.apply_async(PCSF, args=(func(inputObj, seed, excludeT),
+                  msgpath,seed,)) for i in xrange(numRuns)]
+    output = [p.get() for p in results]
     i = 0
+    #Merge output of new msgsteiner runs together
     while i <= numRuns-1:
-        #Change prize/edge values and run msgsteiner with new values
-        #NOTE: there will be an info file written for every run
-        if seed != None:
-            changedInputObj = func(inputObj, seed+i, excludeT)
-            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed+i)
-        else:
-            changedInputObj = func(inputObj, seed, excludeT)
-            (newEdgeList, newInfo) = changedInputObj.runPCSF(msgpath, seed)
+        (newEdgeList, newInfo) = output[i]
         #By creating the output object with inputObj instead of changedInputObj, 
         #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes, 
         #not the changed prizes.
@@ -1244,80 +1279,91 @@ def crossValidation(k, rep, PCSFInputObj, seed, msgpath, outputpath, outputlabel
 
 def main():
     #Parsing arguments (run python PCSF.py -h to see all these decriptions)
-    parser = optparse.OptionParser(description='Find multiple pathways within an interactome '\
+    parser = argparse.ArgumentParser(description='Find multiple pathways within an interactome '\
         'that are altered in a particular condition using the Prize Collecting Steiner Forest '\
         'problem')
     #required arguments
-    parser.add_option("-p", "--prize", dest='prizeFile', help='(Required) Path to the text file '\
+    parser.add_argument("-p", "--prize", dest='prizeFile', help='(Required) Path to the text file '\
         'containing the prizes. Should be a tab delimited file with lines: "ProteinName'\
         '\tPrizeValue"')
-    parser.add_option("-e", "--edge", dest='edgeFile', help ='(Required) Path to the text file '\
+    parser.add_argument("-e", "--edge", dest='edgeFile', help ='(Required) Path to the text file '\
         'containing the interactome edges. Should be a tab delimited file with 3 or 4 columns: '\
         '"ProteinA\tProteinB\tWeight(between 0 and 1)\tDirectionality(U or D, optional)"')
     #optional arguments
-    parser.add_option("-c", "--conf", dest='confFile', help='Path to the text file containing '\
+    parser.add_argument("-c", "--conf", dest='confFile', help='Path to the text file containing '\
         'the parameters. Should be several lines that looks like: "ParameterName = '\
         'ParameterValue". Must contain values for w, b, D.  May contain values for optional '\
         'parameters mu, n, r, g. Default = "./conf.txt"', default='conf.txt')
-    parser.add_option("-d","--dummyMode", dest='dummyMode', help='Tells the program which nodes '\
+    parser.add_argument("-d","--dummyMode", dest='dummyMode', help='Tells the program which nodes '\
         'in the interactome to connect the dummy node to. "terminals"= connect to all terminals, '\
         '"others"= connect to all nodes except for terminals, "all"= connect to all '\
         'nodes in the interactome. If you wish you supply your own list of proteins, dummyMode '\
         'could also be the path to a text file containing a list of proteins (one per line). '\
-        'Default = "terminals"', default='terminals')
-    parser.add_option("--garnet", dest='garnet', help='Path to the text file containing '\
+	'Default = "terminals"', default='terminals')
+    parser.add_argument("--garnet", dest='garnet', help='Path to the text file containing '\
         'the output of the GARNET module regression. Should be a tab delimited file with 2 '\
         'columns: "TranscriptionFactorName\tScore". Default = "None"', default=None)
-    parser.add_option("--musquared", action='store_true', dest='musquared', help='Flag to add '\
+    parser.add_argument("--musquared", action='store_true', dest='musquared', help='Flag to add '\
         'negative prizes to hub nodes proportional to their degree^2, rather than degree. Must '\
         'specify a positive mu in conf file.', default=False)
-    parser.add_option("--excludeTerms", action='store_true', dest='excludeT', help='Flag to '\
+    parser.add_argument("--excludeTerms", action='store_true', dest='excludeT', help='Flag to '\
         'exclude terminals when calculating negative prizes. Use if you want terminals to keep '\
         'exact assigned prize regardless of degree.', default=False)
-    parser.add_option("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
-        'Default = "<current directory>/msgsteiner9"', default='./msgsteiner9')
-    parser.add_option("--outpath", dest = 'outputpath', help='Path to the directory which will '\
+    parser.add_argument("--msgpath", dest='msgpath',  help='Full path to the message passing code. '\
+        'Default = "<current directory>/msgsteiner"', default='./msgsteiner')
+    parser.add_argument("--outpath", dest = 'outputpath', help='Path to the directory which will '\
         'hold the output files. Default = this directory', default='.')
-    parser.add_option("--outlabel", dest = 'outputlabel', help='A string to put at the beginning '\
+    parser.add_argument("--outlabel", dest = 'outputlabel', help='A string to put at the beginning '\
         'of the names of files output by the program. Default = "result"', default='result')
-    parser.add_option("--cyto30", action='store_true', dest='cyto30', help='Use this flag if '\
+    parser.add_argument("--cyto30", action='store_true', dest='cyto30', help='Use this flag if '\
         'you want the output files to be amenable with Cytoscape v3.0 (this is the default).',
         default=True)
-    parser.add_option("--cyto28", action='store_false', dest='cyto30', help='Use this flag if '\
+    parser.add_argument("--cyto28", action='store_false', dest='cyto30', help='Use this flag if '\
         'you want the output files to be amenable with Cytoscape v2.8, rather than v3.0.')
-    parser.add_option("--noisyEdges", dest='noiseNum', help='An integer specifying how many '\
+    parser.add_argument("--noisyEdges", dest='noiseNum', help='An integer specifying how many '\
         'times you would like to add noise to the given edge values and re-run the algorithm. '\
         'Results of these runs will be merged together and written in files with the word '\
-        '"_noisyEdges_" added to their names. Default = 0', type='int', default=0)
-    parser.add_option("--shuffledPrizes", dest='shuffleNum', help='An integer specifying how '\
+        '"_noisyEdges_" added to their names. Default = 0', type=int, default=0)
+    parser.add_argument("--shuffledPrizes", dest='shuffleNum', help='An integer specifying how '\
         'many times you would like to shuffle around the given prizes and re-run the algorithm. '\
         'Results of these runs will be merged together and written in files with the word '\
-        '"_shuffledPrizes_" added to their names. Default = 0', type='int', default=0)
-    parser.add_option("--randomTerminals", dest='termNum', help='An integer specifying how many '\
+        '"_shuffledPrizes_" added to their names. Default = 0', type=int, default=0)
+    parser.add_argument("--randomTerminals", dest='termNum', help='An integer specifying how many '\
         'times you would like to apply your given prizes to random nodes in the interactome (with'\
         ' a similar degree distribution) and re-run the algorithm. Results of these runs will be '\
         'merged together and written in files with the word "_randomTerminals_" added to their '\
-        'names. Default = 0', type='int', default=0)
-    parser.add_option("--knockout", dest='knockout', help='A list specifying protein(s) you '\
-        'would like to "knock out" of the interactome to simulate a knockout experiment, '\
-        "i.e. ['TP53'] or ['TP53', 'EGFR'].", type='string', default='[]')
-    parser.add_option("-k", "--cv", dest='cv', help='An integer specifying the k value if you '\
+        'names. Default = 0', type=int, default=0)
+    parser.add_argument("--knockout", dest='knockout', nargs='*', help='Protein(s) you '\
+        'would like to "knock out" of the interactome to simulate a knockout experiment.', \
+	default=[])    
+    parser.add_argument("-k", "--cv", dest='cv', help='An integer specifying the k value if you '\
         'would like to run k-fold cross validation on the prize proteins. Default = None.', \
-        type='int', default=None)
-    parser.add_option("--cv-reps", dest='cv_reps', help='An integer specifying how many runs of '\
+        type=int, default=None)
+    parser.add_argument("--cv-reps", dest='cv_reps', help='An integer specifying how many runs of '\
         'cross-validation you would like to run. To use this option, you must also specify a -k '\
-        'or --cv parameter. Default = None.', type='int', default=None)
-    parser.add_option("-s", "--seed", dest='seed', help='An integer seed for the pseudo-random '\
+        'or --cv parameter. Default = None.', type=int, default=None)
+    parser.add_argument("-s", "--seed", dest='seed', help='An integer seed for the pseudo-random '\
         'number generators. If you want to reproduce exact results, supply the same seed. '\
-        'Default = None.', type='int', default=None)
+        'Default = None.', type=int, default=None)
     
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
     
     #Check cv parameters do not conflict
     if options.cv_reps != None:
         if options.cv == None:
             sys.exit('You cannot use the --cv-reps option without also specifying a k parameter '\
                      'for k-fold cross validation.')
+
+    #Check if outputpath exists
+    if not os.path.isdir(options.outputpath):
+        sys.exit('Outpath %s is not a directory'%options.outputpath)
+
+    # Ensure msgsteiner can be located before spending time parsing the input files
+    try:
+        with open(options.msgpath): pass
+    except IOError:
+        sys.exit('ERROR: The msgsteiner code was not found in the correct directory. '\
+                 'Please use --msgpath to specify the path to the msgsteiner code.')
 
     #Process input, run msgsteiner, create output object, and write out results
     inputObj = PCSFInput(options.prizeFile,options.edgeFile, options.confFile, options.dummyMode,
