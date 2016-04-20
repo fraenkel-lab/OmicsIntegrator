@@ -4,13 +4,17 @@ Omics Integrator
 
 Omics Integrator is a package designed to integrate gene expression data and/or
 proteomics data using the protein-protein interaction network. It is comprised
-of two modules, garnet and forest, that perform data integration of various
+of two modules, Garnet and Forest, that perform data integration of various
 types of data.
 
 Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
 
 Copyright (c) 2015-2016 Sara JC Gosline, Mandy Kedaigle
 
+Reference:
+--------------------
+[Network-Based Interpretation of Diverse High-Throughput Datasets through the Omics Integrator Software Package](http://dx.doi.org/10.1371/journal.pcbi.1004879)
+Tuncbag N<sup>\*</sup>, Gosline SJC<sup>\*</sup>, Kedaigle A, Soltis AR, Gitter A, Fraenkel E. *PLoS Comput Biol* 12(4): e1004879. doi:10.1371/journal.pcbi.1004879.
 
 System Requirements:
 --------------------
@@ -29,7 +33,6 @@ install Anaconda (https://www.continuum.io/downloads) to obtain Python
 
 4. Cytoscape for viewing results graphically (tested on versions 2.8-3.2):
 http://www.cytoscape.org
-
 
 Features
 --------
