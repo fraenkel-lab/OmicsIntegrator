@@ -78,7 +78,7 @@ We provide many scripts and files to showcase the various capabilities of Omics
 Integrator.  To run this:
 
 1. Download the [example files](./dist/OmicsIntegratorExamples.tar.gz)
-2. Unpack by typing `tar -xvzf OmicsIntegratorExamples.targ.gz` in the `dist`
+2. Unpack by typing `tar -xvzf OmicsIntegratorExamples.tar.gz` in the `dist`
 directory.
 
 For specific details about the examples, check out the [README

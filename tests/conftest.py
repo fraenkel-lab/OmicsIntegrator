@@ -2,7 +2,7 @@
 import pytest
 
 def pytest_addoption(parser):
-    parser.addoption('--msgpath',dest='msgsteiner',type='string',help='Path to msgsteiner9 code, be sure to include!')
+    parser.addoption('--msgpath',dest='msgsteiner',type='string',help='Full path to the msgsteiner dependency, including the executable name.')
 
 @pytest.fixture
 def msgsteiner(request):
