@@ -4,14 +4,12 @@ include HISTORY.rst
 include LICENSE
 include README.md
 
-
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
-prune tests
-
-recursive-include data *
-recursive-include src *
+graft data
+graft src
+graft tests
 
 include example *
 include example/README.md
