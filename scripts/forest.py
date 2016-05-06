@@ -58,6 +58,7 @@ class PCSFInput(object):
                                           edges to.
                 self.interactomeNodes - a list of all nodes in the interactome
                 self.w, self.b, self.D, self.n, self.mu, self.g, self.r, self.threads - parameters
+                                (the variable n is a legacy name for garnetBeta)
         """
         if prizeFile==None or edgeFile==None:
             sys.exit('PCSF.py failed. Needs -p and -e arguments. Run PCSF.py -h for help.')
@@ -86,6 +87,7 @@ class PCSFInput(object):
             if line.startswith('mu ='):
                 mu = line.strip().split()[-1]
             if line.startswith('garnetBeta ='):
+                # Configuration file now uses garnetBeta but still store in n
                 n = line.strip().split()[-1]
             if line.startswith('r ='):
                 r = line.strip().split()[-1]
@@ -109,7 +111,7 @@ class PCSFInput(object):
         try:
             n = float(n)
         except:
-            n = 0.01 # Default n
+            n = 0.01 # Default n (garnetBeta)
         try:
             r = float(r)
         except:
@@ -127,11 +129,11 @@ class PCSFInput(object):
         except:
             processes = None
         try:
-            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, n = %f.' \
-                  %(float(w), float(b), int(D), mu, g, n)
+            print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, garnetBeta = %f, r = %f.' \
+                  %(float(w), float(b), int(D), mu, g, n, r)
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
-                     'include appropriate values for w, b, D, and optionally mu, n, or g.')
+                     'include appropriate values for w, b, D, and optionally mu, r, garnetBeta, or g.')
                      
         self.w = float(w)
         self.b = float(b)
@@ -521,7 +523,7 @@ class PCSFInput(object):
         print 'All directed edges in the input interactome were', self.dirEdges
         print 'The dummy node was connected to nodes: '+ str(self.dummyNodeNeighbors)
         print 'The parameters were: w= ' + self.w + ' b= ' +self.b+ ' D= ' + self.D + ' mu= '\
-              + self.mu + ' r= ' + self.r + ' g= ' + self.g
+              + self.mu + ' r= ' + self.r + ' g= ' + self.g + ' garnetBeta= ' + self.n
     
     def runPCSF(self, msgpath, seed):
         """
@@ -599,8 +601,8 @@ class PCSFInput(object):
             sys.exit('ERROR: There was a problem running the message passing algorithm. <%s>: %s' \
                      %(errcode, errmess))
         print 'Message passing run finished with the parameters: w = %s, b = %s, D = %s, mu = %s' \
-              ', g = %s\n' \
-              %(self.w, self.b, self.D, self.mu, self.g)
+              ', g = %s, r = %s\n' \
+              %(self.w, self.b, self.D, self.mu, self.g, self.r)
         input.close()
         info = subproc.stderr.read()
         subproc.stderr.close()
@@ -1293,7 +1295,7 @@ def main():
     parser.add_argument("-c", "--conf", dest='confFile', help='Path to the text file containing '\
         'the parameters. Should be several lines that looks like: "ParameterName = '\
         'ParameterValue". Must contain values for w, b, D.  May contain values for optional '\
-        'parameters mu, n, r, g. Default = "./conf.txt"', default='conf.txt')
+        'parameters mu, garnetBeta, r, g. Default = "./conf.txt"', default='conf.txt')
     parser.add_argument("-d","--dummyMode", dest='dummyMode', help='Tells the program which nodes '\
         'in the interactome to connect the dummy node to. "terminals"= connect to all terminals, '\
         '"others"= connect to all nodes except for terminals, "all"= connect to all '\
