@@ -326,8 +326,8 @@ A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
 change the values included in this file directly or can supply their own
 similarly formatted file. If the -c option is not included in the command line
 the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu`, `garnetBeta`, `g`, and `r`
-may also be included.
+must be set in this file. Optional parameters `mu`, `garnetBeta`, `noise`,
+`g`, and `r` may also be included.
 
 ```
 w = int, controls the number of trees
@@ -357,7 +357,7 @@ For more details about the parameters, see our publication.
 The rest of the command line options are optional.
 
 If you have run the garnet module to create scores for transcription factors,
-you can include that output file with the `--garnet` option and use `n` in the
+you can include that output file with the `--garnet` option and use `garnetBeta` in the
 configuration file to scale the garnet scores.
 
 The `--dummyMode` option will change which nodes in the terminal are connected
