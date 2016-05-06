@@ -240,8 +240,9 @@ Options:
                         Path to the text file containing the parameters.
                         Should be several lines that looks like:
                         "ParameterName = ParameterValue". Must contain values
-                        for w, b, D.  May contain values for optional
-                        parameters mu, garnetBeta, r, g. Default = "./conf.txt"
+                        for w, b, D. May contain values for optional
+                        parameters mu, garnetBeta, noise, r, g. Default =
+                        "./conf.txt"
   -d DUMMYMODE, --dummyMode=DUMMYMODE
                         Tells the program which nodes in the interactome to
                         connect the dummy node to. "terminals"= connect to all
@@ -277,7 +278,9 @@ Options:
                         add noise to the given edge values and re-run the
                         algorithm. Results of these runs will be merged
                         together and written in files with the word
-                        "_noisyEdges_" added to their names. Default = 0
+                        "_noisyEdges_" added to their names. The noise level
+                        can be controlled using the configuration file.
+                        Default = 0
   --shuffledPrizes=SHUFFLENUM
                         An integer specifying how many times you would like to
                         shuffle around the given prizes and re-run the
@@ -334,6 +337,8 @@ D = int, controls the maximum path-length from v0 to terminal nodes
 mu = float, controls the degree-based negative prizes (defualt 0.0)
 garnetBeta = float, scales the garnet output prizes relative to the
              provided protein prizes (default 0.01)
+noise = float, controls the standard deviation of the Gaussian edge
+        noise when the --noisyEdges option is used (default 0.333)
 g = float, msgsteiner parameter that affects the convergence of the
     solution and runtime (default 0.001)
 r = float, msgsteiner parameter that adds random noise to edges,
@@ -380,24 +385,23 @@ the output files to be compatiable with.
 We include three options, `--noisyEdges`, `--shuffledPrizes`, and
 `--randomTerminals` to determine how robust your results are by comparing them
 to results with slightly altered input values. To use these options, supply a
-number for either parameter greater than 0.  If the number you give is more than
+number for either parameter greater than 0. If the number you give is more than
 1, it will alter values and run the program that number of times and merge the
 results together. The program will add Gaussian noise to the edge values you
 gave in the `-e` option, or shuffle the prizes around all the network proteins
 in the `-p` option, or assign the prizes to network proteins with similar
 degrees as your original terminals, according to which option you use. In
-`--noisyEdges`, the standard deviation of the Gaussian noise will be the value
-the user supplied for the parameter `n` in the `-c` configuration file, if
-given. If not given, the standard deviation will be the 0.333. The results from
-these runs will be stored in seperate files from the results of the run with the
-original prize or edge values, and both will be outputted by the program to the
-same directory.
+`--noisyEdges`, Gaussian noise with mean 0 and standard deviation specified by
+the parameter `noise` in the configuration file (default 0.333) will be added
+to the edge scores. The results from these runs will be stored in seperate files
+from the results of the run with the original prize or edge values, and both
+will be outputted by the program to the same directory.
 
 The knockout option can be used if you would like to simulate a knockout
 experiment by removing a node from your interactome. Specify your knockout
 proteins in a list, i.e. ['TP53'] or ['TP53', 'EGFR'].
 
-The `-k` and `--cv` optionz can be used if you would like to run k-fold cross
+The `-k` and `--cv` options can be used if you would like to run k-fold cross
 validation. This will partition the proteins with prizes into k equal
 subsamples. It will run msgsteiner k times, leaving one subsample of prizes out
 each time. The `--cv-reps` option can be used if you would like to run k-fold
