@@ -57,8 +57,7 @@ class PCSFInput(object):
                 self.dummyNodeNeighbors - a list of all proteins that the dummy node should have
                                           edges to.
                 self.interactomeNodes - a list of all nodes in the interactome
-                self.w, self.b, self.D, self.n, self.mu, self.g, self.r, self.threads - parameters
-                                (the variable n is a legacy name for garnetBeta)
+                self.w, self.b, self.D, self.gb, self.mu, self.g, self.r, self.threads - parameters
         """
         if prizeFile==None or edgeFile==None:
             sys.exit('PCSF.py failed. Needs -p and -e arguments. Run PCSF.py -h for help.')
@@ -87,8 +86,7 @@ class PCSFInput(object):
             if line.startswith('mu ='):
                 mu = line.strip().split()[-1]
             if line.startswith('garnetBeta ='):
-                # Configuration file now uses garnetBeta but still store in n
-                n = line.strip().split()[-1]
+                gb = line.strip().split()[-1]
             if line.startswith('r ='):
                 r = line.strip().split()[-1]
             if line.startswith('g ='):
@@ -109,9 +107,9 @@ class PCSFInput(object):
         except:
             mu = 0.0
         try:
-            n = float(n)
+            gb = float(gb)
         except:
-            n = 0.01 # Default n (garnetBeta)
+            gb = 0.01 # Default garnetBeta
         try:
             r = float(r)
         except:
@@ -130,7 +128,7 @@ class PCSFInput(object):
             processes = None
         try:
             print 'Continuing with parameters w = %f, b = %f, D = %i, mu = %f, g = %f, garnetBeta = %f, r = %f.' \
-                  %(float(w), float(b), int(D), mu, g, n, r)
+                  %(float(w), float(b), int(D), mu, g, gb, r)
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
                      'include appropriate values for w, b, D, and optionally mu, r, garnetBeta, or g.')
@@ -139,7 +137,7 @@ class PCSFInput(object):
         self.b = float(b)
         self.D = int(D)
         self.mu = mu
-        self.n = n
+        self.gb = gb
         self.r = r
         self.g = g
         self.threads = threads
@@ -347,7 +345,8 @@ class PCSFInput(object):
                 if words[0] not in undirEdges and words[0] not in dirEdges:
                     count += 1
                 else:
-                    prize = float(words[1])*self.n
+                    # Scale prize using garnetBeta
+                    prize = float(words[1])*self.gb
                     #If the TF already has a prize value this will replace it.
                     origPrizes[words[0]] = prize
                     if words[0] in terminalTypes.keys():
@@ -523,7 +522,7 @@ class PCSFInput(object):
         print 'All directed edges in the input interactome were', self.dirEdges
         print 'The dummy node was connected to nodes: '+ str(self.dummyNodeNeighbors)
         print 'The parameters were: w= ' + self.w + ' b= ' +self.b+ ' D= ' + self.D + ' mu= '\
-              + self.mu + ' r= ' + self.r + ' g= ' + self.g + ' garnetBeta= ' + self.n
+              + self.mu + ' r= ' + self.r + ' g= ' + self.g + ' garnetBeta= ' + self.gb
     
     def runPCSF(self, msgpath, seed):
         """
@@ -1040,6 +1039,7 @@ def noiseEdges(PCSFInputObj, seed, excludeT):
     if PCSFInputObj.n == None:
         dev = 0.333
     else:
+        # TODO: This parameter was overwritten and started being used for garnetBeta
         dev = PCSFInputObj.n
     for node1 in newPCSFInputObj.dirEdges:
         for node2 in newPCSFInputObj.dirEdges[node1]:
