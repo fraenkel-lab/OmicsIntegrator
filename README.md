@@ -106,7 +106,8 @@ Options:
   --utilpath=ADDPATH    Destination of chipsequtil library, Default=../src
 ```
 
-The configuration file should take the following format:
+Unlike Forest, the Garnet configuration file is a positional argument and must not
+be preceded with `--conf=`.  The configuration file should take the following format:
 
 ### garnet input
 
@@ -157,7 +158,7 @@ the genome used.  The default `numthreads` is 4, but the user can alter this
 depending on the processing power of their machine. `doNetwork` will create a
 NetworkX object mapping transcription factors to genes, required input for the
 [SAMNet algorithm](http://github.com/sgosline/SAMNet).  `tfDelimiter` is an
-internal parameter to tell garnet how to handle cases when many transcription
+internal parameter to tell Garnet how to handle cases when many transcription
 factors map to the sam binding motif.
 
 #### expressionData
@@ -216,7 +217,7 @@ garnet script.
 Running forest.py
 -----------------
 
-Forest **requires** the compiled msgsteiner package as well as the boost library.
+Forest **requires** the compiled msgsteiner package.
 
 ```
 Usage: forest.py [options]
@@ -323,10 +324,12 @@ human interactome example (this interactome comes from iRefIndex v13, scored and
 formatted for our code).
 
 A sample configuration file, `a549/tgfb_forest.cfg` is supplied. The user can
-change the values included in this file directly or can supply their own
-similarly formatted file. If the -c option is not included in the command line
-the program will attempt to read `conf.txt`. The parameters `w`, `b`, and `D`
-must be set in this file. Optional parameters `mu`, `garnetBeta`, `noise`,
+change the values included in this file or can supply their own
+similarly formatted file. Unlike Garnet, the Forest configuration file name must
+be preceded with `-c` or `--conf=`.
+If the `-c` argument is not included in the command line
+the program will attempt to read the default `conf.txt`. The parameters `w`, `b`, and `D`
+must be set in the configuration file. Optional parameters `mu`, `garnetBeta`, `noise`,
 `g`, and `r` may also be included.
 
 ```
