@@ -143,7 +143,7 @@ Many BED-formatted (`bedfile`) and FASTA-formatted (`fastafile`) files are
 included in the examples/ directory. `bedfile` can also be output from MACS
 (with a `.xls` extension) or GPS/GEM (with a `.txt` extension).
 To use your own epigenetic data, convert to BED and upload the
-BED-file to http://usegalaxy.org and select `Fetch Genomic DNA` from the left
+BED-file to http://usegalaxy.org and select `Fetch Alignments/Sequences` from the left
 menu to click on `Extract Genomic DNA`. This will produce a FASTA-formatted file
 that will work with garnet.  We have provided gene (`genefile`) and xref
 (`xreffile`)  annotations for both hg19 and mm9 - these files can be downloaded
