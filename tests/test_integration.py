@@ -10,7 +10,7 @@ def test_integration(msgsteiner):
 
     parser = OptionParser()
 
-    parser.add_option('--msgpath',dest='msgsteiner',type='string',help='Path to msgsteiner9 code, be sure to include!')
+    parser.add_option('--msgpath',dest='msgsteiner',type='string',help='Path to msgsteiner code, be sure to include!')
 
     phos_weights = os.path.join(os.path.dirname(__file__), '..', 'example', 'a549', 'Tgfb_phos.txt')
 
@@ -22,11 +22,9 @@ def test_integration(msgsteiner):
 
     edge_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'iref_mitab_miscore_2013_08_12_interactome.txt') #interactom
 
-    #WE NEED MSGSTEINER9 INSTALLED!!!
+    #WE NEED MSGSTEINER INSTALLED!!!
     msgsteinerpath = msgsteiner
-    if msgsteinerpath == None:
-        print 'Please provide path to msgsteiner using --msgpath option'
-        assert 0
+    assert msgsteinerpath is not None, 'Please provide path to msgsteiner using --msgpath option'
 
     # Create a tmp directory for output	
     forest_out = tempfile.mkdtemp()
