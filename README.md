@@ -59,8 +59,9 @@ instructions on how to download the library and extract files from the archive.
 To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew install boost` to install the library.
 2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
 3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
-4. Enter the `msgsteiner-1.1` subdirectory and run make
-  * See below for advice on compiling the C++ code if you encounter problems. Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
+4. Enter the `msgsteiner-1.1` subdirectory and run `make`
+  * See [this advice](./patches) on compiling the C++ code if you encounter problems. 
+  * Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
 5. Download the Omics Integrator package: [OmicsIntegrator-0.2.0.tar.gz](./dist/OmicsIntegrator-0.2.0.tar.gz)
 6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.2.0.tar.gz`
 7. Make sure you have all the requirements using the pip tool by entering the
