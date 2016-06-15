@@ -89,16 +89,18 @@ class TestLoadGraph:
         graph = self.shared_w_test(0.25)
         
         # Check that the DiGraph has the expected properties
+        # Undirected edges are loaded as a pair of directed edges
         assert graph.order() == 4, "Unexpected number of nodes"
-        assert graph.size() == 2, "Unexpected number of edges"
+        assert graph.size() == 4, "Unexpected number of edges"
         
     def test_w_1(self):
         ''' Run Forest with w=1 and check optimal subnetwork'''
         graph = self.shared_w_test(1)
         
         # Check that the DiGraph has the expected properties
+        # Undirected edges are loaded as a pair of directed edges
         assert graph.order() == 3, "Unexpected number of nodes"
-        assert graph.size() == 2, "Unexpected number of edges"
+        assert graph.size() == 3, "Unexpected number of edges"
         
     def test_w_2(self):
         ''' Run Forest with w=2 and check optimal subnetwork'''
