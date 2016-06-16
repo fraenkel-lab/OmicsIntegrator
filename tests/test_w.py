@@ -56,17 +56,18 @@ class TestW:
         finally:
             conf_filename.close()
         
-        # Location of the prize and network files
+        # Location of the prize, network, and root node files
         network_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_network.txt')
         prize_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_prizes.txt')
+        roots_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_roots.txt')
 
         # Create a tmp directory for output	
         forest_out = tempfile.mkdtemp()
         
         try:
             forest_path = os.path.join(cur_dir, '..', 'scripts', 'forest.py')
-            forest_cmd = 'python %s --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s' % \
-                (forest_path, prize_filename, network_filename, conf_filename.name, forest_out, msgsteiner, seed)
+            forest_cmd = 'python %s --prize=%s --edge=%s --conf=%s  --dummyMode=%s --outpath=%s --msgpath=%s --seed=%s' % \
+                (forest_path, prize_filename, network_filename, conf_filename.name, roots_filename, forest_out, msgsteiner, seed)
             subprocess.call(shlex.split(forest_cmd), shell=False)	
     
             # Only test the optimal Forest to see if w has the intended effect,
