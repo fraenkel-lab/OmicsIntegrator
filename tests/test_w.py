@@ -32,7 +32,7 @@ def write_conf(tmpf, w):
     tmpf.write('D = 5\n')
     tmpf.write('mu = 0\n')
 
-class TestLoadGraph:      
+class TestW:      
 
     def shared_w_test(self, msgsteiner, w=None):
         '''Run Forest on the test network for a particular w
@@ -66,7 +66,7 @@ class TestLoadGraph:
         try:
             forest_path = os.path.join(cur_dir, '..', 'scripts', 'forest.py')
             forest_cmd = 'python %s --prize=%s --edge=%s --conf=%s  --outpath=%s --msgpath=%s --seed=%s' % \
-                (forest_path, prize_filename, network_filename, conf_filename, forest_out, msgsteiner, seed)
+                (forest_path, prize_filename, network_filename, conf_filename.name, forest_out, msgsteiner, seed)
             subprocess.call(shlex.split(forest_cmd), shell=False)	
     
             # Only test the optimal Forest to see if w has the intended effect,
