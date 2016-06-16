@@ -333,8 +333,8 @@ must be set in the configuration file. Optional parameters `mu`, `garnetBeta`, `
 `g`, and `r` may also be included.
 
 ```
-w = int, controls the number of trees
-b = int, controls the trade-off between including more
+w = float, controls the number of trees
+b = float, controls the trade-off between including more
     terminals and using less reliable edges
 D = int, controls the maximum path-length from v0 to terminal nodes
 mu = float, controls the degree-based negative prizes (defualt 0.0)
