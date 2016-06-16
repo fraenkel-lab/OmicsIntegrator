@@ -31,9 +31,10 @@ def write_conf(tmpf, w):
     # All tests should in theory pass with beta = 1 but because msgsteiner
     # does not converge to the global optimum, when w = 1 it returns an
     # empty network instead of the optimal three node network
-    tmpf.write('b = 10\n')
+    tmpf.write('b = 5\n')
     tmpf.write('D = 5\n')
     tmpf.write('mu = 0\n')
+    tmpf.write('g = 0\n')
 
 class TestW:      
 
