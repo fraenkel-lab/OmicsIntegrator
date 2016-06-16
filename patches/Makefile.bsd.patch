@@ -1,0 +1,35 @@
+--- Makefile.pristine	2012-08-20 10:00:39.000000000 -0500
++++ Makefile.new	2016-05-03 09:22:27.831590000 -0500
+@@ -1,6 +1,6 @@
+ MATLABDIR=/usr/local/MATLAB/R2012a/
+ 
++CXX=clang
+-CXXFLAGS=-Wall -O3 -g -Wno-deprecated -fopenmp -fPIC
++CXXFLAGS=-Wall -O3 -g -Wno-deprecated -fopenmp -fPIC -I/usr/local/include -L/usr/local/lib -lc++ -lm
+ #CXXFLAGS=-Wall -O3 -g -Wno-deprecated
+ LDFLAGS=-lboost_program_options -lgomp
+ DIST=*.?pp Makefile README LICENSE matlab
+@@ -10,6 +10,8 @@
+ 
+ BIN=msgsteiner ${MEXOBJ}
+ 
+ 
+ 
+ all: $(BIN)
+@@ -21,13 +23,13 @@
+ 	rm -rf msgsteiner-${VER}
+ 
+ msgsteiner: msgsteiner.cpp ms.o mes.o proba.hpp
+-	g++ ${CXXFLAGS} msgsteiner.cpp ${LDFLAGS} ms.o mes.o -o msgsteiner
++	$(CXX) ${CXXFLAGS} msgsteiner.cpp ${LDFLAGS} ms.o mes.o -o msgsteiner
+ clean:
+ 	rm -f $(BIN) *.o matlab/*.mexa64 matlab/*.mexglx .mlab *.tgz
+ mes.o: mes.cpp mes.hpp proba.hpp
+-	g++ ${CXXFLAGS} -c mes.cpp -o mes.o
++	$(CXX) ${CXXFLAGS} -c mes.cpp -o mes.o
+ ms.o: ms.cpp ms.hpp proba.hpp
+-	g++ ${CXXFLAGS} -c ms.cpp -o ms.o
++	$(CXX) ${CXXFLAGS} -c ms.cpp -o ms.o
+ 
+ .mlab: matlab.cpp ms.o mes.o
+ 	${MATLABDIR}/bin/mex matlab.cpp -output matlab/MsgSteiner -v -g -O -largeArrayDims -lut "CXXFLAGS=\$$CXXFLAGS ${CXXFLAGS}" "LDFLAGS=\$$LDFLAGS ${LDFLAGS} ms.o mes.o -lgomp" \

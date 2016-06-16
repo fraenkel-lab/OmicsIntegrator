@@ -1,0 +1,11 @@
+--- Makefile.pristine	2016-06-14 21:18:35.574015197 -0500
++++ Makefile.new	2016-05-08 21:35:06.250533424 -0500
+@@ -2,7 +2,7 @@
+ 
+ CXXFLAGS=-Wall -O3 -g -Wno-deprecated -fopenmp -fPIC
+ #CXXFLAGS=-Wall -O3 -g -Wno-deprecated
+-LDFLAGS=-lboost_program_options -lgomp
++LDFLAGS=-L/usr/lib -I/usr/include -lboost_program_options
+ DIST=*.?pp Makefile README LICENSE matlab
+ #CXXFLAGS=-Wall -O0 -g -ffloat-store
+ #CXXFLAGS=-Wall -O2 -g -ffloat-store
