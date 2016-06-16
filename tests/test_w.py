@@ -87,6 +87,7 @@ class TestW:
             
         return graph
 
+
     def test_w_025(self, msgsteiner):
         ''' Run Forest with w=0.25 and check optimal subnetwork
 
@@ -99,7 +100,14 @@ class TestW:
         # Undirected edges are loaded as a pair of directed edges
         assert graph.order() == 4, "Unexpected number of nodes"
         assert graph.size() == 4, "Unexpected number of edges"
-        
+
+        # Check that the DiGraph has the expected edges
+        assert graph.has_edge('A','C')
+        assert graph.has_edge('C','A')
+        assert graph.has_edge('B','D')
+        assert graph.has_edge('D','B')
+
+
     def test_w_1(self, msgsteiner):
         ''' Run Forest with w=1 and check optimal subnetwork
 
@@ -112,18 +120,25 @@ class TestW:
         # Undirected edges are loaded as a pair of directed edges
         assert graph.order() == 3, "Unexpected number of nodes"
         assert graph.size() == 3, "Unexpected number of edges"
-        
-    def test_w_2(self, msgsteiner):
-        '''tw =  Run Forest with w=2 and check optimal subnetwork
+
+        # Check that the DiGraph has the expected edges
+        assert graph.has_edge('A','C')
+        assert graph.has_edge('C','A')
+        assert graph.has_edge('C','D')
+
+
+    def test_w_10(self, msgsteiner):
+        '''tw =  Run Forest with w=10 and check optimal subnetwork
 
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
         '''
-        graph = self.shared_w_test(msgsteiner, 2)
+        graph = self.shared_w_test(msgsteiner, 10)
         
         # Check that the DiGraph has the expected properties
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
+
 
     def test_w_missing(self, msgsteiner):
         ''' Run Forest with w missing from the configuration file and check
