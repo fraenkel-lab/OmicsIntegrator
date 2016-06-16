@@ -28,7 +28,10 @@ def write_conf(tmpf, w):
     '''
     if w is not None:
         tmpf.write('w = %f\n' % w)
-    tmpf.write('b = 1\n')
+    # All tests should in theory pass with beta = 1 but because msgsteiner
+    # does not converge to the global optimum, when w = 1 it returns an
+    # empty network instead of the optimal three node network
+    tmpf.write('b = 10\n')
     tmpf.write('D = 5\n')
     tmpf.write('mu = 0\n')
 
@@ -111,7 +114,7 @@ class TestW:
         assert graph.size() == 3, "Unexpected number of edges"
         
     def test_w_2(self, msgsteiner):
-        ''' Run Forest with w=2 and check optimal subnetwork
+        '''tw =  Run Forest with w=2 and check optimal subnetwork
 
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
