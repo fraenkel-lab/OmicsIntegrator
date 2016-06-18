@@ -8,12 +8,6 @@ cache: pip
 python:
   - "2.7"
 
-env:
-  global:
-    # TODO do this better; had this variable set in "install" but each YAML section is run 
-    # in a subshell so the environment variables do not carry over to "script"
-    - MSGSTEINER_PATH=/home/travis/build/aabaker99/OmicsIntegrator/msgsteiner-1.1/msgsteiner
-
 before_install:
   # install conda to help with numpy/scipy system dependencies
   - wget https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O miniconda.sh
@@ -36,6 +30,7 @@ before_install:
   - wget https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/master/patches/Makefile.linux.patch
   - patch Makefile Makefile.linux.patch
   - make
+  - [ -e "msgsteiner" ] && export MSGSTEINER_PATH="$(pwd -P)/msgsteiner"
   - cd ..
 
 install: 
