@@ -11,7 +11,7 @@ and try the build again with `make`:
 
 ```bash
 cd msgsteiner-1.1
-wget "https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/travis-ci/patches/Makefile.linux.patch"
+wget "https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/master/patches/Makefile.linux.patch"
 patch Makefile Makefile.linux.patch
 make
 ```
