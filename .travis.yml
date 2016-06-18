@@ -17,7 +17,7 @@ before_install:
   - export PATH="$CONDA_PREFIX/bin":$PATH
 
   # install matplotlib system dependencies
-  - apt install libx11-dev
+  - apt-get install libx11-dev
 
   # install msgsteiner
   - wget http://areeweb.polito.it/ricerca/cmp/sites/default/files/msgsteiner-1.1.tgz
