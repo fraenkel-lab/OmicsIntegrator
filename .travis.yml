@@ -19,7 +19,7 @@ before_install:
   - sudo apt-get install -y libx11-dev 
   
   # install msgsteiner dependencies
-  - sudo apt-get install -y libboost-dev
+  - sudo apt-get install -y libboost-dev libboost-program-options-dev
 
   # install msgsteiner
   - wget http://areeweb.polito.it/ricerca/cmp/sites/default/files/msgsteiner-1.1.tgz
