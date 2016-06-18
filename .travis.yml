@@ -29,17 +29,12 @@ before_install:
   - patch Makefile Makefile.linux.patch
   - make
   - export MSGSTEINER_PATH="$(realpath msgsteiner)"
+  - cd ..
 
 install: 
   # setup python environment
   - conda create -n testenv -y pip setuptools python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
-
-  # install python dependencies
-  - pip install -r requirements.txt
-
-  # also install test dependencies
-  - pip install pytest>=2.9.2
 
   # debug
   - echo $PATH
@@ -48,6 +43,14 @@ install:
   - conda info
   - conda list
   - pip list
+  - pwd
+  - ls
+
+  # install python dependencies
+  - pip install -r requirements.txt
+
+  # also install test dependencies
+  - pip install pytest>=2.9.2
 
   # install our package
   - python setup.py install
