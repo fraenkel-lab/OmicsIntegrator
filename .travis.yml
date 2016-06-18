@@ -2,17 +2,23 @@
 # Inspired by https://github.com/soft-matter/trackpy/blob/master/.travis.yml
 
 language: python
+# installing requirements.txt takes 5 minutes, mostly due to matplotlib
+cache: pip
 
 python:
   - "2.7"
+
+env:
+  global:
+    # TODO do this better; had this variable set in "install" but each YAML section is run 
+    # in a subshell so the environment variables do not carry over to "script"
+    - MSGSTEINER_PATH=/home/travis/build/aabaker99/OmicsIntegrator/msgsteiner-1.1/msgsteiner
 
 before_install:
   # install conda to help with numpy/scipy system dependencies
   - wget https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - export CONDA_PREFIX=/home/travis/mc
-  - ./miniconda.sh -b -p "$CONDA_PREFIX"
-  - export PATH="$CONDA_PREFIX/bin":$PATH
+  - ./miniconda.sh -b -p "/home/travis/mc"
 
   # install matplotlib system dependencies
   - sudo apt-get -qq update
@@ -28,7 +34,6 @@ before_install:
   - wget https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/master/patches/Makefile.linux.patch
   - patch Makefile Makefile.linux.patch
   - make
-  - export MSGSTEINER_PATH="$(realpath msgsteiner)"
   - cd ..
 
 install: 
@@ -37,14 +42,7 @@ install:
   - source activate testenv
 
   # debug
-  - echo $PATH
   - echo $MSGSTEINER_PATH
-  - which python
-  - conda info
-  - conda list
-  - pip list
-  - pwd
-  - ls
 
   # install python dependencies
   - pip install -r requirements.txt
