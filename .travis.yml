@@ -1,4 +1,5 @@
 # Config file for automatic testing at travis-ci.org
+# Inspired by https://github.com/soft-matter/trackpy/blob/master/.travis.yml
 
 language: python
 
@@ -7,8 +8,47 @@ python:
   - "2.6"
   - "pypy"
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -r requirements.txt
+before_install:
+  # install conda to help with numpy/scipy system dependencies
+  - wget https://repo.continuum.io/miniconda/Miniconda2-4.0.5-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - export CONDA_PREFIX=/home/travis/mc
+  - ./miniconda.sh -b -p "$CONDA_PREFIX"
+  - export PATH="$CONDA_PREFIX/bin":$PATH
+
+  # install matplotlib system dependencies
+  - apt install libx11-dev
+
+  # install msgsteiner
+  - wget http://areeweb.polito.it/ricerca/cmp/sites/default/files/msgsteiner-1.1.tgz
+  - tar xzf msgsteiner-1.1.tgz
+  - cd msgsteiner-1.1
+  - wget https://github.com/fraenkel-lab/OmicsIntegrator/blob/master/patches/Makefile.linux.patch
+  - patch Makefile Makefile.linux.patch
+  - make
+  - export MSGSTEINER_PATH="$(realpath msgsteiner)"
+
+install: 
+  # setup python environment
+  - conda create -n testenv -y pip setuptools python=$TRAVIS_PYTHON_VERSION
+  - source activate testenv
+
+  # install python dependencies
+  - pip install -r requirements.txt --use-mirrors
+
+  # also install test dependencies
+  - pip install pytest>=2.9.2
+
+  # debug
+  - echo $PATH
+  - echo $MSGSTEINER_PATH
+  - which python
+  - conda info
+  - conda list
+  - pip list
+
+  # install our package
+  - python setup.py install
 
 # command to run tests, e.g. python setup.py test
-script: python setup.py test
+script: python setup.py test -a "--msgpath=$MSGSTEINER_PATH"
