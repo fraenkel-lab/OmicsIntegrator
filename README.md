@@ -2,6 +2,8 @@
 Omics Integrator
 ===============================
 
+[![Build Status](https://travis-ci.org/aabaker99/OmicsIntegrator.svg?branch=travis-ci)](https://travis-ci.org/aabaker99/OmicsIntegrator)
+
 Omics Integrator is a package designed to integrate gene expression data and/or
 proteomics data using the protein-protein interaction network. It is comprised
 of two modules, Garnet and Forest, that perform data integration of various
