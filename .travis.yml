@@ -27,8 +27,7 @@ before_install:
   - wget http://areeweb.polito.it/ricerca/cmp/sites/default/files/msgsteiner-1.1.tgz
   - tar xzf msgsteiner-1.1.tgz
   - cd msgsteiner-1.1
-  - wget https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/master/patches/Makefile.linux.patch
-  - patch Makefile Makefile.linux.patch
+  - patch Makefile ../patches/Makefile.linux.patch
   - make
   - [ -e "msgsteiner" ] && export MSGSTEINER_PATH="$(pwd -P)/msgsteiner"
   - cd ..
