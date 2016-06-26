@@ -29,7 +29,7 @@ before_install:
   - cd msgsteiner-1.1
   - patch Makefile ../patches/Makefile.linux.patch
   - make
-  - [ -e "msgsteiner" ] && export MSGSTEINER_PATH="$(pwd -P)/msgsteiner"
+  - export MSGSTEINER_PATH="$(pwd -P)/msgsteiner"
   - cd ..
 
 install: 
