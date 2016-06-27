@@ -138,6 +138,10 @@ tfDelimiter = .
 expressionFile = tabDelimitedExpressionData.txt
 pvalThresh = 0.01
 qvalThresh =
+
+[regression]
+#for generating and saving regression plots
+savePlot=True
 ```
 
 #### Chromatin Data
@@ -173,6 +177,11 @@ condition. We recommend only including those genes whose change in expression is
 statistically significant. P-value (`pvalThresh`) or Q-value (`qvalThresh`)
 thresholds will be used to select only those transcription factors whose
 correlation with expression falls below the provided threshold.
+
+#### regression
+
+If the user sets savePlot=True then all regression plots will be placed in a subdirectory named 'regression_plots' inside the directory provided by the '--outdir'.
+Default is set to False.
 
 ### garnet output
 
@@ -213,8 +222,6 @@ garnet script.
 - **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to forest.
-
-
 
 
 Running forest.py

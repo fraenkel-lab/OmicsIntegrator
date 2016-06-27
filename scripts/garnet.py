@@ -132,7 +132,7 @@ def createBindingMatrix(motif_binding_out,outfile,fastafile,tamo_file,use_unipro
     return res,pklfile
 
 
-def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
+def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT,plot):
     '''
     Fourth step of GARNET is to perform regression with pickled matrix file and expression data
     '''
@@ -152,6 +152,7 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT):
         else:
             thresh=pvalT
         cmd+=' --thresh='+thresh
+        cmd+=' --plot='+plot
         print '\n-----------------------------Regression Output------------------------------------------\n'
         print 'Running command:\n'+cmd+'\n'
         res=os.system(cmd)
@@ -170,6 +171,7 @@ def main():
     parser.add_argument('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT: none',default=None)
     parser.add_argument('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT: ../src',default=srcdir)
     parser.add_argument('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show no evidence of encoding proteins.',action='store_true',default=False)
+    parser.add_argument('--plot',dest='plot',help='Regression plot generation, DEFAULT: False',default=False)
 
 
     opts=parser.parse_args()
@@ -253,12 +255,13 @@ def main():
         
     pvt=config.get('expressionData','pvalThresh')
     qvt=config.get('expressionData','qvalThresh')
-
+    plot=config.get('regression','savePlot')
+    
     ##step 4: regression
     if expr is not None and expr!='':
         #print binding_matrix,expr
         if binding_matrix!='' and os.path.exists(binding_matrix) and os.path.exists(expr):
-            keeprunning,tfs=getTfsFromRegression(binding_matrix,expr,pvt,qvt)
+            keeprunning,tfs=getTfsFromRegression(binding_matrix,expr,pvt,qvt,plot)
         else:
             print 'Cannot perform regression because binding matrix or expression datasets are missing'
     if keeprunning!=0:
