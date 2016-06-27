@@ -2,7 +2,7 @@
 Omics Integrator
 ===============================
 
-[![Build Status](https://travis-ci.org/aabaker99/OmicsIntegrator.svg?branch=travis-ci)](https://travis-ci.org/aabaker99/OmicsIntegrator)
+[![Build Status](https://travis-ci.org/fraenkel-lab/OmicsIntegrator.svg?branch=travis-ci)](https://travis-ci.org/fraenkel-lab/OmicsIntegrator)
 
 Omics Integrator is a package designed to integrate gene expression data and/or
 proteomics data using the protein-protein interaction network. It is comprised
