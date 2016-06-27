@@ -6,6 +6,7 @@
 
 # Packages
 *.egg
+*.eggs
 *.egg-info
 dist
 build
@@ -42,3 +43,6 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+
+# Vim
+*.sw[p-z]

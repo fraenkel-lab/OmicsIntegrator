@@ -78,7 +78,7 @@ setup(
 #                 ('example/mcf7',['example/mcf7/mcf7_garnet.cfg','example/mcf7/wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.bed','example/mcf7/wgEncodeUWDukeDnaseMCF7.fdr01peaks.hg19.fasta.gz']),
 #                 ('example/murineFib',['example/murineFib/murineFib_garnet.cfg','example/murineFib/wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.fasta.gz','example/murineFib/wgEncodeUwDnaseFibroblastC57bl6MAdult8wksPk_Rep1AND2.narrowPeak'])
                  ],
-    scripts=['scripts/garnet.py','scripts/motif_fsa_scores.py','scripts/get_window_binding_matrix.py','scripts/motif_regression.py','scripts/map_peaks_to_known_genes.py','scripts/zipTgms.py','scripts/forest.py','example/downloadExamples.py'],
+    scripts=['scripts/garnet.py','scripts/motif_fsa_scores.py','scripts/get_window_binding_matrix.py','scripts/motif_regression.py','scripts/map_peaks_to_known_genes.py','scripts/zipTgms.py','scripts/forest.py'],
     tests_require=test_requirements,
     cmdclass={'test':PyTest}
 )
