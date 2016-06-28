@@ -258,11 +258,6 @@ Options:
                         connect the dummy node to. "terminals"= connect to all
                         terminals, "others"= connect to all nodes except for
                         terminals, "all"= connect to all nodes in the
-                        terminals, "others"= connect to all nodes except for
-                        terminals, "all"= connect to all nodes in the
-                        connect the dummy node to. "terminals"= connect to all
-                        terminals, "others"= connect to all nodes except for
-                        terminals, "all"= connect to all nodes in the
                         interactome. If you wish you supply your own list of
                         proteins, dummyMode could also be the path to a text
                         file containing a list of proteins (one per line).
@@ -458,7 +453,10 @@ Network > File..., and then select this file to open. Click OK.
 
 - **augmentedForest.sif** is the same thing, only it includes all the edges in
   the interactome that exist between nodes in the optimal Forest, even those
-edges not chosen by the algorithm. Betweenness centrality for all nodes was
+edges not chosen by the algorithm. Betweenness centrality for all nodes was calculated with this network.
+
+- **dummyForest.sif** is the same as optimalForest.sif, only it includes the summy node and all edges connecting to it.
+
 - **edgeattributes.tsv** is a tab-seperated value file containing information
   for each edge in the network, such as the weight in the interactome, and the
 fraction of optimal networks this edge was contained in. To
