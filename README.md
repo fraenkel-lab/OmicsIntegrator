@@ -141,7 +141,7 @@ qvalThresh =
 
 [regression]
 #for generating and saving regression plots
-savePlot=True
+savePlot=False
 ```
 
 #### Chromatin Data
@@ -180,8 +180,7 @@ correlation with expression falls below the provided threshold.
 
 #### regression
 
-If the user sets savePlot=True then all regression plots will be placed in a subdirectory named 'regression_plots' inside the directory provided by the '--outdir'.
-Default is set to False.
+Regression plots are placed in a subdirectory named 'regression_plots' if savePlot=True in configuration file.
 
 ### garnet output
 
@@ -256,6 +255,11 @@ Options:
                         "./conf.txt"
   -d DUMMYMODE, --dummyMode=DUMMYMODE
                         Tells the program which nodes in the interactome to
+                        connect the dummy node to. "terminals"= connect to all
+                        terminals, "others"= connect to all nodes except for
+                        terminals, "all"= connect to all nodes in the
+                        terminals, "others"= connect to all nodes except for
+                        terminals, "all"= connect to all nodes in the
                         connect the dummy node to. "terminals"= connect to all
                         terminals, "others"= connect to all nodes except for
                         terminals, "all"= connect to all nodes in the
@@ -455,11 +459,6 @@ Network > File..., and then select this file to open. Click OK.
 - **augmentedForest.sif** is the same thing, only it includes all the edges in
   the interactome that exist between nodes in the optimal Forest, even those
 edges not chosen by the algorithm. Betweenness centrality for all nodes was
-calculated with this network.
-
-- **dummyForest.sif** is the same as optimalForest.sif, only it includes the
-  dummy node and all edges connecting to it.
-
 - **edgeattributes.tsv** is a tab-seperated value file containing information
   for each edge in the network, such as the weight in the interactome, and the
 fraction of optimal networks this edge was contained in. To

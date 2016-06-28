@@ -171,8 +171,6 @@ def main():
     parser.add_argument('--outdir',dest='outdir',help='Name of directory to place garnet output. DEFAULT: none',default=None)
     parser.add_argument('--utilpath',dest='addpath',help='Destination of chipsequtil library, DEFAULT: ../src',default=srcdir)
     parser.add_argument('--allGenes',dest='allgenes',help='Use this flag to use all annotated genes, even if they show no evidence of encoding proteins.',action='store_true',default=False)
-    parser.add_argument('--plot',dest='plot',help='Regression plot generation, DEFAULT: False',default=False)
-
 
     opts=parser.parse_args()
     

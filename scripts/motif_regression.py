@@ -109,8 +109,8 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
 	    ax1.set_xlabel('Estimated transcription factor affinity')
 	    ax1.set_ylabel('Expression log fold change')
 	    #checking if a subdirectory is present to save plots
-	    plotdir = os.path.join(outdir.split('//')[0],'regression_plots')
-	    #print plotdir
+	    plotdir = os.path.join(os.path.split(outdir)[0],'regression_plots')
+	    
 	    if not os.path.isdir(plotdir):
 			os.makedirs(plotdir)
 	    #cleaning all motif ids to have all alphanumeric name
