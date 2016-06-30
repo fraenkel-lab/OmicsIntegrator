@@ -10,6 +10,7 @@
 dist
 build
 eggs
+.eggs
 parts
 bin
 var
@@ -24,6 +25,7 @@ pip-log.txt
 
 # Unit test / coverage reports
 .coverage
+.cache
 .tox
 nosetests.xml
 htmlcov
@@ -42,3 +44,6 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+
+# Vim
+*.sw[p-z]
