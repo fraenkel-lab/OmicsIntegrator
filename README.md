@@ -2,6 +2,8 @@
 Omics Integrator
 ===============================
 
+[![Build Status](https://travis-ci.org/fraenkel-lab/OmicsIntegrator.svg?branch=master)](https://travis-ci.org/fraenkel-lab/OmicsIntegrator)
+
 Omics Integrator is a package designed to integrate gene expression data and/or
 proteomics data using the protein-protein interaction network. It is comprised
 of two modules, Garnet and Forest, that perform data integration of various
@@ -265,7 +267,7 @@ Options:
                         prizes. Use if you want terminals to keep exact
                         assigned prize regardless of degree.
   --msgpath=MSGPATH     Full path to the message passing code. Default =
-                        "<current directory>/msgsteiner9"
+                        "<current directory>/msgsteiner"
   --outpath=OUTPUTPATH  Path to the directory which will hold the output
                         files. Default = this directory
   --outlabel=OUTPUTLABEL
