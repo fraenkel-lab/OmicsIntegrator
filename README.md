@@ -180,11 +180,12 @@ correlation with expression falls below the provided threshold.
 
 #### regression
 
-Regression plots are placed in a subdirectory named 'regression_plots' if savePlot=True in configuration file.
+Linear regression plots are placed in a subdirectory named `regression_plots` if
+`savePlot=True` in the configuration file.
 
-### garnet output
+### Garnet output
 
-garnet produces a number of intermediate files that enable you
+Garnet produces a number of intermediate files that enable you
 to better interpret your data or re-run a sub-script that may have failed. All
 files are placed in the directory provided by the `--outdir` option of the
 garnet script.
@@ -222,6 +223,8 @@ garnet script.
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to forest.
 
+- **regression_plots**: An optional subdirectory that contains plots visualizing
+the transcription factor linear regression tests.
 
 Running forest.py
 -----------------
@@ -453,9 +456,11 @@ Network > File..., and then select this file to open. Click OK.
 
 - **augmentedForest.sif** is the same thing, only it includes all the edges in
   the interactome that exist between nodes in the optimal Forest, even those
-edges not chosen by the algorithm. Betweenness centrality for all nodes was calculated with this network.
+edges not chosen by the algorithm. Betweenness centrality for all nodes was
+calculated with this network.
 
-- **dummyForest.sif** is the same as optimalForest.sif, only it includes the summy node and all edges connecting to it.
+- **dummyForest.sif** is the same as optimalForest.sif, only it includes the
+dummy node and all edges connecting to it.
 
 - **edgeattributes.tsv** is a tab-seperated value file containing information
   for each edge in the network, such as the weight in the interactome, and the
