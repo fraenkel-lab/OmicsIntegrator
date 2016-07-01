@@ -138,6 +138,10 @@ tfDelimiter = .
 expressionFile = tabDelimitedExpressionData.txt
 pvalThresh = 0.01
 qvalThresh =
+
+[regression]
+#for generating and saving regression plots
+savePlot=False
 ```
 
 #### Chromatin Data
@@ -173,6 +177,10 @@ condition. We recommend only including those genes whose change in expression is
 statistically significant. P-value (`pvalThresh`) or Q-value (`qvalThresh`)
 thresholds will be used to select only those transcription factors whose
 correlation with expression falls below the provided threshold.
+
+#### regression
+
+Regression plots are placed in a subdirectory named 'regression_plots' if savePlot=True in configuration file.
 
 ### garnet output
 
@@ -213,8 +221,6 @@ garnet script.
 - **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to forest.
-
-
 
 
 Running forest.py
@@ -447,11 +453,9 @@ Network > File..., and then select this file to open. Click OK.
 
 - **augmentedForest.sif** is the same thing, only it includes all the edges in
   the interactome that exist between nodes in the optimal Forest, even those
-edges not chosen by the algorithm. Betweenness centrality for all nodes was
-calculated with this network.
+edges not chosen by the algorithm. Betweenness centrality for all nodes was calculated with this network.
 
-- **dummyForest.sif** is the same as optimalForest.sif, only it includes the
-  dummy node and all edges connecting to it.
+- **dummyForest.sif** is the same as optimalForest.sif, only it includes the summy node and all edges connecting to it.
 
 - **edgeattributes.tsv** is a tab-seperated value file containing information
   for each edge in the network, such as the weight in the interactome, and the
