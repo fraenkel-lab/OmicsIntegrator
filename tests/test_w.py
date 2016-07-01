@@ -7,95 +7,44 @@ and finally tests whether the optimal subnetwork matches the expected
 subnetwork.  Different values of w are tested to check
 whether the parameter has the desired effect.
 '''
+import os, sys, pytest, copy
 
-import os, sys, subprocess, shlex, tempfile, shutil, pytest
-
-# Create the path to forest relative to the test_load_graph.py path
+# import repo's tests utilities
 cur_dir = os.path.dirname(__file__)
-path = os.path.abspath(os.path.join(cur_dir, '..', 'scripts'))
+path = os.path.abspath(os.path.join(cur_dir, '..', 'tests'))
 if not path in sys.path:
     sys.path.insert(1, path)
 del path
+import test_util
 
-from forest_util import loadGraph
+# Set arguments used in all forest tests:
+# Define all but the w parameter here; vary beta for the tests
+conf_params = {
+    'b': 5,
+    'D': 5,
+    'mu': 0,
+    'g': 0
+}
+# Location of the prize, network, and root node files
+forest_opts = {
+  'prize': os.path.join(cur_dir, 'small_forest_tests', 'w_test_prizes.txt'),
+  'edge': os.path.join(cur_dir, 'small_forest_tests', 'w_test_network.txt'),
+  'dummyMode': os.path.join(cur_dir, 'small_forest_tests', 'w_test_roots.txt')
+}
 
-def write_conf(tmpf, w):
-    '''Write a configuration file
-    
-    INPUT:
-    tmpf - a temporary file
-    w - the value of w
-    '''
-    if w is not None:
-        tmpf.write('w = %f\n' % w)
-    # All tests should in theory pass with beta = 1 but because msgsteiner
-    # does not converge to the global optimum, when w = 1 it returns an
-    # empty network instead of the optimal three node network
-    tmpf.write('b = 5\n')
-    tmpf.write('D = 5\n')
-    tmpf.write('mu = 0\n')
-    tmpf.write('g = 0\n')
-
+# All tests should in theory pass with beta = 1 but because msgsteiner
+# does not converge to the global optimum, when w = 1 it returns an
+# empty network instead of the optimal three node network
 class TestW:      
-
-    def shared_w_test(self, msgsteiner, w=None):
-        '''Run Forest on the test network for a particular w
-        
-        INPUT:
-        w - the value of w (default None)
-        msgsteiner - the path to msgsteiner
-        OUTPUT:
-        graph - the DiGraph object for the optimal Steiner forest
-        '''
-        assert msgsteiner is not None, 'Please provide path to msgsteiner using --msgpath option'
-
-        # For reproducibility, though it is likely not needed for this
-        # small test case        
-        seed = 2016
-        
-        conf_filename= tempfile.NamedTemporaryFile(suffix='.txt', delete=False)
-        try:
-            # Write the configuration file with the specified w
-            write_conf(conf_filename, w)
-        finally:
-            conf_filename.close()
-        
-        # Location of the prize, network, and root node files
-        network_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_network.txt')
-        prize_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_prizes.txt')
-        roots_filename = os.path.join(cur_dir, 'small_forest_tests', 'w_test_roots.txt')
-
-        # Create a tmp directory for output	
-        forest_out = tempfile.mkdtemp()
-        
-        try:
-            forest_path = os.path.join(cur_dir, '..', 'scripts', 'forest.py')
-            forest_cmd = 'python %s --prize=%s --edge=%s --conf=%s  --dummyMode=%s --outpath=%s --msgpath=%s --seed=%s' % \
-                (forest_path, prize_filename, network_filename, conf_filename.name, roots_filename, forest_out, msgsteiner, seed)
-            subprocess.call(shlex.split(forest_cmd), shell=False)	
-    
-            # Only test the optimal Forest to see if w has the intended effect,
-            # ignore the other output files
-            opt_forest = os.path.join(forest_out, 'result_optimalForest.sif')
-            assert os.path.isfile(opt_forest), 'Forest did not generate output files'
-            graph = loadGraph(opt_forest)
-            
-        finally:
-            # Remove here because delete=False above
-            os.remove(conf_filename.name)
-            # Remove the Forest output directory and all files
-            shutil.rmtree(forest_out)
-            
-        return graph
-
-
     def test_w_025(self, msgsteiner):
         ''' Run Forest with w=0.25 and check optimal subnetwork
 
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
         '''
-        graph = self.shared_w_test(msgsteiner, 0.25)
+        params = copy.deepcopy(conf_params)
+        params['w'] = 0.25
+        graph = test_util.run_forest(msgsteiner, params, forest_opts)
         
         # Check that the DiGraph has the expected properties
         # Undirected edges are loaded as a pair of directed edges
@@ -115,7 +64,9 @@ class TestW:
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
         '''
-        graph = self.shared_w_test(msgsteiner, 1)
+        params = copy.deepcopy(conf_params)
+        params['w'] = 1
+        graph = test_util.run_forest(msgsteiner, params, forest_opts)
         
         # Check that the DiGraph has the expected properties
         # Undirected edges are loaded as a pair of directed edges
@@ -134,8 +85,10 @@ class TestW:
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
         '''
-        graph = self.shared_w_test(msgsteiner, 10)
-        
+        params = copy.deepcopy(conf_params)
+        params['w'] = 10
+        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+
         # Check that the DiGraph has the expected properties
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
@@ -148,8 +101,9 @@ class TestW:
         INPUT:
         msgsteiner - fixture object with the value of --msgpath parsed by conftest.py
         '''
+        params = copy.deepcopy(conf_params)
         with pytest.raises(Exception) as excinfo:
-            self.shared_w_test(msgsteiner)
+            graph = test_util.run_forest(msgsteiner, params, forest_opts)
         # Forest will not raise an Exception, it simply exits if w is missing
         # Have to check for missing output files to determine whether it exited
         assert 'Forest did not generate output files' in excinfo.value.message
