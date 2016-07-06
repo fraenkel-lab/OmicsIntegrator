@@ -33,34 +33,28 @@ class TestBetaMu:
     The mu parameter is typically used in practice to exclude well-studied gene regulatory elements
     that appear as high-confidence hubs in bioinformatics databases.
 
-    Use the following test network:
+    Use the following test network (with directed edges as mentioned in c' below):
 
       B - A - D
        \ / \ /
         C   E
-        |   |
-        F   G
 
     p(A) = 5
     p(B) = 6
-    p(C) = 8
+    p(C) = 6
     p(D) = 6
-    p(E) = 8
-    p(F) = 0 @todo remove
-    p(G) = 0
+    p(E) = 6
     c'(AB) = 0.9
     c'(AC) = 0.9
     c'(AD) = 0.9
     c'(AE) = 0.9
     c'(BC) = 0.1
     c'(DE) = 0.1
-    c'(CF) = 0.1
-    c'(EG) = 0.1
     '''
     def test_beta_1(self, msgsteiner):
         ''' 
         In p'(v) = beta * p(v) - mu * deg(v), beta = 1 is too small to overcome the hub penalty with mu = 2:
-          p'(A) = 6 - 8 = -2
+          p'(A) = 1*5 - 2*4 = -3
 
         We expect forest to use the more costly edges BC and CD in its network instead
         '''
@@ -81,7 +75,7 @@ class TestBetaMu:
     def test_beta_2(self, msgsteiner):
         '''
         See test_beta_1; beta = 2 is enough to overcome the hub penalty so that the hub at A is chosen:
-          p'(A) = 12 - 8 = 4
+          p'(A) = 2*5 - 2*4 = 2
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 2
