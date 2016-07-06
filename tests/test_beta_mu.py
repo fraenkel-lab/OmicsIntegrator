@@ -11,7 +11,7 @@ import test_util
 # Set arguments used in all forest tests:
 # Define all but the b (beta) parameter here; vary beta for the tests
 conf_params = {
-    'w': 0,
+    'w': 1,
     'D': 5,
     'mu': 2,
     'g': 0
@@ -28,27 +28,34 @@ class TestBetaMu:
     Test various values of the beta parameter with respect to its interaction with a non-zero mu
     p'(v) = beta * p(v) - mu * deg(v)
     min f'(F) = sum_{v not in V_F} p'(v) + sum_{e in E_F} c(e) + w * K
+    c(e) = 1 - c'(e) [c' is "confidence" while c is "cost"]
 
     The mu parameter is typically used in practice to exclude well-studied gene regulatory elements
     that appear as high-confidence hubs in bioinformatics databases.
 
     Use the following test network:
 
-      B - A - E
+      B - A - D
        \ / \ /
-        C   D
+        C   E
+        |   |
+        F   G
 
-    p(A) = 6
-    p(B) = 5
-    p(C) = 5
-    p(D) = 5
-    p(E) = 5
-    c(AB) = 0.9
-    c(AC) = 0.9
-    c(AD) = 0.9
-    c(AE) = 0.9
-    c(BC) = 0.1
-    c(DE) = 0.1
+    p(A) = 5
+    p(B) = 6
+    p(C) = 8
+    p(D) = 6
+    p(E) = 8
+    p(F) = 0 @todo remove
+    p(G) = 0
+    c'(AB) = 0.9
+    c'(AC) = 0.9
+    c'(AD) = 0.9
+    c'(AE) = 0.9
+    c'(BC) = 0.1
+    c'(DE) = 0.1
+    c'(CF) = 0.1
+    c'(EG) = 0.1
     '''
     def test_beta_1(self, msgsteiner):
         ''' 
@@ -63,12 +70,10 @@ class TestBetaMu:
 
         try:
             assert graph.order() == 4, "Unexpected number of nodes"
-            assert graph.size() == 4, "Unexpected number of edges"
+            assert graph.size() == 2, "Unexpected number of edges"
     
             assert graph.has_edge('B', 'C')
-            assert graph.has_edge('C', 'B')
             assert graph.has_edge('D', 'E')
-            assert graph.has_edge('E', 'D')
         except AssertionError as e:
             test_util.print_graph(graph)
             raise e
@@ -83,13 +88,13 @@ class TestBetaMu:
         graph = test_util.run_forest(msgsteiner, params, forest_opts)
 
         try:
-            assert graph.order() == 3, "Unexpected number of nodes"
+            assert graph.order() == 5, "Unexpected number of nodes"
             assert graph.size() == 4, "Unexpected number of edges"
     
+            assert graph.has_edge('A', 'B')
             assert graph.has_edge('A', 'C')
-            assert graph.has_edge('C', 'A')
+            assert graph.has_edge('A', 'D')
             assert graph.has_edge('A', 'E')
-            assert graph.has_edge('E', 'A')
         except AssertionError as e:
             test_util.print_graph(graph)
             raise e
