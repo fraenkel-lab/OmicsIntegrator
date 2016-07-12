@@ -81,7 +81,7 @@ def map_data(Xdata,Xnames,Ydata,Ynames):
     #print ','.join(yn[0:20])
     return Xdata_out,Ydata_out
 
-def perform_regression(X,Y,motif_ids,norm):
+def perform_regression(X,Y,motif_ids,norm,outdir,plot):
     '''
 
     '''
@@ -99,13 +99,30 @@ def perform_regression(X,Y,motif_ids,norm):
         # Perform regression
         slope,intercept,r_val,p_val,std_err = stats.linregress(x,y)
         reg_results.append(([motif_ids[i],slope,p_val,i]))
-
-        #fig = plt.figure()
-        #ax1 = fig.add_subplot(111)
-        #ax1.plot(x,y,'bo',x,intercept+slope*x,'k')
-        #ax1.set_title(motif_ids[i])
-        #fig.savefig(open('test_plots/'+motif_ids[i]+'.pdf','w'),dpi=300)
-        #plt.close()
+	
+	#regression plot
+	if plot:
+	    fig = plt.figure()
+	    ax1 = fig.add_subplot(111)
+	    ax1.plot(x,y,'bo',x,intercept+slope*x,'k')
+	    ax1.set_title(motif_ids[i])
+	    ax1.set_xlabel('Estimated transcription factor affinity')
+	    ax1.set_ylabel('Expression log fold change')
+	    #checking if a subdirectory is present to save plots
+	    plotdir = os.path.join(os.path.split(outdir)[0],'regression_plots')
+	    
+	    if not os.path.isdir(plotdir):
+			os.makedirs(plotdir)
+	    #cleaning all motif ids to have all alphanumeric name
+	    if not re.match(r'^[A-Za-z0-9.]*$', motif_ids[i]):
+			motif_ids[i] = "".join(c for c in motif_ids[i] if c not in ('!','$','@','!','%','*','\\','/','_','-'))	    
+	    #file name must be within max characters supported by os 
+	    if len(motif_ids[i])>162:
+			st = motif_ids[i]
+			motif_ids[i] = st[0:160]
+	    plotfile = os.path.join(plotdir,motif_ids[i]+'.pdf')
+	    fig.savefig(open(plotfile,'w'),dpi=300)
+	    plt.close()	    
 
     return sorted(reg_results,key=lambda x: x[2])
 
@@ -151,6 +168,7 @@ def main():
     parser.add_option('--thresh',dest='thresh',type='string',default='0.9',help='P/Q-Value threshold to illustrate results. Default:%default')
     parser.add_option('--gifdir',dest='motifs',default=os.path.join(progdir,'../data/matrix_files/gifs'),
                       help='Directory containing motif GIFs to illustrate results. Default is %default')
+    parser.add_option('--plot',dest='plot',type='string',default=False,help='Enable plot generation for regression results.')
 
     # get options, arguments
     (opts,args) = parser.parse_args()
@@ -215,7 +233,7 @@ def main():
     X,Y=map_data(tgm_data,tgm_genes,response_data,response_genes)
     
     # Perform regression
-    reg_results=perform_regression(X,Y,motif_ids,norm_type)
+    reg_results=perform_regression(X,Y,motif_ids,norm_type,outdir,opts.plot)
     
     # FDR correction
     new_results = fdr_correction(reg_results)
