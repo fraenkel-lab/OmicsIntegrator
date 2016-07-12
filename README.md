@@ -138,6 +138,10 @@ tfDelimiter = .
 expressionFile = tabDelimitedExpressionData.txt
 pvalThresh = 0.01
 qvalThresh =
+
+[regression]
+#for generating and saving regression plots
+savePlot=False
 ```
 
 #### Chromatin Data
@@ -174,9 +178,14 @@ statistically significant. P-value (`pvalThresh`) or Q-value (`qvalThresh`)
 thresholds will be used to select only those transcription factors whose
 correlation with expression falls below the provided threshold.
 
-### garnet output
+#### regression
 
-garnet produces a number of intermediate files that enable you
+Linear regression plots are placed in a subdirectory named `regression_plots` if
+`savePlot=True` in the configuration file.
+
+### Garnet output
+
+Garnet produces a number of intermediate files that enable you
 to better interpret your data or re-run a sub-script that may have failed. All
 files are placed in the directory provided by the `--outdir` option of the
 garnet script.
@@ -214,8 +223,8 @@ garnet script.
   results from the regression that fall under a provided significance threshold,
   e.g. p=0.05.  This file can be used as input to forest.
 
-
-
+- **regression_plots**: An optional subdirectory that contains plots visualizing
+the transcription factor linear regression tests.
 
 Running forest.py
 -----------------
@@ -451,7 +460,7 @@ edges not chosen by the algorithm. Betweenness centrality for all nodes was
 calculated with this network.
 
 - **dummyForest.sif** is the same as optimalForest.sif, only it includes the
-  dummy node and all edges connecting to it.
+dummy node and all edges connecting to it.
 
 - **edgeattributes.tsv** is a tab-seperated value file containing information
   for each edge in the network, such as the weight in the interactome, and the
