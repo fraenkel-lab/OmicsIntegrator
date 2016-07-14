@@ -43,6 +43,9 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
         
         if len(vals)==3:            
             filtered_events[chr+':'+mid]=vals[2]
+
+	if len(vals)==2:           #Renan changed this
+	    filtered_events[chr+':'+mid]=vals[1]
     print 'Found %d events, of which %d have gene names'%(len(seq_mids),len(filtered_events))
     ##this next section relies on xls 
     ##filter events that are within distance from closest_gene_output to get gene mapping
