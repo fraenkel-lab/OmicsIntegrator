@@ -25,10 +25,10 @@ def write_conf(fh, params):
     params - the values of w, b, D and optionally mu, garnetBeta, noise, r, g.
     '''
     for k,v in params.iteritems():
-        if k == 'b':
-          fh.write('%s = %f\n' % (k, v))
-        else:
+        if k == 'D' or k == 'processes':
           fh.write('%s = %d\n' % (k, v))
+        else:
+          fh.write('%s = %f\n' % (k, v))
 
 def run_forest(msgsteiner, conf_params, forest_opts):
     '''
