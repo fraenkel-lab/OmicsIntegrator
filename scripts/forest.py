@@ -297,6 +297,15 @@ class PCSFInput(object):
                     interactomeNodes.append(words[1])
             line = e.readline()
         e.close()
+
+        # dirEndpoints stores edge endpoints of all directed edges together in one set
+        # dirEdges is dict<str, dict<str, str>>
+        dirEndpoints = set()
+        for k, v in dirEdges.iteritems():
+          dirEndpoints.add(k)
+          for k2 in v.iterkeys():
+            dirEndpoints.add(k2)
+
         self.interactomeNodes = interactomeNodes
         if above1 > 0:
             print 'WARNING!! All edgeweights should be a probability of protein '\
@@ -331,7 +340,7 @@ class PCSFInput(object):
                 sys.exit('ERROR: File containing prizes should have exactly two columns: '\
                          'ProteinName\tPrizeValue. Protein names should not have spaces.')
             #Increase count if this is not in the interactome
-            if words[0] not in undirEdges and words[0] not in dirEdges:
+            if words[0] not in undirEdges and words[0] not in dirEndpoints:
                 count += 1
             else:
                 origPrizes[words[0]] = float(words[1])
@@ -350,7 +359,7 @@ class PCSFInput(object):
                     sys.exit('ERROR: File containing TFs should have exactly two columns: '\
                          'TF_Name\tPrizeValue. TF names should not have spaces.')
                 #Increase count if this is not in the interactome
-                if words[0] not in undirEdges and words[0] not in dirEdges:
+                if words[0] not in undirEdges and words[0] not in dirEndpoints:
                     count += 1
                 else:
                     # Scale prize using garnetBeta
@@ -424,7 +433,7 @@ class PCSFInput(object):
             line = dummyFile.readline()
             while line:
                 line = line.strip()
-                if line not in undirEdges and line not in dirEdges:
+                if line not in undirEdges and line not in dirEndpoints:
                     #protein not in interactome. Ignore edge but add to tally
                     numExcluded += 1
                 else:

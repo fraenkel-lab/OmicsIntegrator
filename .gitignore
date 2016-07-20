@@ -11,6 +11,7 @@
 dist
 build
 eggs
+.eggs
 parts
 bin
 var
@@ -24,7 +25,9 @@ lib64
 pip-log.txt
 
 # Unit test / coverage reports
+.cache
 .coverage
+.cache
 .tox
 nosetests.xml
 htmlcov
