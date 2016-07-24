@@ -11,6 +11,8 @@ import numpy as np
 from scipy import stats
 import fileinput
 import matplotlib
+import pdb
+import pandas
 matplotlib.use('pdf')
 from matplotlib import pyplot as plt
 
@@ -108,9 +110,14 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
 	    ax1.set_title(motif_ids[i])
 	    ax1.set_xlabel('Estimated transcription factor affinity')
 	    ax1.set_ylabel('Expression log fold change')
+	    #pdb.set_trace()
 	    #checking if a subdirectory is present to save plots
 	    plotdir = os.path.join(os.path.split(outdir)[0],'regression_plots')
-	    
+	    #Renan export the x and y values for lattter plotting in R reports
+	    df1 = pandas.DataFrame([x,y]) 
+	    outputdatafile = os.path.join(plotdir,motif_ids[i]+'.csv')
+	    df1.to_csv(outputdatafile)
+
 	    if not os.path.isdir(plotdir):
 			os.makedirs(plotdir)
 	    #cleaning all motif ids to have all alphanumeric name
