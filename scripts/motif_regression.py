@@ -115,8 +115,6 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
 	    plotdir = os.path.join(os.path.split(outdir)[0],'regression_plots')
 	    #Renan export the x and y values for lattter plotting in R reports
 	    df1 = pandas.DataFrame([x,y]) 
-	    outputdatafile = os.path.join(plotdir,motif_ids[i]+'.csv')
-	    df1.to_csv(outputdatafile)
 
 	    if not os.path.isdir(plotdir):
 			os.makedirs(plotdir)
@@ -129,6 +127,9 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
 			motif_ids[i] = st[0:160]
 	    plotfile = os.path.join(plotdir,motif_ids[i]+'.pdf')
 	    fig.savefig(open(plotfile,'w'),dpi=300)
+	    #Export data for each plot
+	    outputdatafile = os.path.join(plotdir,motif_ids[i]+'.csv')
+	    df1.to_csv(outputdatafile)
 	    plt.close()	    
 
     return sorted(reg_results,key=lambda x: x[2])
