@@ -8,6 +8,9 @@ cache: pip
 python:
   - "2.7"
 
+notifications:
+  email: false
+
 before_install:
   # install conda to help with numpy/scipy system dependencies
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
