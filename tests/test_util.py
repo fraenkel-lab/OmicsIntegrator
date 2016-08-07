@@ -58,8 +58,12 @@ def run_forest(msgsteiner, conf_params, forest_opts):
         conf_filename.close()
     forest_opts['conf'] = conf_filename.name
     
-    # Create a tmp directory for output	
-    forest_opts['outpath'] = tempfile.mkdtemp()
+    default_outpath = True
+    if 'outpath' in forest_opts:
+      default_outpath = False
+    else:
+      # Create a tmp directory for output	unless one is provided
+      forest_opts['outpath'] = tempfile.mkdtemp()
     
     try:
         cur_dir = os.path.dirname(__file__)
@@ -77,6 +81,7 @@ def run_forest(msgsteiner, conf_params, forest_opts):
         # Remove here because delete=False above
         os.remove(conf_filename.name)
         # Remove the Forest output directory and all files
-        shutil.rmtree(forest_opts['outpath'])
+        if default_outpath:
+          shutil.rmtree(forest_opts['outpath'])
         
     return graph
