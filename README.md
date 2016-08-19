@@ -29,7 +29,7 @@ install Anaconda (https://www.continuum.io/downloads) to obtain Python
   - matplotlib: http://matplotlib.org/
   - Networkx: http://networkx.github.io
 
-2. msgsteiner package (version msgsteiner-1.1.tgz): http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
+2. msgsteiner package (version 1.3): [code](http://staff.polito.it/alfredo.braunstein/code/msgsteiner-1.3.tgz), [license](http://areeweb.polito.it/ricerca/cmp/code/bpsteiner)
 
 3. Boost C++ library: http://www.boost.org
 
@@ -59,9 +59,9 @@ does not include Boost, follow the [Boost getting started
 guide](http://www.boost.org/doc/libs/1_59_0/more/getting_started/index.html) for
 instructions on how to download the library and extract files from the archive.
 To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew install boost` to install the library.
-2. Download `msgsteiner-1.1.tgz` from http://areeweb.polito.it/ricerca/cmp/code/bpsteiner
-3. Unpack files from the archive: `tar -xvf msgsteiner-1.1.tgz`
-4. Enter the `msgsteiner-1.1` subdirectory and run `make`
+2. Download `msgsteiner-1.3.tgz` from http://staff.polito.it/alfredo.braunstein/code/msgsteiner-1.3.tgz ([license](http://areeweb.polito.it/ricerca/cmp/code/bpsteiner))
+3. Unpack files from the archive: `tar -xvf msgsteiner-1.3.tgz`
+4. Enter the `msgsteiner-1.3` subdirectory and run `make`
   * See [this advice](./patches) on compiling the C++ code if you encounter problems. 
   * Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
 5. Download the Omics Integrator package: [OmicsIntegrator-0.2.0.tar.gz](./dist/OmicsIntegrator-0.2.0.tar.gz)
@@ -387,7 +387,7 @@ network.
 
 If the user is not keeping the file `msgsteiner` in the same directory as
 forest.py, the path needs to be specified using the `--msgpath` option, i.e
-'--msgpath /home/msgsteiner-1.1/msgsteiner'.
+'--msgpath /home/msgsteiner-1.3/msgsteiner'.
 
 If you would like the output files to be stored in a directory other than the
 one you are running the code from, you can specify this directory with the
