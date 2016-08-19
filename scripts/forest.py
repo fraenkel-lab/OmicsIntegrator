@@ -487,9 +487,9 @@ class PCSFInput(object):
                 if not excludeT:
                     try:
                         degree = DegreeDict[prot]
-                        prize = (self.b * float(self.origPrizes[prot])) +\
-                                 score(degree,self.mu,musquared)
                         negprize = score(degree,self.mu,musquared)
+                        prize = (self.b * float(self.origPrizes[prot])) +\
+                                 negprize
                         totalPrizes[prot] = prize
                         negPrizes[prot] = negprize
                     except KeyError:
@@ -658,6 +658,13 @@ class PCSFOutput(object):
         #Create networkx graph storing the result of msgsteiner
         optForest = nx.DiGraph()
         dumForest = nx.DiGraph()
+
+        # Compute the objective function score of the msgsteiner solution
+        # as defined in Eq 3 of Tuncbag et al 2016
+        # prizeTerm computed below
+        edgeTerm = 0 # cummulative edge costs of included edges
+        treesTerm = 0 # penalty for multiple trees
+
         edges = edgeList.split('\n')
         for edge in edges:
             words = edge.split()
@@ -668,34 +675,49 @@ class PCSFOutput(object):
                              'edges pointing towards the root dummy node!')
                 if words[1] == 'DUMMY':
                     dumForest.add_edge(words[1], words[0])
+                    treesTerm += inputObj.w
                     continue
                 #Add directed edges
                 try:
+                    edgeWeight = inputObj.dirEdges[words[1]][words[0]]
                     optForest.add_edge(words[1], words[0], 
-                                       weight=inputObj.dirEdges[words[1]][words[0]], 
+                                       weight=edgeWeight, 
                                        fracOptContaining=1.0)
+                    edgeTerm += 1 - float(edgeWeight)
                 except KeyError:
                     #Add undirected edges
-                    try:    
+                    try:
+                        # Undirected edges should have symmetric edge costs
+                        if inputObj.undirEdges[words[1]][words[0]] != inputObj.undirEdges[words[0]][words[1]]:
+                            sys.exit('ERROR: Undirected edges must have symmetric costs')
+                        edgeWeight = inputObj.undirEdges[words[1]][words[0]]
                         optForest.add_edge(words[1], words[0], 
-                                           weight=inputObj.undirEdges[words[1]][words[0]], 
+                                           weight=edgeWeight, 
                                            fracOptContaining=1.0)
                         optForest.add_edge(words[0], words[1], 
-                                           weight=inputObj.undirEdges[words[0]][words[1]], 
+                                           weight=edgeWeight, 
                                            fracOptContaining=1.0)
+                        edgeTerm += 1 - float(edgeWeight)
                     #edge not found in either dictionary
                     except KeyError:
                         sys.exit('ERROR: Edges were returned from the message passing algorithm '\
                                  'that were not found in the input data. Aborting program.')
+
+        # Initially store all of the prizes, then subtract the prize of those
+        # that are in the optimal forest
+        prizeTerm = sum(inputObj.totalPrizes.itervalues()) # cummulative prizes of excluded nodes
+
         #Add prizes from input data as node attribute. Steiner nodes have prize zero.
         #Also add fracOptContaining as node attribute.
         terminalCount = 0
         for node in optForest.nodes():
             try:
                 optForest.node[node]['prize'] = inputObj.totalPrizes[node]
+                prizeTerm -= inputObj.totalPrizes[node]
+
                 #Count terminal nodes (nodes that had prizes before mu)
                 try:
-                    orig = inputObj.origPrizes[node]
+                    inputObj.origPrizes[node]
                     terminalCount += 1
                 except KeyError:
                     pass
@@ -736,6 +758,12 @@ class PCSFOutput(object):
                 augForest.node[node]['betweenness'] = 0
         
         #Write info about results in info file
+        err.write('\n')
+        err.write('Total objective function: %f\n' % (prizeTerm + edgeTerm + treesTerm))  
+        err.write('Prize objective function term: %f\n' % prizeTerm)
+        err.write('Edge objective function term: %f\n' % edgeTerm)
+        err.write('Number of trees objective function term: %f\n' % treesTerm)
+
         err.write('\n')
         err.write('There were %i terminals in the interactome.\n' %len(inputObj.origPrizes.keys()))
         err.write('There are %i terminals in the optimal forest.\n' %terminalCount)
