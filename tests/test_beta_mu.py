@@ -60,7 +60,7 @@ class TestBetaMu:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 1
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         try:
             assert graph.order() == 4, "Unexpected number of nodes"
@@ -79,7 +79,7 @@ class TestBetaMu:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 2
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         try:
             assert graph.order() == 5, "Unexpected number of nodes"

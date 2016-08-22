@@ -57,7 +57,7 @@ class TestBeta:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 0
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
@@ -72,7 +72,7 @@ class TestBeta:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 0.24
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
@@ -92,7 +92,7 @@ class TestBeta:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 0.26
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         assert graph.order() == 4
         assert graph.size() == 4

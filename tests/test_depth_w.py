@@ -45,7 +45,7 @@ class TestDepthW:
         params = copy.deepcopy(conf_params)
         params['D'] = 3
         params['w'] = 1
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         # Check that the DiGraph has the expected properties
         # Undirected edges are loaded as a pair of directed edges

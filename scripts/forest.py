@@ -759,10 +759,13 @@ class PCSFOutput(object):
         
         #Write info about results in info file
         err.write('\n')
-        err.write('Total objective function: %f\n' % (prizeTerm + edgeTerm + treesTerm))  
-        err.write('Prize objective function term: %f\n' % prizeTerm)
-        err.write('Edge objective function term: %f\n' % edgeTerm)
-        err.write('Number of trees objective function term: %f\n' % treesTerm)
+        err.write('Total objective function: %f\n' % (prizeTerm + edgeTerm + treesTerm))
+        # \sum_{v \notin V_F} p'(v)
+        err.write('Excluded prizes term: %f\n' % prizeTerm)
+        # \sum_{e \in E_V} c(e)
+        err.write('Edge costs term: %f\n' % edgeTerm)
+        # \omega * \kappa
+        err.write('Number of trees term: %f\n' % treesTerm)
 
         err.write('\n')
         err.write('There were %i terminals in the interactome.\n' %len(inputObj.origPrizes.keys()))
