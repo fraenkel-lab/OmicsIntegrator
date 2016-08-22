@@ -1,4 +1,5 @@
 import os, sys, pytest, copy
+from numpy import isclose
 
 # import repo's tests utilities
 cur_dir = os.path.dirname(__file__)
@@ -61,6 +62,15 @@ class TestBeta:
 
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
+
+        # Check that the optimal forest has the correct objective function
+        # value, using isclose to allow for minor floating point variation
+        # Objective function: 0
+        # Excluded prizes: 0
+        # Edge costs: 0
+        # Number of trees * w: 0
+        assert isclose(0, objective, rtol=0, atol=1e-5), 'Incorrect objective function value'
+
         
     def test_beta_024(self, msgsteiner):
         '''
@@ -76,6 +86,15 @@ class TestBeta:
 
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
+
+        # Check that the optimal forest has the correct objective function
+        # value, using isclose to allow for minor floating point variation
+        # Objective function: 0.48
+        # Excluded prizes: 0.48
+        # Edge costs: 0
+        # Number of trees * w: 0
+        assert isclose(0.48, objective, rtol=0, atol=1e-5), 'Incorrect objective function value'
+
   
     def test_beta_026(self, msgsteiner):
         '''
@@ -101,3 +120,12 @@ class TestBeta:
         assert graph.has_edge('C', 'A')
         assert graph.has_edge('B', 'D')
         assert graph.has_edge('D', 'B')
+
+        # Check that the optimal forest has the correct objective function
+        # value, using isclose to allow for minor floating point variation
+        # Objective function: 0.5
+        # Excluded prizes: 0
+        # Edge costs: 0.5
+        # Number of trees * w: 0 * 2 = 0
+        assert isclose(0.5, objective, rtol=0, atol=1e-5), 'Incorrect objective function value'
+
