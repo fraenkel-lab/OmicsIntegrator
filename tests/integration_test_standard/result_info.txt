@@ -3,9 +3,9 @@ num threads: 1
 146 -13725.3 32.9672 -13758.3 0 5
 152 -13733.8 29.6495 -13763.5 0 6
 
-Total objective function: -13733.274885
+Total objective function: -13733.830532
 Excluded prizes term: -13763.480000
-Edge costs term: 24.205115
+Edge costs term: 23.649468
 Number of trees term: 6.000000
 
 There were 49 terminals in the interactome.
