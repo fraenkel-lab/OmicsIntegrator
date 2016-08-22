@@ -771,11 +771,13 @@ class PCSFOutput(object):
         err.write('There were %i terminals in the interactome.\n' %len(inputObj.origPrizes.keys()))
         err.write('There are %i terminals in the optimal forest.\n' %terminalCount)
         err.write('The optimal forest has %i nodes total.\n' %len(optForest.nodes()))
-        err.write('The roots in the optimal forest are ' + str([node for node in dumForest.nodes()
-                  if node != 'DUMMY']) + '\n')
-        err.write('Of these, ' + str([node for node in dumForest.nodes() if node != 'DUMMY' and 
-                  node not in optForest.nodes()]) + ' are singletons and will not show up in '\
-                  'optimalForest.sif since they have no leaves.\n')
+        opt_roots = [node for node in dumForest.nodes() if node != 'DUMMY']
+        err.write('The %d roots in the optimal forest are %s\n' % (len(opt_roots), str(opt_roots)))
+        singletons = [node for node in dumForest.nodes()\
+            if node != 'DUMMY' and node not in optForest.nodes()]
+        err.write('The %d singleton roots that will not show up in '\
+                  'the optimal forest are %s\n' % \
+                  (len(singletons), str(singletons)))
         err.close()
         
         self.augForest = augForest
