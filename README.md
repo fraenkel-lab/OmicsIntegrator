@@ -9,9 +9,10 @@ proteomics data using the protein-protein interaction network. It is comprised
 of two modules, Garnet and Forest, that perform data integration of various
 types of data.
 
-Contact: Sara JC Gosline [sgosline@mit.edu], Mandy Kedaigle [mandyjoy@mit.edu]
+Contact: Amanda Kedaigle [mandyjoy@mit.edu]
 
-Copyright (c) 2015-2016 Sara JC Gosline, Mandy Kedaigle
+Copyright (c) 2015 Massachusetts Institute of Technology
+All rights reserved.
 
 Reference:
 --------------------
