@@ -221,11 +221,13 @@ garnet script.
   regression.
 
 - **events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv**: Only those
-  results from the regression that fall under a provided significance threshold,
-  e.g. p=0.05.  This file can be used as input to forest.
+  regression results that fall under the p-value or q-value significance
+  threshold provided in the configuration file, e.g. p=0.05, are included.
+  This file can be used as input to Forest, and the prizes are -log2(pval)
+  or -log2(qval).
 
 - **regression_plots**: An optional subdirectory that contains plots visualizing
-the transcription factor linear regression tests.
+  the transcription factor linear regression tests.
 
 Running forest.py
 -----------------

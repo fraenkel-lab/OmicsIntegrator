@@ -5,7 +5,7 @@ GARNET primary script executes 5 sub scripts according to provided configuration
 --------------------------------------------------------------------
 Config file:
 --------------------------------------------------------------------
-Configuration file should have 11 different varaibles provided.
+Configuration file should provide the following variables.
 [chromatinData]
 bedfile=[bed file of accessible chromatin regions]
 fastafile=[fasta file of same regions, collected via galaxyweb]
@@ -26,6 +26,9 @@ tfDelimiter=.
 expressionFile=[name of expression file]
 pvalThresh=0.01
 qvalThresh=
+
+[regression]
+savePlot=False
 =======================================================================
 
 '''
