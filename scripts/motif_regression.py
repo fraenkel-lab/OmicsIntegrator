@@ -168,7 +168,7 @@ def main():
     parser.add_option('--thresh',dest='thresh',type='string',default='0.9',help='P/Q-Value threshold to illustrate results. Default:%default')
     parser.add_option('--gifdir',dest='motifs',default=os.path.join(progdir,'../data/matrix_files/gifs'),
                       help='Directory containing motif GIFs to illustrate results. Default is %default')
-    parser.add_option('--plot',dest='plot',type='string',default=False,help='Enable plot generation for regression results.')
+    parser.add_option('--plot',dest='plot',action='store_true',default=False,help='Enable plot generation for regression results. Default:%default')
 
     # get options, arguments
     (opts,args) = parser.parse_args()
@@ -305,7 +305,7 @@ def main():
                 regdict[tf]=lpv
     print 'Found '+str(len(regdict))+'Tf scores for '+str(len(new_results))+' motif results'
     of=open(re.sub('.tsv','_FOREST_INPUT.tsv',outdir),'w')
-    for tf in regdict.keys():
+    for tf in sorted(regdict.keys()):
         val=regdict[tf]
         of.write(tf+'\t'+str(val)+'\n')
     of.close()
