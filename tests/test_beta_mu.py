@@ -1,4 +1,5 @@
 import os, sys, pytest, copy
+from numpy import isclose
 
 # import repo's tests utilities
 cur_dir = os.path.dirname(__file__)
@@ -30,7 +31,7 @@ class TestBetaMu:
     min f'(F) = sum_{v not in V_F} p'(v) + sum_{e in E_F} c(e) + w * K
     c(e) = 1 - c'(e) [c' is "confidence" while c is "cost"]
 
-    The mu parameter is typically used in practice to exclude well-studied gene regulatory elements
+    The mu parameter is typically used in practice to exclude well-studied proteins
     that appear as high-confidence hubs in bioinformatics databases.
 
     Use the following test network (with directed edges as mentioned in c' below):
@@ -60,7 +61,7 @@ class TestBetaMu:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 1
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         try:
             assert graph.order() == 4, "Unexpected number of nodes"
@@ -68,6 +69,15 @@ class TestBetaMu:
     
             assert graph.has_edge('B', 'C')
             assert graph.has_edge('D', 'E')
+            
+            # Check that the optimal forest has the correct objective function
+            # value, using isclose to allow for minor floating point variation
+            # Objective function: 0.8
+            # Excluded prizes: -3.0
+            # Edge costs: 1.8
+            # Number of trees * w: 2 * 1.0 = 2.0
+            assert isclose(0.8, objective, rtol=0, atol=1e-5), 'Incorrect objective function value'
+
         except AssertionError as e:
             test_util.print_graph(graph)
             raise e
@@ -79,7 +89,7 @@ class TestBetaMu:
         '''
         params = copy.deepcopy(conf_params)
         params['b'] = 2
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         try:
             assert graph.order() == 5, "Unexpected number of nodes"
@@ -89,6 +99,15 @@ class TestBetaMu:
             assert graph.has_edge('A', 'C')
             assert graph.has_edge('A', 'D')
             assert graph.has_edge('A', 'E')
+            
+            # Check that the optimal forest has the correct objective function
+            # value, using isclose to allow for minor floating point variation
+            # Objective function: 1.4
+            # Excluded prizes: 0
+            # Edge costs: 0.4
+            # Number of trees * w: 1 * 1.0 = 1.0
+            assert isclose(1.4, objective, rtol=0, atol=1e-5), 'Incorrect objective function value'
+            
         except AssertionError as e:
             test_util.print_graph(graph)
             raise e

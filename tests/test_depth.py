@@ -41,8 +41,8 @@ class TestDepth:
         params = copy.deepcopy(conf_params)
         params['D'] = 0
         with pytest.raises(Exception) as excinfo:
-            graph = test_util.run_forest(msgsteiner, params, forest_opts)
-        assert 'Forest did not generate output files' in excinfo.value.message
+            test_util.run_forest(msgsteiner, params, forest_opts)
+        assert 'Forest did not generate the optimal forest file' in excinfo.value.message
 
     def test_depth_2(self, msgsteiner):
         ''' 
@@ -51,7 +51,7 @@ class TestDepth:
         '''
         params = copy.deepcopy(conf_params)
         params['D'] = 2
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         assert graph.order() == 0, "Unexpected number of nodes"
         assert graph.size() == 0, "Unexpected number of edges"
@@ -63,7 +63,7 @@ class TestDepth:
         '''
         params = copy.deepcopy(conf_params)
         params['D'] = 3
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         # Check that the DiGraph has the expected properties
         # Undirected edges are loaded as a pair of directed edges
@@ -82,7 +82,7 @@ class TestDepth:
         '''
         params = copy.deepcopy(conf_params)
         params['D'] = 3
-        graph = test_util.run_forest(msgsteiner, params, forest_opts)
+        graph, objective = test_util.run_forest(msgsteiner, params, forest_opts)
 
         # Check that the DiGraph has the expected properties
         # Undirected edges are loaded as a pair of directed edges
