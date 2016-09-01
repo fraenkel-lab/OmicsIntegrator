@@ -1,13 +1,12 @@
+<center><img src="http://fraenkel-nsf.csbi.mit.edu/omicsintegrator/omicsI_logo.png" height="40%" width="40%" ></center>
+
 ===============================
 Omics Integrator
 ===============================
 
 [![Build Status](https://travis-ci.org/fraenkel-lab/OmicsIntegrator.svg?branch=master)](https://travis-ci.org/fraenkel-lab/OmicsIntegrator)
 
-Omics Integrator is a package designed to integrate gene expression data and/or
-proteomics data using the protein-protein interaction network. It is comprised
-of two modules, Garnet and Forest, that perform data integration of various
-types of data.
+Omics Integrator is a package designed to integrate proteomic data, gene expression data and/or epigenetic data using a protein-protein interaction network. It is comprised of two modules, Garnet and Forest.
 
 Contact: Amanda Kedaigle [mandyjoy@mit.edu]
 
