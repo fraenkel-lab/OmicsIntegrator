@@ -64,8 +64,8 @@ To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew
 4. Enter the `msgsteiner-1.3` subdirectory and run `make`
   * See [this advice](./patches) on compiling the C++ code if you encounter problems. 
   * Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
-5. Download the Omics Integrator package: [OmicsIntegrator-0.2.0.tar.gz](./dist/OmicsIntegrator-0.2.0.tar.gz)
-6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.2.0.tar.gz`
+5. Download the Omics Integrator package: [OmicsIntegrator-0.3.0.tar.gz](./dist/OmicsIntegrator-0.3.0.tar.gz)
+6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.3.0.tar.gz`
 7. Make sure you have all the requirements using the pip tool by entering the
 directory and typing: `pip install -r requirements.txt`
 

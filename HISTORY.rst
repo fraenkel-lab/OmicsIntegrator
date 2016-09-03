@@ -3,6 +3,18 @@
 History
 -------
 
+0.3.0 (2016-09-03)
+---------------------
+* Remove conflicts between Forest edge noise and garnetBeta parameters
+* Correctly query for whether prize nodes are in a directed network
+* Use correct p-value or q-value to filter Garnet output
+* Switch to msgsteiner-1.3 to fix bugs with directed edges and suboptimal forests
+* BSD license
+* Forest unit tests to assess the effects of w, beta, mu, and D
+* Continuous integration testing with Travis CI
+* Option to save plots from Garnet motif regression
+* Write Forest objective function value of optimal forest to info file
+
 0.2.0 (2016-04-13)
 ---------------------
 * Add a Forest integration test

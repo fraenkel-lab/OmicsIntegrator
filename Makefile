@@ -53,7 +53,7 @@ release: clean
 	python setup.py bdist_wheel upload
 
 dist: clean
-	python setup.py sdist
+	python setup.py sdist --formats=gztar
 	tar cvzf OmicsIntegratorExamples.tar.gz example/*
 	mv OmicsIntegratorExamples.tar.gz dist/
 	ls -l dist
