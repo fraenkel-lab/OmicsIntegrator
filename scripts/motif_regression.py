@@ -164,11 +164,11 @@ def main():
     parser.add_option('--norm-type',dest='norm_type',default=None,
                       help='Choose normalization type for response data. Choices are: "log2", "log10".\
                             Default is %default.')    
-    parser.add_option('--use-qval',dest='use_qval',action='store_true',default=False,help='If set this the FOREST input file will contain -log(qval) instead of -log(pval). Default:%default')
+    parser.add_option('--use-qval',dest='use_qval',action='store_true',default=False,help='If set this the Forest input file will contain -log(qval) instead of -log(pval) and threshold the output using qval. Default:%default')
     parser.add_option('--thresh',dest='thresh',type='string',default='0.9',help='P/Q-Value threshold to illustrate results. Default:%default')
     parser.add_option('--gifdir',dest='motifs',default=os.path.join(progdir,'../data/matrix_files/gifs'),
                       help='Directory containing motif GIFs to illustrate results. Default is %default')
-    parser.add_option('--plot',dest='plot',type='string',default=False,help='Enable plot generation for regression results.')
+    parser.add_option('--plot',dest='plot',action='store_true',default=False,help='Enable plot generation for regression results. Default:%default')
 
     # get options, arguments
     (opts,args) = parser.parse_args()
@@ -254,6 +254,7 @@ def main():
     of.close()
 
     ##now create HTML writeup
+    threshold = float(opts.thresh)
     of= open(re.sub(outdir.split('.')[-1],'html',outdir),'w')
     of.writelines("""<html>
                      <title>GARNET Results</title>
@@ -264,8 +265,9 @@ def main():
                 """)
     for res in new_results:
         if str(res[1])=='nan':
-            continue    
-        if res[4]<float(opts.thresh):
+            continue
+        # skip rows that exceed the q-value or p-value threhsold
+        if (opts.use_qval and res[4]<=threshold) or ((not opts.use_qval) and res[2]<=threshold):
             motifgif=os.path.join(opts.motifs,'motif'+str(res[3])+'.gif')
             ostr = "<tr><td>"+' '.join(res[0].split('.'))+"</td><td>"+str(res[1])+'</td><td>'+str(res[2])+"</td><td>"+str(res[4])+"</td><td><img src=\""+motifgif+"\" scale=80%></td></tr>\n"
             of.writelines(ostr)
@@ -273,26 +275,28 @@ def main():
     of.close()
     
     
-    ##now write to FOREST-friendly input file
+    ##now write to Forest-friendly input file
     ##collect dictionary of all individual tf names and their regression p-values
+    ##or q-values
     regdict={}
     for row in new_results:
         tfs=[t for t in row[0].split(delim) if t!='' and ' ' not in t]
 	#print row
         if str(row[1])=='nan':
-            continue    
+            continue
+        # skip rows that exceed the q-value or p-value threhsold
         if opts.use_qval:
-            if row[4]>float(opts.thresh):
+            if row[4]>threshold:
                 continue
-        elif row[2]>float(opts.thresh):
+        elif row[2]>threshold:
             continue
         for tf in tfs:
             if row[2]==1:
                 continue
             if opts.use_qval:
-                lpv=-1.0*np.log2(float(row[4]))#calculate neg log pvalue
+                lpv=-1.0*np.log2(float(row[4]))#calculate neg log2 qvalue
             else:
-                lpv=-1.0*np.log2(float(row[2]))#calculate neg log pvalue
+                lpv=-1.0*np.log2(float(row[2]))#calculate neg log2 pvalue
             try:
                 cpv=regdict[tf]
             except KeyError:
@@ -301,7 +305,7 @@ def main():
                 regdict[tf]=lpv
     print 'Found '+str(len(regdict))+'Tf scores for '+str(len(new_results))+' motif results'
     of=open(re.sub('.tsv','_FOREST_INPUT.tsv',outdir),'w')
-    for tf in regdict.keys():
+    for tf in sorted(regdict.keys()):
         val=regdict[tf]
         of.write(tf+'\t'+str(val)+'\n')
     of.close()

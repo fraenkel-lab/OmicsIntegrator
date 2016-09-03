@@ -5,7 +5,7 @@ GARNET primary script executes 5 sub scripts according to provided configuration
 --------------------------------------------------------------------
 Config file:
 --------------------------------------------------------------------
-Configuration file should have 11 different varaibles provided.
+Configuration file should provide the following variables.
 [chromatinData]
 bedfile=[bed file of accessible chromatin regions]
 fastafile=[fasta file of same regions, collected via galaxyweb]
@@ -26,6 +26,9 @@ tfDelimiter=.
 expressionFile=[name of expression file]
 pvalThresh=0.01
 qvalThresh=
+
+[regression]
+savePlot=False
 =======================================================================
 
 '''
@@ -152,7 +155,10 @@ def getTfsFromRegression(pickle_file,expressionfile,pvalT,qvalT,plot):
         else:
             thresh=pvalT
         cmd+=' --thresh='+thresh
-        cmd+=' --plot='+plot
+        
+        if plot:        
+            cmd+=' --plot'
+
         print '\n-----------------------------Regression Output------------------------------------------\n'
         print 'Running command:\n'+cmd+'\n'
         res=os.system(cmd)
@@ -244,7 +250,7 @@ def main():
     if delim is None:##here we want no delimiter if we do not want to tease out individual tfs
         delim=''
 
-    if do_network is not None and do_network!='' and do_network!='False':
+    if do_network is not None and do_network!='' and do_network.lower()!='false':
         cmd='python '+os.path.join(progdir,'zipTgms.py')+' --pkl='+binding_matrix+' --genome '+genome+' --as-network --tf-delimiter='+delim
         if opts.allgenes:
             cmd=cmd+' --allGenes'
@@ -253,7 +259,11 @@ def main():
         
     pvt=config.get('expressionData','pvalThresh')
     qvt=config.get('expressionData','qvalThresh')
-    plot=config.get('regression','savePlot')
+    
+    plot = False
+    plot_str=config.get('regression','savePlot')
+    if plot_str is not None and plot_str != '' and plot_str.lower() != 'false':
+        plot = True
     
     ##step 4: regression
     if expr is not None and expr!='':
