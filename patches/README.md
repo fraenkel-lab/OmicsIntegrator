@@ -10,7 +10,7 @@ your operating system, place it in the directory with the msgsteiner source code
 and try the build again with `make`:
 
 ```bash
-cd msgsteiner-1.1
+cd msgsteiner-1.3
 wget "https://raw.githubusercontent.com/fraenkel-lab/OmicsIntegrator/master/patches/Makefile.linux.patch"
 patch Makefile Makefile.linux.patch
 make
