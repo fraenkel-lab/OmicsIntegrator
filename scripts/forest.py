@@ -350,31 +350,30 @@ class PCSFInput(object):
         
         if garnet != None: 
             print 'Reading text file containing TF regression results: %s...\n' %garnet
-            if os.path.isfile(garnet):
-                g = open(garnet, 'rb')
+            if os.path.exists(garnet):
+                with open(garnet, 'rb') as g:
+                    line = g.readline()
+                    while line:
+                        words = line.strip().split()
+                        if len(words) != 2:
+                            print 'current line:', line
+                            sys.exit('ERROR: File containing TFs should have exactly two columns: '\
+                                 'TF_Name\tPrizeValue. TF names should not have spaces.')
+                        #Increase count if this is not in the interactome
+                        if words[0] not in undirEdges and words[0] not in dirEndpoints:
+                            count += 1
+                        else:
+                            # Scale prize using garnetBeta
+                            prize = float(words[1])*self.gb
+                            #If the TF already has a prize value this will replace it.
+                            origPrizes[words[0]] = prize
+                            if words[0] in terminalTypes.keys():
+                                terminalTypes[words[0]]+='_TF'
+                            else:
+                                terminalTypes[words[0]]='TF'
+                        line = g.readline()
             else:
-                sys.exit('ERROR: No such garnet file %s' %garnet
-            line = g.readline()
-            while line:
-                words = line.strip().split()
-                if len(words) != 2:
-                    print 'current line:', line
-                    sys.exit('ERROR: File containing TFs should have exactly two columns: '\
-                         'TF_Name\tPrizeValue. TF names should not have spaces.')
-                #Increase count if this is not in the interactome
-                if words[0] not in undirEdges and words[0] not in dirEndpoints:
-                    count += 1
-                else:
-                    # Scale prize using garnetBeta
-                    prize = float(words[1])*self.gb
-                    #If the TF already has a prize value this will replace it.
-                    origPrizes[words[0]] = prize
-                    if words[0] in terminalTypes.keys():
-                        terminalTypes[words[0]]+='_TF'
-                    else:
-                        terminalTypes[words[0]]='TF'
-                line = g.readline()
-            g.close()
+                sys.exit('ERROR: No such garnet file %s' %garnet)
         
         #Warning if supplied proteins were not in the interactome
         percentexcluded = (count/float(len(origPrizes.keys())+count)) * 100
