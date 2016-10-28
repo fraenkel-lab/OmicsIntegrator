@@ -350,6 +350,7 @@ class PCSFInput(object):
         
         if garnet != None: 
             print 'Reading text file containing TF regression results: %s...\n' %garnet
+            if os.path.isfile(garnet):
                 g = open(garnet, 'rb')
             else:
                 sys.exit('ERROR: No such garnet file %s' %garnet
