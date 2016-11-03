@@ -1,0 +1,1 @@
+wgEncodeRegDnaseClusteredV2.fasta.gz filter=lfs diff=lfs merge=lfs -text
