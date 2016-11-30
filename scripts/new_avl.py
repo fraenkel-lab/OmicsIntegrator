@@ -1,3 +1,4 @@
+##adapted from github of Pavel Grafov: https://github.com/pgrafov
 import random, math
 import sys
 
