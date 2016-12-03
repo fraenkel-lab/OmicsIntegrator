@@ -6,7 +6,7 @@ Large integration test script.
 import os, subprocess, filecmp, shutil, shlex, tempfile
 
 # msgsteiner is a fixture object
-def test_integration(msgsteiner):
+def test_forest_integration(msgsteiner):
     # msgsteiner is parsed using conftest.py
     assert msgsteiner is not None, 'Please provide path to msgsteiner using --msgpath option'
     
@@ -46,3 +46,7 @@ def test_integration(msgsteiner):
         print 'IO error'
     finally:
         shutil.rmtree(forest_out)
+
+# Placeholder test case for Garnet integration test
+def test_garnet_integration():
+    assert True
