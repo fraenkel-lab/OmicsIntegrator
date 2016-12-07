@@ -56,7 +56,26 @@ def test_garnet_integration():
     '''
     # Garnet config file
     curr_dir = os.path.dirname(__file__)
-    garnet_conf = os.path.join(curr_dir, '..', 'example', 'a549', 'tgfb_foxa1_garnet.cfg')
+    example_dir = os.path.join(curr_dir, '..', 'example', 'a549')
+    orig_conf = os.path.join(example_dir, 'tgfb_foxa1_garnet.cfg')
+
+    # Create a temporary copy of the config file that updates the relative
+    # file paths, which are relative to the example/a549 directory
+    conf_file = tempfile.NamedTemporaryFile(suffix='.cfg', delete=False)
+    try:
+        with open(orig_conf) as orig_conf_f:
+            # Copy each line in the original config file and update
+            # lines that contain the path to a file
+            for line in orig_conf_f:
+                # Matches File= or file=
+                if 'ile=' in line:
+                    tokens = line.split('=')
+                    updated_file = os.path.join(example_dir, tokens[1])
+                    conf_file.write('%s=%s\n' % (tokens[0], updated_file))
+                else:
+                    conf_file.write(line)
+    finally:
+        conf_file.close()
 
     # Create a tmp directory for output
     garnet_out = tempfile.mkdtemp()
@@ -64,10 +83,11 @@ def test_garnet_integration():
     try:
         garnet_path = os.path.join(curr_dir, '..', 'scripts', 'garnet.py')
 
-        garnet_cmd='python %s --outdir=%s %s' % (garnet_path, garnet_out, garnet_conf)
+        garnet_cmd='python %s --outdir=%s %s' % (garnet_path, garnet_out, conf_file.name)
         subprocess.call(shlex.split(garnet_cmd), shell=False)
 
         # Test all of the Garnet output files
+        # Do not test whether Garnet produces extra files besides those listed here
         output_files = ['events_to_genes.fsa',
                         'events_to_genes.xls',
                         'events_to_genes_with_motifs.pkl',
@@ -89,4 +109,6 @@ def test_garnet_integration():
     except IOError:
         print 'IO error'
     finally:
+        # Remove temporary config file here because delete=False above
+        os.remove(conf_file.name)
         shutil.rmtree(garnet_out)
