@@ -70,7 +70,7 @@ def test_garnet_integration():
                 # Matches File= or file=
                 if 'ile=' in line:
                     tokens = line.split('=')
-                    updated_file = os.path.join(example_dir, tokens[1])
+                    updated_file = os.path.normpath(os.path.join(example_dir, tokens[1]))
                     conf_file.write('%s=%s\n' % (tokens[0], updated_file))
                 else:
                     conf_file.write(line)
@@ -104,7 +104,7 @@ def test_garnet_integration():
         if len(match) != len(output_files):
             print 'Mismatching files: ', mismatch
             print 'Errors: ', errors
-            assert 0, 'Not all Forest output files match'
+            assert 0, 'Not all Garnet output files match'
 
     except IOError:
         print 'IO error'
