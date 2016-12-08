@@ -148,9 +148,6 @@ def main():
     usage = "%prog [options] <scores.tgm or scores.tgm.pkl> <response_values.tab>"
     description = "Script that takes a predicted TF-Gene matrix and uses a linear regression to identify which TFs have binding scores correlated with gene expression changes."
     parser = OptionParser(usage=usage,description=description)
-
-    ##get program directory
-    progdir=os.path.dirname(os.path.abspath(sys.argv[0]))
     
     # Options
     parser.add_option('--outdir','--out',dest="outdir",default='./test_out.txt',
@@ -166,8 +163,9 @@ def main():
                             Default is %default.')    
     parser.add_option('--use-qval',dest='use_qval',action='store_true',default=False,help='If set this the Forest input file will contain -log(qval) instead of -log(pval) and threshold the output using qval. Default:%default')
     parser.add_option('--thresh',dest='thresh',type='string',default='0.9',help='P/Q-Value threshold to illustrate results. Default:%default')
-    parser.add_option('--gifdir',dest='motifs',default=os.path.join(progdir,'../data/matrix_files/gifs'),
-                      help='Directory containing motif GIFs to illustrate results. Default is %default')
+    # Cannot set the default here because it depends on opts.outdir
+    parser.add_option('--gifdir',dest='motifs',default=None,
+                      help='Directory containing motif GIFs to illustrate results. Default is <path_to_this_script>/../data/matrix_files/gifs.')
     parser.add_option('--plot',dest='plot',action='store_true',default=False,help='Enable plot generation for regression results. Default:%default')
 
     # get options, arguments
@@ -253,7 +251,18 @@ def main():
         of.writelines(ostr)
     of.close()
 
-    ##now create HTML writeup
+    ## Now create HTML writeup
+    # Set the motif gif directory
+    if opts.motifs is None:
+        # Default is <path_to_this_script>/../data/matrix_files/gif
+        prog_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        motif_dir = os.path.join(prog_dir, '..', 'data', 'matrix_files', 'gifs')
+        # Make it relative to the output directory
+        # Note that opts.outdir is the output file name, not a directory
+        motif_dir = os.path.relpath(motif_dir, os.path.dirname(opts.outdir))
+    else:
+        motif_dir = opts.motifs
+
     threshold = float(opts.thresh)
     of= open(re.sub(outdir.split('.')[-1],'html',outdir),'w')
     of.writelines("""<html>
@@ -268,7 +277,7 @@ def main():
             continue
         # skip rows that exceed the q-value or p-value threhsold
         if (opts.use_qval and res[4]<=threshold) or ((not opts.use_qval) and res[2]<=threshold):
-            motifgif=os.path.join(opts.motifs,'motif'+str(res[3])+'.gif')
+            motifgif=os.path.join(motif_dir,'motif'+str(res[3])+'.gif')
             ostr = "<tr><td>"+' '.join(res[0].split('.'))+"</td><td>"+str(res[1])+'</td><td>'+str(res[2])+"</td><td>"+str(res[4])+"</td><td><img src=\""+motifgif+"\" scale=80%></td></tr>\n"
             of.writelines(ostr)
     of.writelines("</table></html>")

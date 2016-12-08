@@ -78,7 +78,9 @@ def test_garnet_integration():
         conf_file.close()
 
     # Create a tmp directory for output
-    garnet_out = tempfile.mkdtemp()
+    # It must be a subdirectory of a known directory so that the relative
+    # paths to the motif gifs are identical on different machines
+    garnet_out = tempfile.mkdtemp(dir=curr_dir)
 
     try:
         garnet_path = os.path.join(curr_dir, '..', 'scripts', 'garnet.py')
