@@ -15,8 +15,11 @@ a549/
 ----
 Here we have data from lung cancer-derived cell lines that we use to evaluate the role of TgfB-stimulation on gene expression and phospho-proteomic changes. Running `test-tgfb-data.py` at the prompt will first run garnet.py, then run Forest with the result.
 
+- A549_FOXA1_broadPeak.bed: [FOXA1 ChIP-seq data from ENCODE](https://www.encodeproject.org/experiments/ENCSR000BPX/)
+- A549_FOXA1_broadPeak.fasta: [FOXA1 ChIP-seq data from ENCODE](https://www.encodeproject.org/experiments/ENCSR000BPX/)
 - test-tgfb-data.py: A test script designed to show how to use Garnet + Forest to interpret real data.
 - tgfb_forest.cfg: Configuration file require to use Forest to find interactions between altered proteins during TgfB stimulation.
+- tgfb_foxa1_garnet.cfg: Configuration file required to test Garnet with FOXA1 ChIP-seq data.
 - tgfb_garnet.cfg: Configuration file required to use Garnet to identify transcription factors from epigenetic data and expression data.
 - Tgfb_phos.txt: Changes in phospho-protein levels between TgfB-stimulated cells and untreated cells.
 - Tgfb_exp.txt:  Changes in gene expression levels between TgfB-stimulated cells and untreated cells.
