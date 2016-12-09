@@ -3,7 +3,8 @@
 End-to-end integration test.
 '''
 
-import os, subprocess, filecmp, shutil, shlex, tempfile
+import os, subprocess, filecmp, shutil, shlex, tempfile, csv
+import numpy as np
 
 # msgsteiner is a fixture object
 def test_forest_integration(msgsteiner):
@@ -90,6 +91,8 @@ def test_garnet_integration():
 
         # Test all of the Garnet output files
         # Do not test whether Garnet produces extra files besides those listed here
+        # Test events_to_genes_with_motifsregression_results.tsv as a special
+        # case that does not use exact string matching for floating point values
         output_files = ['events_to_genes.fsa',
                         'events_to_genes.xls',
                         'events_to_genes_with_motifs.pkl',
@@ -98,12 +101,18 @@ def test_garnet_integration():
                         'events_to_genes_with_motifs_geneids.txt',
                         'events_to_genes_with_motifs_tfids.txt',
                         'events_to_genes_with_motifsregression_results.html',
-                        'events_to_genes_with_motifsregression_results.tsv',
                         'events_to_genes_with_motifsregression_results_FOREST_INPUT.tsv']
         match, mismatch, errors = filecmp.cmpfiles(garnet_out, os.path.join(curr_dir, 'integration_test_standard'),
                                    output_files, shallow=False)
 
-        if len(match) != len(output_files):
+        match_table, mismatch_table, errors_table = cmp_garnet_table(garnet_out, os.path.join(curr_dir, 'integration_test_standard'), 'events_to_genes_with_motifsregression_results.tsv')
+        match.extend(match_table)
+        mismatch.extend(mismatch_table)
+        errors.extend(errors_table)
+
+        # Add 1 because events_to_genes_with_motifsregression_results.tsv is
+        # not in the output_files list
+        if len(match) != (len(output_files)+1):
             print 'Mismatching files: ', mismatch
             print 'Errors: ', errors
             assert 0, 'Not all Garnet output files match'
@@ -114,3 +123,56 @@ def test_garnet_integration():
         # Remove temporary config file here because delete=False above
         os.remove(conf_file.name)
         shutil.rmtree(garnet_out)
+
+def cmp_garnet_table(test_dir, standard_dir, filename):
+    '''
+    A file comparison that mimics filecmp.cmp but is tailored for the Garnet
+    output tsv file events_to_genes_with_motifsregression_results.tsv.  It
+    does not rely on exact string matches but rather uses numpy.isclose
+    for all numeric values.
+    
+    INPUT:
+    test_dir - the test output directory
+    standard_dir - the directory with the expected output file
+    filename - the filename of the file that should exist in both directories
+    
+    OUTPUT:
+    (match, mismatch, errors) - like filecmp.cmpfiles, lists of filenames
+    that match, did not match, or produced errors except here the lists will
+    contain exactly 0 or 1 item
+    '''
+    # Possible return values
+    match = ([filename], [], [])    
+    mismatch = ([], [filename], [])    
+    error = ([], [], [filename])    
+
+    try:
+        # Load both tsv files
+        with open(os.path.join(test_dir, filename)) as test_file:
+            reader = csv.DictReader(test_file, delimiter = '\t')
+            test_contents = list(reader)
+        with open(os.path.join(standard_dir, filename)) as standard_file:
+            reader = csv.DictReader(standard_file, delimiter = '\t')
+            standard_contents = list(reader)
+    except IOError:
+        return error
+
+    # Confirm the number of rows is the same
+    if len(test_contents) != len(standard_contents):
+        return mismatch
+
+    # Confirm all rows are the same using string matching for the motif is
+    # and approximate float matching for the slope, p-value, and q-value
+    for row in range(len(test_contents)):
+        test_row = test_contents[row]
+        standard_row = standard_contents[row]
+
+        if len(test_row) != len(standard_row):
+            return mismatch
+        if test_row['Motif'] != standard_row['Motif']:
+            return mismatch
+        for key in ['Slope', 'p-val', 'q-val']:
+            if not np.isclose(float(test_row[key]), float(standard_row[key]), rtol=0, atol=1e-10, equal_nan=True):
+                return mismatch
+
+    return match

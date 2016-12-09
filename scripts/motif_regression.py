@@ -77,13 +77,14 @@ def map_data(Xdata,Xnames,Ydata,Ynames):
     Xdata_out = Xdata[Xinds,:]
     Ydata_out = Ydata[Yinds]
     print 'Found %d genes that have binding data and are in the expression output'%(len(Yinds))
-    #yn.sort()
-    #print ','.join(yn[0:20])
+
     return Xdata_out,Ydata_out
 
 def perform_regression(X,Y,motif_ids,norm,outdir,plot):
     '''
-
+    Linear regression to assess whether X (predicted TF binding affinity)
+    is predictive of Y (gene expression).  Optionally stores figures showing
+    the regression results for each TF motif.
     '''
     reg_results = []
     for i in range(0,X.shape[1]):
@@ -99,7 +100,7 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
         # Perform regression
         slope,intercept,r_val,p_val,std_err = stats.linregress(x,y)
         reg_results.append(([motif_ids[i],slope,p_val,i]))
-	
+
 	#regression plot
 	if plot:
 	    fig = plt.figure()
@@ -124,7 +125,11 @@ def perform_regression(X,Y,motif_ids,norm,outdir,plot):
 	    fig.savefig(open(plotfile,'w'),dpi=300)
 	    plt.close()	    
 
-    return sorted(reg_results,key=lambda x: x[2])
+    # First sort by p-value, then by magnitude of the regression slope,
+    # then by motif id to break ties
+    # Test case uses the values written to file by the str() conversion
+    # so sort on the same truncated values
+    return sorted(reg_results, key=lambda reg_res: (float(str(reg_res[2])), -float(str(abs(reg_res[1]))), reg_res[0]))
 
 def fdr_correction(results):
     '''
@@ -246,7 +251,7 @@ def main():
     of.writelines('\t'.join(['Motif','Slope','p-val','q-val'])+'\n')
     for res in new_results:
         if str(res[1])=='nan':
-            continue    
+            continue
         ostr = '\t'.join([res[0],str(res[1]),str(res[2]),str(res[4])]) + '\n'
         of.writelines(ostr)
     of.close()
