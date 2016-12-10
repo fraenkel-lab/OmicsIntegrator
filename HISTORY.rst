@@ -3,6 +3,14 @@
 History
 -------
 
+Pre-release changes
+---------------------
+* Garnet integration test case using FOXA1 ChIP-seq
+* Correct formatting problems in example data wgEncodeRegDnaseClusteredV2.fasta.gz
+* Fix bug when reading Garnet results in Forest
+* Use relative paths for motif gifs in Garnet HTML output file
+* Update sort order in Garnet output table
+
 0.3.0 (2016-09-03)
 ---------------------
 * Remove conflicts between Forest edge noise and garnetBeta parameters
