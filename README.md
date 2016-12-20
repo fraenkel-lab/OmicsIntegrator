@@ -344,7 +344,15 @@ be preceded with `-c` or `--conf=`.
 If the `-c` argument is not included in the command line
 the program will attempt to read the default `conf.txt`. The parameters `w`, `b`, and `D`
 must be set in the configuration file. Optional parameters `mu`, `garnetBeta`, `noise`,
-`g`, and `r` may also be included.
+`g`, and `r` may also be included.  The `processes` and `threads` parameters
+both provide parallelization.  By default, Forest parallelizes tasks
+by running each network optimization task (e.g. for a different set of shuffled
+prizes or edge noise values) in a different, single-threaded process.  If
+you are not running Forest multiple times with cross validiation, shuffled
+prizes, or noisy edges, you may set `processes = 1` and `threads` to the
+number of processors on your computer to run msgsteiner in a multi-threaded
+manner.
+
 
 ```
 w = float, controls the number of trees
@@ -356,14 +364,16 @@ garnetBeta = float, scales the garnet output prizes relative to the
              provided protein prizes (default 0.01)
 noise = float, controls the standard deviation of the Gaussian edge
         noise when the --noisyEdges option is used (default 0.333)
-g = float, msgsteiner parameter that affects the convergence of the
-    solution and runtime (default 0.001)
+g = float, msgsteiner reinforcement parameter that affects the convergence of the
+    solution and runtime, with larger values leading to faster convergence
+    but suboptimal results (default 0.001)
 r = float, msgsteiner parameter that adds random noise to edges,
     which is rarely needed because the Forest --noisyEdges option
     is recommended instead (default 0)
 processes = int, number of processes to spawn when doing randomization runs
             (default to number of processors on your computer)
-
+threads = int, number of threads to use during msgsteiner optimization
+            (default 1)
 ```
 
 For more details about the parameters, see our publication.
@@ -436,7 +446,7 @@ msgsteiner itself. If you want to reproduce exact results, you should supply the
 same seed every time. If you do not supply your own seed, system time is used a
 seed.
 
-###Running forest
+### Running forest
 
 Once you submit your command to the command line the program will run. It will
 display messages as it completes, letting you know where in the process you are.
