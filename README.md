@@ -497,3 +497,8 @@ the appearance of the network as you usually would using VizMapper.
 Testing
 -----------------
 See the `tests` directory for instructions on testing Omics Integrator.
+
+Third Party Code
+-----------------
+See the 'LICENSE-3RD-PARTY' file for license information for:
+[python-avl-tree by Pavel Grafov](https://github.com/pgrafov/python-avl-tree)
