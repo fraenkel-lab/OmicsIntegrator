@@ -10,6 +10,8 @@ Pre-release changes
 * Fix bug when reading Garnet results in Forest
 * Use relative paths for motif gifs in Garnet HTML output file
 * Update sort order in Garnet output table
+* Garnet uses balanced binary search tree to speed up the search for genes within peaks
+* Change default values of arguments in Garnet's map_peaks_to_known_genes.py
 
 0.3.0 (2016-09-03)
 ---------------------
