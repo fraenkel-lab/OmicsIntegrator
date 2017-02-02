@@ -10,7 +10,6 @@ __email__="sgosline@mit.edu"
 
 from optparse import OptionParser
 
-#import chipsequtil.Fasta as Fasta
 import cPickle
 import numpy as np
 import math,sys
@@ -21,7 +20,7 @@ import os,sys,re
 
 def reduce_fasta(fsa_dict,gene_file,gene_list):
     '''
-    Takes FASTA file and reduces events to those found in gene_file
+    Takes FASTA file and reduces events to those found near differentially expressed genes
     '''
     #read in genes from differential expression data
     include_genes=[]
@@ -110,9 +109,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
     '''
     Creates matrix of motif scan based on TRANSFAC match scores
     '''
-
-
-    #Load motif and background adjust PSSM
+    #Load motif file and write file with human-readable motif names
     m=MotifTools.load(motif)
     fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
     writeMotNames(m,fname)
@@ -138,9 +135,10 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
 
 def writeMotNames(m,fname):
     '''
-    Write motif names to file
+    Write nice human-readable motif names to file
     '''
-    ##write out motif names to local file
+    #motifs are loaded using MotifTools, motif.source will give line with full name and description,
+    #i.e. 'M00023\tV$HOX13_01\tHOXA5 (Hox-1.3)\tT01702; HOXA5; Species: human, Homo sapiens; site(s) included: yes. T13906; HoxA5; Species: human, Homo sapiens; site(s) included: yes. T00377; HOXA5; Species: mouse, Mus musculus; site(s) included: yes. T17230; HOXA5; Species: mouse, Mus musculus; site(s) included: yes. T16527; Hoxa5; Species: rat, Rattus norvegicus; site(s) included: yes. T16528; Hoxa5; Species: rat, Rattus norvegicus; site(s) included: yes.'
     newnames=[a.source for a in m]
     genenames=[]
     for n in newnames:
@@ -149,18 +147,19 @@ def writeMotNames(m,fname):
         for i in anns:
             gv=[a.strip() for a in i.split('\t')]
             if len(gv)>1:
+                #The annotation giving names has \t, so this is the one we want, usually the third col
                 if len(gv)>2 and gv[2] not in gns:
                     gns.append(gv[2])
                 elif len(gv)<2:
                     if '$' not in gv[0] and gv[0] not in gns:
                         gns.append(gv[0])
             elif 'Species' not in i and 'included' not in i and i.strip() not in gns:
+                #also include annotations that are on their own and not telling us a species or site(s) included
                 gns.append(i.strip())
-            #print gns
-        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g])
+        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g]) #get unique names, and those without person-curated unwanted characters
         genenames.append('.'.join(gns))
+    #write to file
     open(fname,'w').writelines([g+'\n' for g in genenames])
-    #print fname
 
 #############TRANSFAC SPECIFIC CODE
 def load_ids(ids):
@@ -286,9 +285,7 @@ def main():
     global MotifTools
     from chipsequtil import motiftools as MotifTools
     global Fasta
-    from chipsequtil import Fasta
-#    sys.path.insert(0,opts.addpath+'chipsequtil')
-    
+    from chipsequtil import Fasta    
     fsa_dict=Fasta.load(fsa,key_func=lambda x:x)
     if opts.gene_file!='':
         print 'Reducing FASTA file to only contain sequences from '+opts.gene_file
