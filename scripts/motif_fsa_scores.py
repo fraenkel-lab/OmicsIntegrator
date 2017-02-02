@@ -19,153 +19,6 @@ from csv import DictReader
 
 import os,sys,re
 
-def writeMotNames(m,fname):
-    '''
-    Write motif names to file
-    '''
-    ##write out motif names to local file
-    newnames=[a.source for a in m]
-    genenames=[]
-    for n in newnames:
-        anns=n.split(';')
-        gns=[]
-        for i in anns:
-            gv=[a.strip() for a in i.split('\t')]
-            if len(gv)>1:
-                if len(gv)>2 and gv[2] not in gns:
-                    gns.append(gv[2])
-                elif len(gv)<2:
-                    if '$' not in gv[0] and gv[0] not in gns:
-                        gns.append(gv[0])
-            elif 'Species' not in i and 'included' not in i and i.strip() not in gns:
-                gns.append(i.strip())
-            #print gns
-        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g])
-        genenames.append('.'.join(gns))
-    open(fname,'w').writelines([g+'\n' for g in genenames])
-    #print fname
-
-#############TRANSFAC SPECIFIC CODE
-def load_ids(ids):
-    '''
-    Loads in TRANSFAC motif identifiers
-    '''
-    FH=open(ids)
-    IDS=[]
-    for line in FH:
-        mid=line.rstrip('\n')
-        IDS.append(mid)
-    FH.close()
-    return IDS
-
-def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
-    '''
-    Creates matrix of motif scan based on TRANSFAC match scores
-    '''
-
-
-    #Load motif and background adjust PSSM
-    m=MotifTools.load(motif)
-    fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
-    writeMotNames(m,fname)
-
-#    F=Fasta.load(fsa,key_func=lambda x:x)
-    seqs=F.values()
-    n_seqs=len(seqs)
-    n_motifs=len(m)
-    SCORES=np.zeros((n_motifs,n_seqs),dtype='float')
-    
-    #Load motif ids and profile pickle
-    IDS=load_ids(ids)
-    PRF=cPickle.load(open(pkl))
-
-    z=zip(m,IDS)
-    jobs=[]
-    p=Pool(threads)
-    for Z in z: jobs.append([Z,PRF,genome,seqs,typ])
-    results=p.map(numbs,jobs)
-    for i,r in enumerate(results): SCORES[i,:]=r
-
-    np.savetxt(outfile,SCORES,fmt='%.3f')
-    
-def numbs(args):
-    '''
-    Calculates the score of all the matches in a particular binding region
-    '''
-    Z,PRF,genome,seqs,typ=args
-    n_seqs=len(seqs)
-    M,ID=Z
-    thres,SUM,FP=PRF[ID]
-    ##if FP is 1, then that can throw things off...
-#    if FP==1.0:
-#        FP=min(SUM+0.05,0.95)
-#        print 'Ajusting FP from 1.0 to '+str(FP)
-    ll = M.logP
-
-    if genome in ['hg18','hg19']:
-        bg={'A': 0.26005923930888059,
-            'C': 0.23994076069111939,
-            'G': 0.23994076069111939,
-            'T': 0.26005923930888059}
-    elif genome in ['mm8','mm9','mm10']: 
-        bg={'A': 0.29119881438474354,
-        'C': 0.20880118561525646,
-        'G': 0.20880118561525646,
-        'T': 0.29119881438474354}
-    else:
-        bg={'A':0.25,'G':0.25,'C':0.25,'T':0.25}
-
-    for pos in ll:
-        for letter in pos.keys():
-            pos[letter] = pos[letter] - math.log(bg[letter])/math.log(2.0)
-
-    AM = MotifTools.Motif_from_ll(ll)
-    mi,ma=AM.minscore,AM.maxscore
-    AM.source = M.source
-    t=thres*(ma-mi)+mi
-    S=np.zeros((1,n_seqs),dtype='float')
-    
-    #Search every seq for given motif above threshold t and print motif centered results
-    for j,seq in enumerate(seqs):
-        try:
-            seq_fwd = seq.upper()
-            matches,endpoints,scores=AM.scan(seq_fwd,threshold=t)
-            s=[(x-mi)/(ma-mi) for x in scores]
-            aff=affinity(s,SUM,FP,typ)
-            #num_bs=len(scores)
-            S[0,j]=aff
-        except: 
-            S[0,j]=0
-            #print 'score calc exception',
-    return S
-
-def affinity(scores,SUM,FP,typ=6.):
-    '''
-    takes the afinity based on the FP score (which is just .5?)
-    typ is a scaling factor that changes how much to weight the priors
-    '''
-#    if typ==0:
-#        try: w=math.log(9)/(FP-SUM)
-#        except: w=math.log(9)/0.1
-#        b=math.exp(w*SUM)
-#    else: #default to this
-    if typ<=1.0:
-        typ=1.000001
-    try: w=math.log(typ)/(FP-SUM)
-    except: w=math.log(typ)/0.1
-    #SJCG: altered prob of being unbound to scale with the typ
-    ##scaling with length of scores penalizes lower probability sites
-    ##    b=math.log(10.0-typ)*math.exp(w*SUM)*len(scores)
-    #b=2*(10-typ)*math.exp(w*SUM) this looks pretty good, lowers total scores
-    b=2*typ*math.exp(w*SUM)
-        #try: w=2*math.log(7/3.)/(FP-SUM)
-        #except: w=2*math.log(7/3.)/0.1
-        #b=7/3*math.exp(w*SUM)
-    a=0
-    for x in scores: a+=math.exp(w*x) #probability of being bound at any region
-    A=a/(b+a)#prob of being bound (a) / prob unbond (b) + prob bound (a)
-    return A
-
 def reduce_fasta(fsa_dict,gene_file,gene_list):
     '''
     Takes FASTA file and reduces events to those found in gene_file
@@ -252,7 +105,153 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
     ##now write new fasta file
     Fasta.write(new_seq,re.sub('.xls','.fsa',gene_file))
     return new_seq
+
+def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
+    '''
+    Creates matrix of motif scan based on TRANSFAC match scores
+    '''
+
+
+    #Load motif and background adjust PSSM
+    m=MotifTools.load(motif)
+    fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
+    writeMotNames(m,fname)
+
+#    F=Fasta.load(fsa,key_func=lambda x:x)
+    seqs=F.values()
+    n_seqs=len(seqs)
+    n_motifs=len(m)
+    SCORES=np.zeros((n_motifs,n_seqs),dtype='float')
     
+    #Load motif ids and profile pickle
+    IDS=load_ids(ids)
+    PRF=cPickle.load(open(pkl))
+
+    z=zip(m,IDS)
+    jobs=[]
+    p=Pool(threads)
+    for Z in z: jobs.append([Z,PRF,genome,seqs,typ])
+    results=p.map(numbs,jobs)
+    for i,r in enumerate(results): SCORES[i,:]=r
+
+    np.savetxt(outfile,SCORES,fmt='%.3f')
+
+def writeMotNames(m,fname):
+    '''
+    Write motif names to file
+    '''
+    ##write out motif names to local file
+    newnames=[a.source for a in m]
+    genenames=[]
+    for n in newnames:
+        anns=n.split(';')
+        gns=[]
+        for i in anns:
+            gv=[a.strip() for a in i.split('\t')]
+            if len(gv)>1:
+                if len(gv)>2 and gv[2] not in gns:
+                    gns.append(gv[2])
+                elif len(gv)<2:
+                    if '$' not in gv[0] and gv[0] not in gns:
+                        gns.append(gv[0])
+            elif 'Species' not in i and 'included' not in i and i.strip() not in gns:
+                gns.append(i.strip())
+            #print gns
+        gns=set([g.upper() for g in gns if '(' not in g and ')' not in g and ':' not in g and '-' not in g and '/' not in g and 'Delta' not in g and ' ' not in g and '.' not in g])
+        genenames.append('.'.join(gns))
+    open(fname,'w').writelines([g+'\n' for g in genenames])
+    #print fname
+
+#############TRANSFAC SPECIFIC CODE
+def load_ids(ids):
+    '''
+    Loads in TRANSFAC motif identifiers
+    '''
+    FH=open(ids)
+    IDS=[]
+    for line in FH:
+        mid=line.rstrip('\n')
+        IDS.append(mid)
+    FH.close()
+    return IDS
+    
+def numbs(args):
+    '''
+    Calculates the score of all the matches in a particular binding region
+    '''
+    Z,PRF,genome,seqs,typ=args
+    n_seqs=len(seqs)
+    M,ID=Z
+    thres,SUM,FP=PRF[ID]
+    ##if FP is 1, then that can throw things off...
+#    if FP==1.0:
+#        FP=min(SUM+0.05,0.95)
+#        print 'Ajusting FP from 1.0 to '+str(FP)
+    ll = M.logP
+
+    if genome in ['hg18','hg19']:
+        bg={'A': 0.26005923930888059,
+            'C': 0.23994076069111939,
+            'G': 0.23994076069111939,
+            'T': 0.26005923930888059}
+    elif genome in ['mm8','mm9','mm10']: 
+        bg={'A': 0.29119881438474354,
+        'C': 0.20880118561525646,
+        'G': 0.20880118561525646,
+        'T': 0.29119881438474354}
+    else:
+        bg={'A':0.25,'G':0.25,'C':0.25,'T':0.25}
+
+    for pos in ll:
+        for letter in pos.keys():
+            pos[letter] = pos[letter] - math.log(bg[letter])/math.log(2.0)
+
+    AM = MotifTools.Motif_from_ll(ll)
+    mi,ma=AM.minscore,AM.maxscore
+    AM.source = M.source
+    t=thres*(ma-mi)+mi
+    S=np.zeros((1,n_seqs),dtype='float')
+    
+    #Search every seq for given motif above threshold t and print motif centered results
+    for j,seq in enumerate(seqs):
+        try:
+            seq_fwd = seq.upper()
+            matches,endpoints,scores=AM.scan(seq_fwd,threshold=t)
+            s=[(x-mi)/(ma-mi) for x in scores]
+            aff=affinity(s,SUM,FP,typ)
+            #num_bs=len(scores)
+            S[0,j]=aff
+        except: 
+            S[0,j]=0
+            #print 'score calc exception',
+    return S
+
+def affinity(scores,SUM,FP,typ=6.):
+    '''
+    takes the afinity based on the FP score (which is just .5?)
+    typ is a scaling factor that changes how much to weight the priors
+    '''
+#    if typ==0:
+#        try: w=math.log(9)/(FP-SUM)
+#        except: w=math.log(9)/0.1
+#        b=math.exp(w*SUM)
+#    else: #default to this
+    if typ<=1.0:
+        typ=1.000001
+    try: w=math.log(typ)/(FP-SUM)
+    except: w=math.log(typ)/0.1
+    #SJCG: altered prob of being unbound to scale with the typ
+    ##scaling with length of scores penalizes lower probability sites
+    ##    b=math.log(10.0-typ)*math.exp(w*SUM)*len(scores)
+    #b=2*(10-typ)*math.exp(w*SUM) this looks pretty good, lowers total scores
+    b=2*typ*math.exp(w*SUM)
+        #try: w=2*math.log(7/3.)/(FP-SUM)
+        #except: w=2*math.log(7/3.)/0.1
+        #b=7/3*math.exp(w*SUM)
+    a=0
+    for x in scores: a+=math.exp(w*x) #probability of being bound at any region
+    A=a/(b+a)#prob of being bound (a) / prob unbond (b) + prob bound (a)
+    return A    
 
 ##get program directory
 progdir=os.path.dirname(sys.argv[0])
