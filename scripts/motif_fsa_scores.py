@@ -45,26 +45,6 @@ def writeMotNames(m,fname):
     open(fname,'w').writelines([g+'\n' for g in genenames])
     #print fname
 
-def motif_bestscan_matrix(F,motif,outfile,genome):
-    
-    #Load motif and background adjust PSSM
-    m=MotifTools.load(motif)
-
-    fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
-    writeMotNames(m,fname)
-    seqs=F.values()
-    n_seqs=len(seqs)
-    n_motifs=len(m)
-    SCORES=np.zeros((n_motifs,n_seqs),dtype='float')
-
-    ##for now just create matrix of best scans
-    for ind,mot in enumerate(m):
-        for s_ind,seq in enumerate(seqs):
-            SCORES[ind,s_ind]=mot.bestscan(seq.upper())
-
-
-    ##save scores to file
-    np.savetxt(outfile,SCORES,fmt='%.3f')
 #############TRANSFAC SPECIFIC CODE
 def load_ids(ids):
     '''
