@@ -170,24 +170,34 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
     '''
     Takes FASTA file and reduces events to those found in gene_file
     '''
-    ##first open gene file and get mids that map to a gene region
-    mapped_mids=set()
-    #read in gene mapping
-    closest_gene=DictReader(open(gene_file,'rU'),delimiter='\t')
+    #read in genes from differential expression data
     include_genes=[]
-    
-    mid_to_gene={}
     if os.path.exists(gene_list):
         include_genes=[a.strip().split()[0] for a in open(gene_list,'rU').readlines()]
+    else:
+        sys.exit('ERROR: Cannot find file %s'%gene_list)
         
     if len(include_genes)>0:
         print 'Found %d genes in differential expression data, reducing FASTA to only include regions nearby'%(len(include_genes))
-    
-    count=0
+    else:
+        sys.exit('ERROR: Found 0 differentially expressed genes in %s, check file format.'%gene_list)
+
+    #read in genes mapped to peaks
+    if os.path.exists(gene_file):
+        closest_gene=DictReader(open(gene_file,'rU'),delimiter='\t')
+    else:
+        sys.exit('ERROR: Cannot find expected output file from step 1, %s'%gene_file)
+        
+    #get midpoints of genes near peaks and differentially expressed
+    mapped_mids=set()
+    mid_to_gene={}
+    decount=0
+    totcount=0
     for g in closest_gene:
-        if len(include_genes)>0 and g['geneSymbol'] not in include_genes:
-           # print g['geneSymbol']+' not included in list, skipping'
-            continue
+        totcount += 1
+        if g['geneSymbol'] not in include_genes:
+           # gene near peak, but no expression data
+           continue
         try: #this will work for bed
             midval = g['chrom']+':'+str(int(g['chromStart'])+(int(g['chromEnd'])-int(g['chromStart']))/2)
         except:
@@ -200,24 +210,27 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
             mid_to_gene[midval] = g['geneSymbol']
         else:
             mid_to_gene[midval] = g['knownGeneID']
-        count=count+1
-    ##then reduce fasta dict to only get those genes that map
-    new_seq={}    
-  #  print ','.join([k for k in mapped_mids][0:10])
+        decount=decount+1
 
+    if totcount == 0:
+        sys.exit('ERROR: Output file from step 1, %s, is empty or formatted incorrectly.'%gene_file)
+    if decount==0:
+        sys.exit('There were zero differentially expressed genes found near the epigenetic regions in the windowsize you provided.')
+
+    #reduce fasta dict to only get those genes that are differentially expressed
+    new_seq={}    
     for k in fsa_dict.keys():
         vals=k.split(';')
         if len(vals)==1:
             vals=k.split(' ')
-        #print vals
+        #find midpoint of regions in fasta file
         if ':' in vals[0]: #just in case bedtools were used 
             chr,range=vals[0].split(':')
             low,high=range.split('-')
             mid=str(int(low)+((int(high)-int(low))/2))
             seq_mid=chr+':'+mid
-        elif 'random' not in vals[0]: #galaxy tools used, but no random found
+        elif 'random' not in vals[0]: #galaxy tools used, ignoring random chromosomes
             allvals=vals[0].split('_')
-            #            genome,chr,low,high,strand=vals[0].split('_')
             if(len(allvals)<4):
                 print 'Cannot find sequence data for '+vals[0]
             else:
@@ -227,12 +240,14 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
                 high=allvals[3]
             mid=str(int(low)+((int(high)-int(low))/2))
             seq_mid=chr+':'+mid
-        #print seq_mid
         if seq_mid in mapped_mids:
-            # print seq_mid,mapped_mids[0]
-            new_seq[k+' '+mid_to_gene[seq_mid]]=fsa_dict[k] ###****UPDATED: added gene name here, so don't have to map later....***
-    
-    print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(count)+' event-gene matches  and '+str(len(include_genes))+' genes out of '+str(len(fsa_dict))+' events'
+            #new_seq will hold regions and gene names mapped to sequence
+            new_seq[k+' '+mid_to_gene[seq_mid]]=fsa_dict[k] 
+
+    print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(decount)+' event-gene matches  and '+str(len(include_genes))+' genes out of '+str(len(fsa_dict))+' events'
+
+    if len(new_seq) == 0:
+        sys.exit('ERROR: There were zero sequences found in the FASTA file that map to the right regions. The FASTA file should contain the sequences for the regions in your epigenetic file.')
 
     ##now write new fasta file
     Fasta.write(new_seq,re.sub('.xls','.fsa',gene_file))
@@ -270,7 +285,7 @@ def main():
     ##append path to chipsequtil/TAMO
     sys.path.insert(0,opts.addpath)
     global MotifTools
-    from chipsequtil import motiftools as MotifTools #import chipsequtil.motiftools as MotifTools
+    from chipsequtil import motiftools as MotifTools
     global Fasta
     from chipsequtil import Fasta
 #    sys.path.insert(0,opts.addpath+'chipsequtil')
