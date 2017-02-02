@@ -65,8 +65,8 @@ To use the [Homebrew](http://brew.sh/) package manager for Mac simply type `brew
   * See [this advice](./patches) on compiling the C++ code if you encounter problems and [this advice](https://github.com/fraenkel-lab/OmicsIntegrator/issues/22) regarding compilation issues on OS X.
   * Make a note of the path to the compiled msgsteiner file that was created, which you will use when running Forest.
   * In Linux, use `readlink -f msgsteiner` in the `msgsteiner-1.3` subdirectory to obtain the path.
-5. Download the Omics Integrator package: [OmicsIntegrator-0.3.0.tar.gz](./dist/OmicsIntegrator-0.3.0.tar.gz)
-6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.3.0.tar.gz`
+5. Download the Omics Integrator package: [OmicsIntegrator-0.3.1.tar.gz](./dist/OmicsIntegrator-0.3.1.tar.gz)
+6. Unpack files from the archive: `tar -xvzf OmicsIntegrator-0.3.1.tar.gz`
 7. Make sure you have all the requirements using the pip tool by entering the
 directory and typing: `pip install -r requirements.txt`
   * Some users have reported errors when using this command to install matplotlib. To fix, install matplotlib independently (http://matplotlib.org) or use Anaconda as indicated above.

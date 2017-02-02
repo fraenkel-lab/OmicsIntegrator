@@ -3,7 +3,7 @@
 History
 -------
 
-Pre-release changes
+0.3.1 (2017-02-02)
 ---------------------
 * Garnet integration test case using FOXA1 ChIP-seq
 * Correct formatting problems in example data wgEncodeRegDnaseClusteredV2.fasta.gz
