@@ -1,6 +1,4 @@
 '''
-More generic version of the logisitic function
-
 Read in a fasta sequences, scan for every motif in a tamo file, produce numpy matrix as a result
 
 '''
@@ -114,7 +112,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
     fname=re.sub('.tamo','_source_names.txt',os.path.basename(motif))
     writeMotNames(m,fname)
 
-#    F=Fasta.load(fsa,key_func=lambda x:x)
+    #Load sequences file and initialize matrix with a score for every motif in every sequence
     seqs=F.values()
     n_seqs=len(seqs)
     n_motifs=len(m)
@@ -128,6 +126,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
     jobs=[]
     p=Pool(threads)
     for Z in z: jobs.append([Z,PRF,genome,seqs,typ])
+    #scan for motifs and get bg-adjusted scores
     results=p.map(numbs,jobs)
     for i,r in enumerate(results): SCORES[i,:]=r
 
@@ -161,7 +160,6 @@ def writeMotNames(m,fname):
     #write to file
     open(fname,'w').writelines([g+'\n' for g in genenames])
 
-#############TRANSFAC SPECIFIC CODE
 def load_ids(ids):
     '''
     Loads in TRANSFAC motif identifiers
@@ -182,12 +180,9 @@ def numbs(args):
     n_seqs=len(seqs)
     M,ID=Z
     thres,SUM,FP=PRF[ID]
-    ##if FP is 1, then that can throw things off...
-#    if FP==1.0:
-#        FP=min(SUM+0.05,0.95)
-#        print 'Ajusting FP from 1.0 to '+str(FP)
     ll = M.logP
 
+    #sets background expectations based on GC content of human and mouse genomes
     if genome in ['hg18','hg19']:
         bg={'A': 0.26005923930888059,
             'C': 0.23994076069111939,
@@ -201,10 +196,12 @@ def numbs(args):
     else:
         bg={'A':0.25,'G':0.25,'C':0.25,'T':0.25}
 
+    #adjust log-liklihood matrix for background expectations
     for pos in ll:
         for letter in pos.keys():
             pos[letter] = pos[letter] - math.log(bg[letter])/math.log(2.0)
 
+    #redraw motif in text based on adjusted log-liklihood, and find new max,min,and thresh
     AM = MotifTools.Motif_from_ll(ll)
     mi,ma=AM.minscore,AM.maxscore
     AM.source = M.source
@@ -218,11 +215,9 @@ def numbs(args):
             matches,endpoints,scores=AM.scan(seq_fwd,threshold=t)
             s=[(x-mi)/(ma-mi) for x in scores]
             aff=affinity(s,SUM,FP,typ)
-            #num_bs=len(scores)
-            S[0,j]=aff
+             S[0,j]=aff
         except: 
             S[0,j]=0
-            #print 'score calc exception',
     return S
 
 def affinity(scores,SUM,FP,typ=6.):
@@ -230,23 +225,13 @@ def affinity(scores,SUM,FP,typ=6.):
     takes the afinity based on the FP score (which is just .5?)
     typ is a scaling factor that changes how much to weight the priors
     '''
-#    if typ==0:
-#        try: w=math.log(9)/(FP-SUM)
-#        except: w=math.log(9)/0.1
-#        b=math.exp(w*SUM)
-#    else: #default to this
     if typ<=1.0:
         typ=1.000001
     try: w=math.log(typ)/(FP-SUM)
     except: w=math.log(typ)/0.1
     #SJCG: altered prob of being unbound to scale with the typ
     ##scaling with length of scores penalizes lower probability sites
-    ##    b=math.log(10.0-typ)*math.exp(w*SUM)*len(scores)
-    #b=2*(10-typ)*math.exp(w*SUM) this looks pretty good, lowers total scores
     b=2*typ*math.exp(w*SUM)
-        #try: w=2*math.log(7/3.)/(FP-SUM)
-        #except: w=2*math.log(7/3.)/0.1
-        #b=7/3*math.exp(w*SUM)
     a=0
     for x in scores: a+=math.exp(w*x) #probability of being bound at any region
     A=a/(b+a)#prob of being bound (a) / prob unbond (b) + prob bound (a)
