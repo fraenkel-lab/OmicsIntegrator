@@ -215,7 +215,7 @@ def numbs(args):
             matches,endpoints,scores=AM.scan(seq_fwd,threshold=t)
             s=[(x-mi)/(ma-mi) for x in scores]
             aff=affinity(s,SUM,FP,typ)
-             S[0,j]=aff
+            S[0,j]=aff
         except: 
             S[0,j]=0
     return S
