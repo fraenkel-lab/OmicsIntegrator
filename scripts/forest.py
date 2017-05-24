@@ -8,6 +8,7 @@ import sys, argparse, random, copy, os
 import subprocess, tempfile
 import networkx as nx
 from operator import itemgetter
+from collections import Counter
 import multiprocessing as mp
 
 
@@ -23,36 +24,36 @@ def score(value, mu, musquared):
         return 0
     else:
         newvalue = -float(value) #-math.log(float(value),2)
-        if musquared: 
+        if musquared:
             newvalue = -(newvalue * newvalue)
         newvalue = newvalue * mu
         return newvalue
-            
+
 class PCSFInput(object):
-    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared,excludeT):
+    def __init__(self,prizeFile,edgeFile,confFile,dummyMode,knockout,garnet,shuffle,musquared,excludeT,alpha):
         """
         Converts input information into dictionaries to be used in the message passing algorithm
-        
-        INPUT: prizeFile - tab-delimited text file containing all proteins with prizes 
+
+        INPUT: prizeFile - tab-delimited text file containing all proteins with prizes
                            formatted like "ProteinName\tPrizeValue"
                edgeFile - tab-delimited text file containing edges in interactome and their weights
                           formatted like "ProteinA\tProteinB\tWeight\t
                           Directionality(U or D, optional)"
                confFile - text file containing values for all parameters. Should include the lines
                           "w=<value>", "D=<value>", and "b=<value>".
-               dummyMode - a string that indicates which nodes in the interactome to connect the 
-                           dummy node to. 'terminals'=connect to all terminals (default),  
-                           'others'=connect to all nodes except for terminals, 'all'=connect to 
-                           all nodes in the interactome, or a the path to a text file containing a 
+               dummyMode - a string that indicates which nodes in the interactome to connect the
+                           dummy node to. 'terminals'=connect to all terminals (default),
+                           'others'=connect to all nodes except for terminals, 'all'=connect to
+                           all nodes in the interactome, or a the path to a text file containing a
                            list of proteins to connect to.
-        
+
         OUTPUT: self.origPrizes - dictionary of proteins with prizes. {ProteinName: PrizeValue}
-                self.negPrizes - dictionary of proteins with negative prizes calculated based on 
+                self.negPrizes - dictionary of proteins with negative prizes calculated based on
                                  degree. {ProteinName: PrizeValue}
                 self.totalPrizes - dictionary of prizes as msgsteiner sees them (PrizeValue*beta)
-                self.dirEdges - dictionary of dictionaries of all directed edges. 
+                self.dirEdges - dictionary of dictionaries of all directed edges.
                                 {ProteinFROM: {ProteinTO: weight}}
-                self.undirEdges - dictionary of dictionaries of all undirected edges. 
+                self.undirEdges - dictionary of dictionaries of all undirected edges.
                                   {ProteinA: {ProteinB: weight}, ProteinB: {ProteinA: weight}}
                 self.dummyNodeNeighbors - a list of all proteins that the dummy node should have
                                           edges to.
@@ -73,7 +74,7 @@ class PCSFInput(object):
                 sys.exit('dummyMode value not recognized. Accepted values include "all", ' \
                          '"terminals", "others", or a path to a text file on your computer '\
                          'containing a list of proteins.')
-        
+
         #Read configuration file to record parameters for this object
         print 'Reading text file containing parameters %s...' %confFile
         c = open(confFile, 'rb')
@@ -139,7 +140,7 @@ class PCSFInput(object):
         except:
             sys.exit('ERROR: There was a problem reading the file containing parameters. Please '\
                      'include appropriate values for w, b, D, and optionally mu, r, garnetBeta, g, or noise.')
-                     
+
         self.w = float(w)
         self.b = float(b)
         self.D = int(D)
@@ -150,7 +151,7 @@ class PCSFInput(object):
         self.noise = noise
         self.threads = threads
         self.processes = processes
-        
+
         print 'Reading text file containing interactome edges: %s...' %edgeFile
         dirEdges = {}
         undirEdges = {}
@@ -237,7 +238,7 @@ class PCSFInput(object):
             #Add edges to dictionaries if there is directionality information
             if col == 4:
                 if words[3] == 'U':
-                    #If there are directed and undirected edges for the same protein pair, 
+                    #If there are directed and undirected edges for the same protein pair,
                     #only keep directed
                     if words[0] in dirEdges:
                         if words[1] in dirEdges[words[0]]:
@@ -347,8 +348,8 @@ class PCSFInput(object):
                 terminalTypes[words[0]] = 'Proteomic'
             line = p.readline()
         p.close()
-        
-        if garnet != None: 
+
+        if garnet != None:
             print 'Reading text file containing TF regression results: %s...\n' %garnet
             if os.path.exists(garnet):
                 with open(garnet, 'rb') as g:
@@ -374,7 +375,7 @@ class PCSFInput(object):
                         line = g.readline()
             else:
                 sys.exit('ERROR: No such garnet file %s' %garnet)
-        
+
         #Warning if supplied proteins were not in the interactome
         percentexcluded = (count/float(len(origPrizes.keys())+count)) * 100
         if percentexcluded > 90:
@@ -387,20 +388,20 @@ class PCSFInput(object):
                   'same in your prize file as in your edge file. Continuing program...\n' \
                   %percentexcluded
             warnings += 1
-        
+
         #Warning for self-edges
         if selfedges > 0:
             print 'WARNING: There were %i self-edges in your interactome. We ignored these '\
                   'edges.\n' %selfedges
             warnings += 1
-        
+
         #Notice for knockouts
         if knockoutCount > 0:
             print 'There were %i edges connected to your knockout protein(s). We ignored these '\
                   'edges.\n' %knockoutCount
-        
+
         print 'Input prize files and edge files have been successfully read.\n'
-        
+
         #Connect dummy node to nodes in interactome, depending on dummyMode
         dummyNodeNeighbors = []
         if dummyMode == 'terminals':
@@ -464,14 +465,35 @@ class PCSFInput(object):
         self.undirEdges = undirEdges
         self.dummyNodeNeighbors = dummyNodeNeighbors
         self.musquared = musquared
- 
+
         self.assignNegPrizes(musquared, excludeT)
-        
+        self.assignNegEdges(alpha)
+
         if warnings > 0:
             print 'THERE WERE %s WARNING(S) WHEN READING THE INPUT FILES.\n' %warnings
-        
-    def assignNegPrizes(self, musquared, excludeT):     
-        """        
+
+
+
+    def assignNegEdges(self, alpha):
+
+        # dirEdges is dict<str, dict<str, str>>
+
+        degree = Counter({protein1: len(edges.items()) for protein1, edges in self.dirEdges.items()}) +
+                 Counter({protein1: len(edges.items()) for protein1, edges in self.undirEdges.items()})
+
+        for protein1, out_edges in self.dirEdges:
+            for protein2, cost in out_edges:
+                self.dirEdges[protein1][protein2] = cost + alpha * (degree[protein1] * degree[protein2] /
+                                                    (N - degree[protein1] - 1) * (N - degree[protein2] - 1) + degree[protein1] * degree[protein2])
+
+        for protein1, out_edges in self.undirEdges:
+            for protein2, cost in out_edges:
+                self.dirEdges[protein1][protein2] = cost + alpha * (degree[protein1] * degree[protein2] /
+                                                    (N - degree[protein1] - 1) * (N - degree[protein2] - 1) + degree[protein1] * degree[protein2])
+
+
+    def assignNegPrizes(self, musquared, excludeT):
+        """
         Scales original prizes by beta and adds negative prizes to penalize
         nodes with high degrees if mu > 0.
         Scales original prizes by beta if mu = 0.
@@ -479,7 +501,7 @@ class PCSFInput(object):
         """
         negPrizes = {}
         totalPrizes = {}
-        
+
         if self.mu != 0.0:
             print 'Adding negative prizes to nodes in interactome using mu parameter...'
             if musquared: print 'Negative prizes will be proportional to node degree^2.'
@@ -512,10 +534,10 @@ class PCSFInput(object):
                 prize = float(self.origPrizes[prot]) * self.b
                 totalPrizes[prot] = prize
                 negPrizes[prot] = 0
-       
+
         self.negPrizes = negPrizes
         self.totalPrizes = totalPrizes
-    
+
     def degreeNegPrize(self):
         """
         Helper function for use in assigning negative prizes (when mu != 0)
@@ -543,14 +565,14 @@ class PCSFInput(object):
         print 'The parameters were: w= ' + self.w + ' b= ' +self.b+ ' D= ' + self.D + ' mu= '\
               + self.mu + ' r= ' + self.r + ' g= ' + self.g + ' garnetBeta= ' + self.gb\
               + ' noise= ' + self.noise
-    
+
     def runPCSF(self, msgpath, seed):
         """
         Passes the information in this input object to msgsteiner, and returns the results.
-        
+
         INPUT: msgpath - points to the directory where msgsteiner is held.
-               
-        RETURNS: edgeList - the contents of stdout from msgsteiner: a list of edges in the 
+
+        RETURNS: edgeList - the contents of stdout from msgsteiner: a list of edges in the
                             optimal Forest
                  info - the contents of stderr from msgsteiner: if all goes well, a report on
                              the optimization
@@ -561,9 +583,9 @@ class PCSFInput(object):
         for edgeNode1 in self.dirEdges:
             for edgeNode2 in self.dirEdges[edgeNode1]:
                 #directed edges are flipped so that they point towards the root node
-                #Weights are converted to costs by using 1-weight 
+                #Weights are converted to costs by using 1-weight
                 #(good for Psiquic, needs to be changed -log2(weight) for String)
-                input.write('D %s %s %f\n' %(edgeNode2, edgeNode1, 
+                input.write('D %s %s %f\n' %(edgeNode2, edgeNode1,
                             1-float(self.dirEdges[edgeNode1][edgeNode2])))
         edgesAdded = {}
         for edgeNode1 in self.undirEdges:
@@ -572,7 +594,7 @@ class PCSFInput(object):
                 try:
                     edgesAdded[edgeNode2][edgeNode1] = 2
                 except KeyError:
-                    input.write('E %s %s %f\n' %(edgeNode1, edgeNode2, 
+                    input.write('E %s %s %f\n' %(edgeNode1, edgeNode2,
                                 1-float(self.undirEdges[edgeNode1][edgeNode2])))
                     edgesAdded[edgeNode1] = {edgeNode2: 1}
         for node in self.dummyNodeNeighbors:
@@ -597,10 +619,10 @@ class PCSFInput(object):
         input.write('R DUMMY\n\n')
 
         print 'Input is processed. Piping to msgsteiner code...\n'
-        
-        #Run msgsteiner as subprocess. Using temporary files for stdin and stdout 
+
+        #Run msgsteiner as subprocess. Using temporary files for stdin and stdout
         #to avoid broken pipes when data is too big
-        subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r', 
+        subprocArgs = [msgpath, '-d', str(self.D), '-t', '1000000', '-o', '-r',
                        str(self.r), '-g', str(self.g), '-j', str(self.threads)]
         #Only supply seed to msgsteiner if one is given by user
         #Use the seed to set the -s (instance seed, which controls random noise on edge weights)
@@ -612,7 +634,7 @@ class PCSFInput(object):
             subprocArgs.append(str(seed))
         out = tempfile.TemporaryFile()
         input.seek(0) #return to first line of temporary file for reading
-        subproc = subprocess.Popen(subprocArgs, bufsize=1, stdin=input, stdout=out, 
+        subproc = subprocess.Popen(subprocArgs, bufsize=1, stdin=input, stdout=out,
                                    stderr=subprocess.PIPE)
         errcode = subproc.wait()
         if errcode:
@@ -629,13 +651,13 @@ class PCSFInput(object):
         edgeList = out.read()
         out.close()
         return (edgeList, info)
-        
+
 class PCSFOutput(object):
     def __init__(self, inputObj, edgeList, info, outputpath, outputlabel, betweenness):
         """
         Takes the forest output given by msgsteiner and converts it to two networkx graphs.
-        
-        INPUT: inputObj - a reference to the PCSFInput object that stores the correct edges and 
+
+        INPUT: inputObj - a reference to the PCSFInput object that stores the correct edges and
                           prizes dictionaries for this output object
                edgeList - the edges in the forest output given by msgsteiner, contents of stdout
                info - stats about the msgsteiner run, contents of stderr
@@ -643,20 +665,20 @@ class PCSFOutput(object):
                outputlabel - a label with which to name all of the output files for this run
                betweenness - a T/F flag indicating whether we should do the costly betweenness
                              calculation
-               
+
         OUTPUT: self.optForest - a networkx digraph storing the forest returned by msgsteiner
                 self.augForest - a networkx digraph storing the forest returned by msgsteiner, plus
                                  all of the edges in the interactome between nodes in that forest
-                self.dumForest - a networkx digraph storing the dummy node edges in the optimal 
+                self.dumForest - a networkx digraph storing the dummy node edges in the optimal
                                  forest
                 self.inputObj - a reference to the PCSFInput object that created this output object
                 <outputlabel>_info.txt - a text file containing the contents of stderr and info
         """
-        #Write output stderr file before attempting to do anything else so the info is 
+        #Write output stderr file before attempting to do anything else so the info is
         #there if the program breaks
         err = open('%s/%s_info.txt' %(outputpath,outputlabel), 'wb')
         err.write(info)
-        
+
         #Create networkx graph storing the result of msgsteiner
         optForest = nx.DiGraph()
         dumForest = nx.DiGraph()
@@ -682,8 +704,8 @@ class PCSFOutput(object):
                 #Add directed edges
                 try:
                     edgeWeight = inputObj.dirEdges[words[1]][words[0]]
-                    optForest.add_edge(words[1], words[0], 
-                                       weight=edgeWeight, 
+                    optForest.add_edge(words[1], words[0],
+                                       weight=edgeWeight,
                                        fracOptContaining=1.0)
                     edgeTerm += 1 - float(edgeWeight)
                 except KeyError:
@@ -693,11 +715,11 @@ class PCSFOutput(object):
                         if inputObj.undirEdges[words[1]][words[0]] != inputObj.undirEdges[words[0]][words[1]]:
                             sys.exit('ERROR: Undirected edges must have symmetric costs')
                         edgeWeight = inputObj.undirEdges[words[1]][words[0]]
-                        optForest.add_edge(words[1], words[0], 
-                                           weight=edgeWeight, 
+                        optForest.add_edge(words[1], words[0],
+                                           weight=edgeWeight,
                                            fracOptContaining=1.0)
-                        optForest.add_edge(words[0], words[1], 
-                                           weight=edgeWeight, 
+                        optForest.add_edge(words[0], words[1],
+                                           weight=edgeWeight,
                                            fracOptContaining=1.0)
                         edgeTerm += 1 - float(edgeWeight)
                     #edge not found in either dictionary
@@ -733,7 +755,7 @@ class PCSFOutput(object):
                 ttype=''
             optForest.node[node]['TerminalType'] =ttype
 
-        #Create networkx graph storing the "augmented forest", 
+        #Create networkx graph storing the "augmented forest",
         #the result of msgsteiner plus all interactome edges between nodes present in the forest
         augForest = copy.deepcopy(optForest)
         for node in augForest.nodes():
@@ -750,7 +772,7 @@ class PCSFOutput(object):
                 if node2 in augForest.nodes():
                     if (node, node2) not in optForest.edges():
                         augForest.add_edge(node, node2, weight=edges[node2], fracOptContaining=0.0)
-                    
+
         #Calculate betweenness centrality for all nodes in augmented forest
         if betweenness:
             betweenness = nx.betweenness_centrality(augForest)
@@ -758,7 +780,7 @@ class PCSFOutput(object):
         else:
             for node in augForest.nodes():
                 augForest.node[node]['betweenness'] = 0
-        
+
         #Write info about results in info file
         err.write('\n')
         err.write('Total objective function: %f\n' % (prizeTerm + edgeTerm + treesTerm))
@@ -781,36 +803,36 @@ class PCSFOutput(object):
                   'the optimal forest are %s\n' % \
                   (len(singletons), str(singletons)))
         err.close()
-        
+
         self.augForest = augForest
         self.optForest = optForest
         self.dumForest = dumForest
         self.inputObj = inputObj
-            
+
     def writeCytoFiles(self, outputpath, outputlabel, cyto30):
         """
         Writes Cytoscape-supported files for viewing the output network.
-        
+
         INPUT: outputpath - path to the directory where output files should be stored
                outputlabel - a label with which to name all of the output files for this run
-        
-        OUTPUT: <outputlabel>_optimalForest.sif - a file storing edges of optForest in Simple 
+
+        OUTPUT: <outputlabel>_optimalForest.sif - a file storing edges of optForest in Simple
                                                   Interaction Format
-                <outputlabel>_augmentedForest.sif - a file storing edges of augForest in Simple 
+                <outputlabel>_augmentedForest.sif - a file storing edges of augForest in Simple
                                                     Interaction Format
-                <outputlabel>_dummyForest.sif - a file storing edges of dumForest in Simple 
+                <outputlabel>_dummyForest.sif - a file storing edges of dumForest in Simple
                                                 Interaction Format
                 <outputlabel>_nodeattributes.tsv - a tab-delimited file storing the node attributes
                 <outputlabel>_edgeattributes.tsv - a tab-delimited file storing the edge attributes
         """
-        
+
         if cyto30:
-            #Write Simple Interaction Format files to store edges in a format supported by 
+            #Write Simple Interaction Format files to store edges in a format supported by
             #Cytoscape 3.0
             optSif= open('%s/%s_optimalForest.sif'%(outputpath,outputlabel), 'wb')
             augSif = open('%s/%s_augmentedForest.sif'%(outputpath,outputlabel), 'wb')
             dumSif = open('%s/%s_dummyForest.sif' %(outputpath, outputlabel), 'wb')
-        
+
             #Write attribute files in a format supported by Cytoscape
             #The first lines of these files contains the variable names
             noa = open('%s/%s_nodeattributes.tsv'%(outputpath, outputlabel), 'wb')
@@ -818,10 +840,10 @@ class PCSFOutput(object):
                       'FractionOfOptimalForestsContaining\tTerminalType\n')
             eda = open('%s/%s_edgeattributes.tsv'%(outputpath, outputlabel), 'wb')
             eda.write('Edge\tWeight\tFractionOfOptimalForestsContaining\n')
-        
+
             undirEdgesAdded = {}
-            
-            edgesSorted = self.augForest.edges(data=True)            
+
+            edgesSorted = self.augForest.edges(data=True)
             edgesSorted.sort(key = itemgetter(0, 1))
 
             #iterate through edges to record edge types and edge attributes
@@ -832,7 +854,7 @@ class PCSFOutput(object):
                     augSif.write(node1+'\tpd\t'+node2+'\n')
                     eda.write(node1+' (pd) '+node2+'\t'+str(data['weight'])+'\t'+
                               str(data['fracOptContaining'])+'\n')
-                    #Check if this edge is in optForest 
+                    #Check if this edge is in optForest
                     if data['fracOptContaining'] > 0.0:
                         optSif.write(node1+'\tpd\t'+node2+'\n')
                         dumSif.write(node1+'\tpd\t'+node2+'\n')
@@ -861,12 +883,12 @@ class PCSFOutput(object):
                           str(data['fracOptContaining'])+'\t'+data['TerminalType']+'\n')
 
             dumSorted = self.dumForest.edges()
-            dumSorted.sort(key = itemgetter(0, 1))        
+            dumSorted.sort(key = itemgetter(0, 1))
             #Record dummy edges
             for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
                     dumSif.write(node1+'\tpd\t'+node2+'\n')
-        
+
             optSif.close()
             augSif.close()
             dumSif.close()
@@ -874,14 +896,14 @@ class PCSFOutput(object):
             eda.close()
             print 'Wrote output files for Cytoscape, in directory %s, with names starting with '\
                   '"%s".\n' %(outputpath, outputlabel)
-                  
+
         else:
-            #Write Simple Interaction Format files to store edges in a format supported by 
+            #Write Simple Interaction Format files to store edges in a format supported by
             #Cytoscape 2.8
             optSif= open('%s/%s_optimalForest.sif'%(outputpath,outputlabel), 'wb')
             augSif = open('%s/%s_augmentedForest.sif'%(outputpath,outputlabel), 'wb')
             dumSif = open('%s/%s_dummyForest.sif'%(outputpath,outputlabel), 'wb')
-        
+
             #Write attribute files in a format supported by Cytoscape
             bcNoa = open('%s/%s_betweennessCentrality.noa'%(outputpath, outputlabel), 'wb')
             bcNoa.write('BetweennessCentrality (class=Double)\n')
@@ -891,16 +913,16 @@ class PCSFOutput(object):
             fracNoa.write('FractionOptimalForestsContaining (class=Double)\n')
             ttypeNoa =  open('%s/%s_termTypes.noa'%(outputpath, outputlabel), 'wb')
             ttypeNoa.write('TerminalType\n')
-            
+
             #Write edge attribute files in a format supported by Cytoscape
             weightEda = open('%s/%s_weights.eda'%(outputpath, outputlabel), 'wb')
             weightEda.write('Weight (class=Double)\n')
             fracEda = open('%s/%s_fracOptContaining.eda'%(outputpath, outputlabel), 'wb')
             fracEda.write('FractionOptimalForestsContaining (class=Double)\n')
-        
+
             undirEdgesAdded = {}
-            edgesSorted = self.augForest.edges(data=True)            
-            edgesSorted.sort(key = itemgetter(0, 1))            
+            edgesSorted = self.augForest.edges(data=True)
+            edgesSorted.sort(key = itemgetter(0, 1))
             #iterate through edges to record edge types and edge attributes
             for (node1,node2,data) in edgesSorted:
                 try:
@@ -929,10 +951,10 @@ class PCSFOutput(object):
                             undirEdgesAdded[node1][node2] = 1
                         else:
                             undirEdgesAdded[node1] = {node2:1}
-                    
+
             #iterate through nodes to record node attributes
             nodesSorted = self.augForest.nodes(data=True)
-            nodesSorted.sort(key = itemgetter(0, 1))            
+            nodesSorted.sort(key = itemgetter(0, 1))
             for (node,data) in nodesSorted:
                 bcNoa.write(node+' = '+str(data['betweenness'])+'\n')
                 prizeNoa.write(node+' = '+str(data['prize'])+'\n')
@@ -940,12 +962,12 @@ class PCSFOutput(object):
                 ttypeNoa.write(node+ ' = '+str(data['TerminalType'])+'\n')
 
             dumSorted = self.dumForest.edges()
-            dumSorted.sort(key = itemgetter(0, 1))        
+            dumSorted.sort(key = itemgetter(0, 1))
             #Record dummy edges
             for (node1,node2) in dumSorted:
                 if node1 == 'DUMMY':
                     dumSif.write(node1+'\tpd\t'+node2+'\n')
-        
+
             optSif.close()
             augSif.close()
             bcNoa.close()
@@ -955,24 +977,24 @@ class PCSFOutput(object):
             fracEda.close()
             print 'Wrote output files for Cytoscape, in directory %s, with names starting with '\
                   '"%s".\n' %(outputpath, outputlabel)
-    
+
 def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
     """
-    Merges two PCSFOutput objects together. Creates a new PCSFOutput object whose graphs contain 
-    all edges found in either original object, with updated fracOptContaining values and 
+    Merges two PCSFOutput objects together. Creates a new PCSFOutput object whose graphs contain
+    all edges found in either original object, with updated fracOptContaining values and
     betweenness values.
-    
-    INPUT: Two PCSFOutput objects, either individual objects or themselves results of merges.  
-                Ideally, these output objects were created using the same interactome (though the 
+
+    INPUT: Two PCSFOutput objects, either individual objects or themselves results of merges.
+                Ideally, these output objects were created using the same interactome (though the
                 prizes or algorithm parameters may have been different). This is not enforced.
            betweenness - a T/F flag indicating whether to do the costly betweenness calculation
-           n1,n2 - integers, the number of msgsteiner runs each PCSFOutput object is a result of 
+           n1,n2 - integers, the number of msgsteiner runs each PCSFOutput object is a result of
                    (if one of PCSFOutputObj is the result of a merge, this should be >1).
-                   
-    RETURNS: A new PCSFOutput object, with all edges found in either original object, with updated 
-                fracOptContaining and betweenness values. If a node or edge is found in both 
-                original objects, the prize or weight in this object is copied from 
-                PCSFOutputObj1. The inputObj reference in this object is the same as    
+
+    RETURNS: A new PCSFOutput object, with all edges found in either original object, with updated
+                fracOptContaining and betweenness values. If a node or edge is found in both
+                original objects, the prize or weight in this object is copied from
+                PCSFOutputObj1. The inputObj reference in this object is the same as
                 PCSFOutputObj1.
     """
     print 'Merging outputs to give summary over %i algorithm runs...'%(n1+n2)
@@ -1001,19 +1023,19 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
             dataM = mergedObj.optForest[node1][node2]
         except KeyError:
             numRuns2 = data['fracOptContaining'] * n2
-            #If there are nodes in outputObj2 not included in 1, they will be added to 
+            #If there are nodes in outputObj2 not included in 1, they will be added to
             #mergedObj without error
             if node1 not in mergedObj.optForest.nodes():
-                mergedObj.optForest.add_node(node1, 
+                mergedObj.optForest.add_node(node1,
                                              prize=PCSFOutputObj2.optForest.node[node1]['prize'],
                                              TerminalType=PCSFOutputObj2.optForest.node[node1]['TerminalType'],
                                              fracOptContaining=numRuns2/(n1+n2))
             if node2 not in mergedObj.optForest.nodes():
-                mergedObj.optForest.add_node(node2, 
+                mergedObj.optForest.add_node(node2,
                                             prize=PCSFOutputObj2.optForest.node[node2]['prize'],
                                             TerminalType=PCSFOutputObj2.optForest.node[node2]['TerminalType'],
                                             fracOptContaining=numRuns2/(n1+n2))
-            mergedObj.optForest.add_edge(node1, node2, weight=data['weight'], 
+            mergedObj.optForest.add_edge(node1, node2, weight=data['weight'],
                                          fracOptContaining=numRuns2/(n1+n2))
     #Add dumForest edges to mergedObj that appear in outputObj2 but not in outputObj1
     for (node1, node2, data) in PCSFOutputObj2.dumForest.edges(data=True):
@@ -1021,9 +1043,9 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
             dataM = mergedObj.dumForest[node1][node2]
         except KeyError:
             mergedObj.dumForest.add_edge(node1, node2)
-    
+
     #Create augForest based on new optForest
-    #Need to first copy optForest in case an edge previously included in augForest 
+    #Need to first copy optForest in case an edge previously included in augForest
     #has a new fracOptContaining
     mergedObj.augForest = copy.deepcopy(mergedObj.optForest)
     for node in mergedObj.augForest.nodes():
@@ -1035,32 +1057,32 @@ def mergeOutputs(PCSFOutputObj1, PCSFOutputObj2, betweenness, n1=1, n2=1):
         try:
            edges.update(mergedObj.inputObj.dirEdges[node])
         except KeyError:
-            #If a node found in mergedObj.optForest is not found in PCSFInputObj1's interactome, 
+            #If a node found in mergedObj.optForest is not found in PCSFInputObj1's interactome,
             #it is quietly ignored in making augForest
             pass
         for node2 in edges:
             if node2 in mergedObj.augForest.nodes():
                 if (node, node2) not in mergedObj.optForest.edges():
-                    mergedObj.augForest.add_edge(node, node2, weight=edges[node2], 
+                    mergedObj.augForest.add_edge(node, node2, weight=edges[node2],
                                                  fracOptContaining=0.0)
-                    
+
     #Calculate betweenness centrality for all nodes in augmented forest
     if betweenness:
         betweenness = nx.betweenness_centrality(mergedObj.augForest)
         nx.set_node_attributes(mergedObj.augForest, 'betweenness', betweenness)
-        
+
     print 'Outputs were successfully merged.\n'
     return mergedObj
-   
-    
+
+
 def shufflePrizes(PCSFInputObj, seed, excludeT):
     """
     Shuffles the prizes over all the nodes in PCSFInputObj.
-    
+
     INPUT: a PCSFInput object
            seed - number to give to the random number generator
-    RETURNS: a new PCSFInput object with the same prize values, but in randomly shuffled order. 
-             All nodes will now have random prizes, but with the same distribution as the original 
+    RETURNS: a new PCSFInput object with the same prize values, but in randomly shuffled order.
+             All nodes will now have random prizes, but with the same distribution as the original
              data.
     """
     print 'Prize values are being shuffled.\n'
@@ -1076,11 +1098,11 @@ def shufflePrizes(PCSFInputObj, seed, excludeT):
     newPCSFInputObj.origPrizes = shuffledValues
     newPCSFInputObj.assignNegPrizes(newPCSFInputObj.musquared,excludeT)
     return newPCSFInputObj
-    
+
 def noiseEdges(PCSFInputObj, seed, excludeT):
     """
     Adds gaussian noise to all edges in the PCSFInputObj prize dictionary.
-    
+
     INPUT: a PCSFInput object
            seed - number to give to the random number generator
     RETURNS: a new PCSFInput object with with added gaussian noise to edge values
@@ -1100,7 +1122,7 @@ def noiseEdges(PCSFInputObj, seed, excludeT):
                                                       + random.gauss(0,dev)
     print 'Noise has been added to all edge values.\n'
     return newPCSFInputObj
-    
+
 def randomTerminals(PCSFInputObj, seed, excludeT):
     """
     Selects nodes with a similar degree distribution to the original terminals, and assigns the
@@ -1189,23 +1211,23 @@ def PCSF(inputObj,msgpath,seed):
 def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpath, outputlabel,
                                 excludeT):
     """
-    Changes the prizes/edges in the PCSFInput object according to func and runs the msgsteiner 
-    algorithm, then merges the results together with the given PCSFOutput object. Writes 
+    Changes the prizes/edges in the PCSFInput object according to func and runs the msgsteiner
+    algorithm, then merges the results together with the given PCSFOutput object. Writes
     cytoscape files for final merged results.
-    
-    INPUT: func - the function which takes inputObj and changes the prize/edge values 
+
+    INPUT: func - the function which takes inputObj and changes the prize/edge values
                   (i.e. shuffles or adds noise)
            inputObj - a PCSFInput object with original values, to be changed.
            numRums - the number of times to change the values and re-run msgsteiner
            msgpath - path to the directory where msgsteiner is kept
            outputpath - path to the directory where output files should be stored
            outputlabel - a label with which to name all of the output files for this run
-           
+
     OUTPUT: <outputlabel>_changed_#_info.txt - a text file FOR EACH RUN containing the
                       contents of stderr for all msgsteiner runs
     RETURNS: merged - the PCSFOutput object that is a result of all the merges
 
-    """ 
+    """
     print 'Preparing to change values %i times and get merged results of running the '\
           'algorithm on new values.\n' %numRuns
     #Create multiprocessing Pool
@@ -1226,14 +1248,14 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
     #Merge output of new msgsteiner runs together
     while i <= numRuns-1:
         (newEdgeList, newInfo) = output[i]
-        #By creating the output object with inputObj instead of changedInputObj, 
-        #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes, 
+        #By creating the output object with inputObj instead of changedInputObj,
+        #the prizes stored in the networkx graphs will be the ORIGINAL CORRECT prizes,
         #not the changed prizes.
         if str(func)[10:23]  == 'shufflePrizes':
-            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath, 
+            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath,
                                           outputlabel+'_shuffledPrizes_%i'%i, 0)
         elif str(func)[10:20] == 'noiseEdges':
-            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath, 
+            changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath,
                                           outputlabel+'_noisyEdges_%i'%i, 0)
         elif str(func)[10:25] == 'randomTerminals':
             changedOutputObj = PCSFOutput(inputObj, newEdgeList, newInfo, outputpath,
@@ -1253,9 +1275,9 @@ def changeValuesAndMergeResults(func, seed, inputObj, numRuns, msgpath, outputpa
 
 def crossValidation(k, rep, PCSFInputObj, seed, msgpath, outputpath, outputlabel):
     """
-    Seperates prizes into k "folds" and leaves those out of analysis. Reports what fraction of 
+    Seperates prizes into k "folds" and leaves those out of analysis. Reports what fraction of
     held-out prize nodes were returned as steiner nodes.
-    
+
     INPUT: k - the number of "folds" to seperate the prize nodes into.
            rep - Repetition of k-fold cv calculation we are currently on
            PCSFInputObj - a PCSF object with all prize nodes
@@ -1263,10 +1285,10 @@ def crossValidation(k, rep, PCSFInputObj, seed, msgpath, outputpath, outputlabel
            msgpath - path to msgsteiner code
            outputpath - path to the directory where output files should be stored
            outputlabel - a label with which to name all of the output files for this run
-    
-    OUTPUTS: File <outputlabel>_cvResults_<rep>.txt containing stats from the cv run 
+
+    OUTPUTS: File <outputlabel>_cvResults_<rep>.txt containing stats from the cv run
              Files showing steiners and terminals for each of the intermediate solutions
-    """ 
+    """
     print 'Running %i-fold cross validation (rep %i).\n'%(k,rep)
     prizes = PCSFInputObj.origPrizes.keys()
     if seed != None:
@@ -1326,7 +1348,7 @@ def crossValidation(k, rep, PCSFInputObj, seed, msgpath, outputpath, outputlabel
                   'Total num of Steiner nodes\n')
     results.write(iterations)
     results.close
-        
+
 
 def main():
     #Parsing arguments (run python PCSF.py -h to see all these decriptions)
@@ -1387,7 +1409,7 @@ def main():
         'names. Default = 0', type=int, default=0)
     parser.add_argument("--knockout", dest='knockout', nargs='*', help='Protein(s) you '\
         'would like to "knock out" of the interactome to simulate a knockout experiment.', \
-	default=[])    
+	default=[])
     parser.add_argument("-k", "--cv", dest='cv', help='An integer specifying the k value if you '\
         'would like to run k-fold cross validation on the prize proteins. Default = None.', \
         type=int, default=None)
@@ -1397,9 +1419,9 @@ def main():
     parser.add_argument("-s", "--seed", dest='seed', help='An integer seed for the pseudo-random '\
         'number generators. If you want to reproduce exact results, supply the same seed. '\
         'Default = None.', type=int, default=None)
-    
+
     options = parser.parse_args()
-    
+
     #Check cv parameters do not conflict
     if options.cv_reps != None:
         if options.cv == None:
@@ -1424,19 +1446,19 @@ def main():
     (edgeList, info) = inputObj.runPCSF(options.msgpath, options.seed)
     outputObj = PCSFOutput(inputObj,edgeList,info,options.outputpath,options.outputlabel,1)
     outputObj.writeCytoFiles(options.outputpath, options.outputlabel, options.cyto30)
-    
+
     #Get merged results of adding noise to edge values
     if options.noiseNum > 0:
-        merged = changeValuesAndMergeResults(noiseEdges, options.seed, inputObj, 
-                                             options.noiseNum, options.msgpath, 
+        merged = changeValuesAndMergeResults(noiseEdges, options.seed, inputObj,
+                                             options.noiseNum, options.msgpath,
                                              options.outputpath, options.outputlabel,
                                              options.excludeT)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_noisy', options.cyto30)
-    
+
     #Get merged results of shuffling prizes
     if options.shuffleNum > 0:
-        merged = changeValuesAndMergeResults(shufflePrizes, options.seed, inputObj, 
-                                             options.shuffleNum, options.msgpath, 
+        merged = changeValuesAndMergeResults(shufflePrizes, options.seed, inputObj,
+                                             options.shuffleNum, options.msgpath,
                                              options.outputpath, options.outputlabel,
                                              options.excludeT)
         merged.writeCytoFiles(options.outputpath, options.outputlabel+'_shuffled', options.cyto30)
@@ -1447,9 +1469,9 @@ def main():
                                              options.termNum, options.msgpath,
                                              options.outputpath, options.outputlabel,
                                              options.excludeT)
-        merged.writeCytoFiles(options.outputpath, options.outputlabel+'_randomTerminals', 
+        merged.writeCytoFiles(options.outputpath, options.outputlabel+'_randomTerminals',
                               options.cyto30)
-    
+
     #If k is supplied, run k-fold cross validation
     if options.cv != None:
         if options.cv_reps == None:
@@ -1459,6 +1481,6 @@ def main():
             for i in range(0,options.cv_reps):
                 crossValidation(options.cv, i+1, inputObj, options.seed, options.msgpath, \
                             options.outputpath, options.outputlabel)
-    
+
 if __name__ == '__main__':
     main()
