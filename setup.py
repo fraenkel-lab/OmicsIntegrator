@@ -45,7 +45,7 @@ class PyTest(TestCommand):
 
 setup(
     name='OmicsIntegrator',
-    version='0.3.0',
+    version='0.3.1',
     description="Python tool for high throughput data integration",
     long_description=readme + '\n\n' + history,
     author="Sara Gosline",
