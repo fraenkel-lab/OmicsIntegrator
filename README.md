@@ -18,6 +18,10 @@ Reference:
 [Network-Based Interpretation of Diverse High-Throughput Datasets through the Omics Integrator Software Package](http://dx.doi.org/10.1371/journal.pcbi.1004879)
 Tuncbag N<sup>\*</sup>, Gosline SJC<sup>\*</sup>, Kedaigle A, Soltis AR, Gitter A, Fraenkel E. *PLoS Comput Biol* 12(4): e1004879. doi:10.1371/journal.pcbi.1004879.
 
+For a step-by-step protocol for running this software:
+[Discovering altered regulation and signaling through network-based integration of transcriptomic, epigenomic and proteomic tumor data](https://link.springer.com/protocol/10.1007/978-1-4939-7493-1_2)
+Kedaigle A, and Fraenkel E. *Cancer Systems Biology: Methods in Molecular Biology*, 2018.
+
 System Requirements:
 --------------------
 1. Python 2.6 or 2.7 (3.x version currently untested) and the dependencies
