@@ -1,4 +1,3 @@
-
 '''
 From the original motif scanning, selects those events withing a particular window of a gene and outputs the
 tgm, geneids and tf ids for final analysis
@@ -24,14 +23,15 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
 
     ##need to get sequence mids in the order they are processed
     ##in the file, this is the index into the score_output file
-    ##. ASSUMES GALAXY-formatted FASTA!!!!
+    ##. ASSUMES GALAXY-formatted FASTA: genome_chr_start_stop_strand[ ignores
+    ##things after space]
     seq_mids=[] ##list of FASTA regions, in their appropriate order in the file
     filtered_events={}##gene name of closest gene to event within window
     for k in seq_ids.keys():
         vals=k.split(';')
         if len(vals)==1:
     	    vals=k.split()
-        if ':' in vals[0]: #bed tools used 
+        if ':' in vals[0]: #bed tools used
             chr,range=vals[0].split(':')
             low,high=range.split('-')
             mid=str(int(low)+((int(high)-int(low))/2))
@@ -40,71 +40,16 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
             genome,chr,low,high,strand=vals[0].split('_')
             mid=str(int(low)+((int(high)-int(low))/2))
             seq_mids.append(chr+':'+mid)
-        
-        if len(vals)==3:            
+
+        if len(vals)==3:
             filtered_events[chr+':'+mid]=vals[2]
     print 'Found %d events, of which %d have gene names'%(len(seq_mids),len(filtered_events))
-    ##this next section relies on xls 
+    ##this next section relies on xls
     ##filter events that are within distance from closest_gene_output to get gene mapping
     ##
     filtered_fc={}##FC of events within window, in case we want to use in the future
 
     event_indexes=[] ##
-
-    
- #    ###open the closest_gene_output and determine
-#     try:
-#         cgo=open(closest_gene_output,'rU').readlines()
-#     except:
-#         print "Error opening file:", sys.exc_info()[0]
-#         print "Check to make sure file exists at %s"%(closest_gene_output)
-#         raise
-#     inds=cgo[0].strip().split('\t')
-#     for row in cgo[1:]:
-#         arr=row.strip().split('\t')
-#         if 'geneSymbol' in inds: #this is true if we used an xref file
-#             gene=arr[inds.index('geneSymbol')]        
-# #            mid=arr[2]+':'+str(int(arr[3])+(int(arr[4])-int(arr[3]))/2)
-#         else: #otherwise we just gene id
-#             gene=arr[inds.index('knownGeneID')]
-#         #position mapping is different
-#         if 'Position' in inds: #this is for GPS
-#             mid='chr'+arr[inds.index('Position')]
-#         elif 'chrom' in inds: #this is for BED
-#             mid=arr[inds.index('chrom')]+':'+str(int(arr[inds.index('chromStart')])+(int(arr[inds.index('chromEnd')])-int(arr[inds.index('chromStart')]))/2)
-#         else: #this is for MACS
-#             mid=arr[inds.index('chr')]+':'+str(int(arr[inds.index('start')])+(int(arr[inds.index('end')])-int(arr[inds.index('start')]))/2)
-
-        
-#         #print gene,mid
-#         dist=arr[inds.index('dist from feature')]
-#         try:
-#             sv=arr[inds.index('score')]
-#         except:
-#             try:
-#                 sv=arr[inds.index('IPvsCTR')]
-#             except:
-#                 fc=0.0
-#         if sv!='':
-#             fc=float(sv)
-#         else:
-#             next
-                
-#         #check absolute distance if we're doing a window, or negative distance if we're looking upstream
-#         if distance_to_tss=='' or (makeWindow and np.absolute(int(dist))<int(distance_to_tss)) or int(dist)>(-1*int(distance_to_tss)):
-# #            filtered_events[mid]=gene #(this was out of if clause, should it be there?) 1/2
-#             if mid in seq_mids:
-#                 event_indexes.append(seq_mids.index(mid))##index into fasta file value/maps to array
-                
-#                 ##UPDATE: moved these to within if clause - so that unrelated scores are not included
-#                 filtered_events[mid]=gene ##gene name of event
-#                 filtered_fc[mid]=float(fc) ##fc value of event
-# #            filtered_fc[mid]=float(fc) #see above, 2/2
-
-                
-  #  print 'Got '+str(len(filtered_events))+' per-gene events within '+distance_to_tss+' bp window out of '+str(len(cgo))
-
- #   print 'These map to '+str(len(event_indexes))+' regions in the FASTA file'
 
     ##get gene ids, or just use mid of sequence region
     gene_names=[t for t in set(filtered_events.values())]
@@ -127,7 +72,7 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
                 print "Error opening file:", sys.exc_info()[0]
                 print "Check to make sure file exists at %s"%(f)
                 raise
-               
+
             if len(newfs)==len(all_tf_names):
                 #combine existing tf names with these with . delimiter....
                 all_tf_names=['.'.join((a,b)) for a,b in zip(all_tf_names,newfs)]
@@ -145,13 +90,13 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
     all_tf_names=cleaned_tf_names
     #print len(cleaned_tf_names)
 
-    
+
     ##now actually map events to scores
     ##load motif matrix scanning output that maps matrices to regions
     print 'Loading complete motif score file...'
     event_scores=np.loadtxt(logistic_score_output)
     print '\t...Loaded!'
-                      
+
     #create new tgm matrix with approriate file name
     newmat=np.zeros((len(all_tf_names),len(gene_names)),dtype='float')##fill in gene length),dtype='float')
     if makeWindow:
@@ -159,16 +104,16 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
     else:
         distance_to_tss=distance_to_tss+'_bpUpstream'
 
-    if tgm_file=='': 
+    if tgm_file=='':
         tgm_file=re.sub('.txt','_'+distance_to_tss+'.tgm',os.path.basename(logistic_score_output))
     if do_pkl:
         pkl_file=re.sub('.tgm','.pkl',tgm_file)
     else:
         pkl_file=''
-        
-    ##sort event indexes from seq_mids that are in the filtered_events file
+
+    ##sort event indexes from  that are in the filtered_events file
     event_indexes.sort()
-    
+
     #populate matrix with greatest score attributed to that gene/tf combo
     for ind,arr in enumerate(event_scores):
         ##name of matrix/motif
@@ -177,13 +122,13 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
         #tfnames=[mat]
         ##here we enumerate which sequences were mapped to a gene within the window
         for k,val in enumerate(seq_mids):#k in event_indexes:
-            
+
             #here we want the event midpoint for the index
 #            val=seq_mids[k]
-            
+
             #get score for that index
             score=arr[k]
-            
+
             #now map it to closest gene for that midpoint
             cg=filtered_events[val]
 
@@ -203,7 +148,7 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
             #        if np.abs(float(score))>np.abs(curscore):
             #            newmat[all_tf_names.index(t),gene_names.index(cg)]=float(score)
 
-                
+
     ###save these intermediate files for debugging purposes
     np.savetxt(tgm_file,newmat)
     gin=re.sub('.tgm','_geneids.txt',tgm_file)
@@ -216,7 +161,7 @@ def build_annotated_tgm(closest_gene_output,distance_to_tss,logistic_score_outpu
         print "Error opening file:", sys.exc_info()[0]
         print "Check to make sure file exists at %s"%(closest_gene_output)
         raise
-    
+
     if pkl_file!='':
         zipcmd='python '+os.path.join(progdir,'zipTgms.py')+' '+tgm_file+' '+tin+' '+gin+' --pkl='+pkl_file
         print 'Compressing matrix file into pkl'
@@ -254,7 +199,7 @@ def main():
 #    print opts.do_pkl
 
     res=build_annotated_tgm(closest_gene_output,opts.distance,logistic_score_output,fasta_file,opts.motif_ids,tgm_file=opts.outfile,do_pkl=opts.do_pkl)
- 
+
 
 if __name__=='__main__':
     main()
