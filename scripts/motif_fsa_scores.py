@@ -46,7 +46,7 @@ def writeMotNames(m,fname):
     #print fname
 
 def motif_bestscan_matrix(F,motif,outfile,genome):
-    
+
     #Load motif and background adjust PSSM
     m=MotifTools.load(motif)
 
@@ -94,7 +94,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
     n_seqs=len(seqs)
     n_motifs=len(m)
     SCORES=np.zeros((n_motifs,n_seqs),dtype='float')
-    
+
     #Load motif ids and profile pickle
     IDS=load_ids(ids)
     PRF=cPickle.load(open(pkl))
@@ -107,7 +107,7 @@ def motif_matrix(F,motif,outfile,genome,ids,pkl,threads,typ):
     for i,r in enumerate(results): SCORES[i,:]=r
 
     np.savetxt(outfile,SCORES,fmt='%.3f')
-    
+
 def numbs(args):
     '''
     Calculates the score of all the matches in a particular binding region
@@ -127,7 +127,7 @@ def numbs(args):
             'C': 0.23994076069111939,
             'G': 0.23994076069111939,
             'T': 0.26005923930888059}
-    elif genome in ['mm8','mm9','mm10']: 
+    elif genome in ['mm8','mm9','mm10']:
         bg={'A': 0.29119881438474354,
         'C': 0.20880118561525646,
         'G': 0.20880118561525646,
@@ -144,7 +144,7 @@ def numbs(args):
     AM.source = M.source
     t=thres*(ma-mi)+mi
     S=np.zeros((1,n_seqs),dtype='float')
-    
+
     #Search every seq for given motif above threshold t and print motif centered results
     for j,seq in enumerate(seqs):
         try:
@@ -154,7 +154,7 @@ def numbs(args):
             aff=affinity(s,SUM,FP,typ)
             #num_bs=len(scores)
             S[0,j]=aff
-        except: 
+        except:
             S[0,j]=0
             #print 'score calc exception',
     return S
@@ -195,14 +195,14 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
     #read in gene mapping
     closest_gene=DictReader(open(gene_file,'rU'),delimiter='\t')
     include_genes=[]
-    
+
     mid_to_gene={}
     if os.path.exists(gene_list):
         include_genes=[a.strip().split()[0] for a in open(gene_list,'rU').readlines()]
-        
+
     if len(include_genes)>0:
         print 'Found %d genes in differential expression data, reducing FASTA to only include regions nearby'%(len(include_genes))
-    
+
     count=0
     for g in closest_gene:
         if len(include_genes)>0 and g['geneSymbol'] not in include_genes:
@@ -222,7 +222,7 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
             mid_to_gene[midval] = g['knownGeneID']
         count=count+1
     ##then reduce fasta dict to only get those genes that map
-    new_seq={}    
+    new_seq={}
   #  print ','.join([k for k in mapped_mids][0:10])
 
     for k in fsa_dict.keys():
@@ -230,7 +230,7 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
         if len(vals)==1:
             vals=k.split(' ')
         #print vals
-        if ':' in vals[0]: #just in case bedtools were used 
+        if ':' in vals[0]: #just in case bedtools were used
             chr,range=vals[0].split(':')
             low,high=range.split('-')
             mid=str(int(low)+((int(high)-int(low))/2))
@@ -249,15 +249,16 @@ def reduce_fasta(fsa_dict,gene_file,gene_list):
             seq_mid=chr+':'+mid
         #print seq_mid
         if seq_mid in mapped_mids:
+            new_seq[vals[0]+' '+mid_to_gene[seq_mid]]=fsa_dict[k]
             # print seq_mid,mapped_mids[0]
-            new_seq[k+' '+mid_to_gene[seq_mid]]=fsa_dict[k] ###****UPDATED: added gene name here, so don't have to map later....***
-    
+#            new_seq[k+' '+mid_to_gene[seq_mid]]=fsa_dict[k] ###****UPDATED: added gene name here, so don't have to map later....***
+
     print 'Found '+str(len(new_seq))+' events from FASTA file that map to '+str(count)+' event-gene matches  and '+str(len(include_genes))+' genes out of '+str(len(fsa_dict))+' events'
 
     ##now write new fasta file
     Fasta.write(new_seq,re.sub('.xls','.fsa',gene_file))
     return new_seq
-    
+
 
 ##get program directory
 progdir=os.path.dirname(sys.argv[0])
@@ -267,11 +268,11 @@ def main():
     srcdir=os.path.join(progdir,'../src')
 
     parser=OptionParser(usage)
-    
+
     parser.add_option("--motif", dest="motif",default=os.path.join(progdir,"../data/matrix_files/vertebrates_clustered_motifs.tamo"),help='The .tamo formatted motif file to use for motif matching and scoring')
     parser.add_option('--scores',dest='pkl',default=os.path.join(progdir,'../data/matrix_files/motif_thresholds.pkl'),help='PKL file of matrix score thresholds')
     parser.add_option('--ids',dest='ids',default=os.path.join(progdir,'../data/matrix_files/vertebrates_clustered_motifs_mIDs.txt'),help='List of Exemplar motifs in motif cluster')
-    
+
     parser.add_option('--genemappingfile',dest='gene_file',default='',help='File indicating which regions are mapped to genes, enabling the reduction of the FASTA file for gene-relevant regions')
     parser.add_option("--genome", dest="genome", default='mm9',help='The genome build that you are using, used to estimate binding site priors')
     parser.add_option('--utilpath',dest='addpath',default=srcdir,help='Destination of chipsequtil library, Default=%default')
@@ -284,7 +285,7 @@ def main():
     (opts, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("incorrect number of arguments")
-        
+
     fsa=args[0]
     motiffile=opts.motif
     ##append path to chipsequtil/TAMO
@@ -294,7 +295,7 @@ def main():
     global Fasta
     from chipsequtil import Fasta
 #    sys.path.insert(0,opts.addpath+'chipsequtil')
-    
+
     fsa_dict=Fasta.load(fsa,key_func=lambda x:x)
     if opts.gene_file!='':
         print 'Reducing FASTA file to only contain sequences from '+opts.gene_file
