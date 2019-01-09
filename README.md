@@ -1,8 +1,6 @@
 <center><img src="http://fraenkel-nsf.csbi.mit.edu/omicsintegrator/omicsI_logo.png" height="40%" width="40%" ></center>
 
-===============================
-Omics Integrator
-===============================
+## OmicsIntegrator has moved. See [OmicsIntegrator2](https://github.com/fraenkel-lab/OmicsIntegrator2). This codebase is not maintained. 
 
 [![Build Status](https://travis-ci.org/fraenkel-lab/OmicsIntegrator.svg?branch=master)](https://travis-ci.org/fraenkel-lab/OmicsIntegrator)
 
